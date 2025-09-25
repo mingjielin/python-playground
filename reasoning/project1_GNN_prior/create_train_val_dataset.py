@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer, AutoModel
 from Bio import SeqIO
 from Bio.PDB import PDBParser
 import requests
-import os
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from scipy.stats import pearsonr
