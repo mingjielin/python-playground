@@ -36,6 +36,13 @@ class DDGDataProcessor:
             'MET': 'M', 'ASN': 'N', 'PRO': 'P', 'GLN': 'Q', 'ARG': 'R',
             'SER': 'S', 'THR': 'T', 'VAL': 'V', 'TRP': 'W', 'TYR': 'Y'
         }
+
+        # Common enzyme cofactors and ligands to identify active sites
+        self.common_cofactors = {
+            'NAD', 'NAP', 'NDP', 'FAD', 'FMN', 'ATP', 'GTP', 'ADP', 'GDP',
+            'COA', 'ACP', 'HEM', 'HEC', 'FES', 'ZN', 'MG', 'CA', 'FE'
+        }
+        
         
         # Data storage
         self.raw_data = None
@@ -76,10 +83,13 @@ class DDGDataProcessor:
             # load a local PDB file
             # Parse PDB and extract sequence
             from io import StringIO
-            from Bio.PDB import PDBParser
+            from Bio.PDB import PDBParser, PPBuilder
                 
             parser = PDBParser()
-            structure = parser.get_structure(pdb_id, StringIO("./data/s669/pdb/{pdb_id}.pdb"))
+            structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
+            # structure = parser.get_structure(pdb_id, StringIO("./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb"))
+            # structure = parser.get_structure(pdb_id, './reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb')
+            # structure = parser.get_structure(pdb_id, './reasoning/project1_GNN_prior/data/s669/pdb/1A0F.pdb')
                 
             sequence = ""
             for chain in structure[0]:  # First model
@@ -87,7 +97,14 @@ class DDGDataProcessor:
                     for residue in chain:
                         if residue.get_resname() in self.amino_acids_3to1:
                             sequence += self.amino_acids_3to1[residue.get_resname()]
-                
+
+            """
+            ppb = PPBuilder()
+            for pp in ppb.build_peptides(structure):
+                # sequence = pp.get_sequence()
+                sequence.append(str(pp.get_sequence()))
+            """
+
             return sequence
         except:
             return None
