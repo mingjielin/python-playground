@@ -302,7 +302,9 @@ class DDGDataProcessor:
         )
         
         train_dataset = torch.utils.data.Subset(self.dataset, train_idx)
+        print(train_dataset)
         val_dataset = torch.utils.data.Subset(self.dataset, val_idx)
+        print(val_dataset)
         
         # Create data loaders
         self.train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
