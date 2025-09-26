@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+os.environ['CUDA_VISIBLE_DEVICES'] = '' # or '-1'
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer, AutoModel
@@ -87,10 +88,8 @@ class DDGDataProcessor:
             from Bio.PDB import PDBParser, PPBuilder
                 
             parser = PDBParser()
-            structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
-            # structure = parser.get_structure(pdb_id, StringIO("./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb"))
-            # structure = parser.get_structure(pdb_id, './reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb')
-            # structure = parser.get_structure(pdb_id, './reasoning/project1_GNN_prior/data/s669/pdb/1A0F.pdb')
+            #structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
+            structure = parser.get_structure(pdb_id, f"./data/s669/pdb/{pdb_id}.pdb")
                 
             sequence = ""
             for chain in structure[0]:  # First model
@@ -306,8 +305,8 @@ class DDGDataProcessor:
         val_dataset = torch.utils.data.Subset(self.dataset, val_idx)
         
         # Create data loaders
-        self.train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-        self.val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False)
+        self.train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+        self.val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
         
         print(f"Training samples: {len(train_idx)}")
         print(f"Validation samples: {len(val_idx)}")
@@ -439,7 +438,8 @@ if __name__ == "__main__":
     processor = DDGDataProcessor()
     
     # Process your data
-    train_loader, val_loader = processor.process_data('./reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+    # train_loader, val_loader = processor.process_data('./reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+    train_loader, val_loader = processor.process_data('./data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
     
     # Initialize model
     model = DDGPredictionModel()
