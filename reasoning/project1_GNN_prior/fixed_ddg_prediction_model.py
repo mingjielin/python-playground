@@ -716,6 +716,18 @@ if __name__ == "__main__":
     print("\nModel is ready for inference!")
     print("All device handling issues have been fixed.")
 
+    # Save the trained model
+    torch.save(model.state_dict(), 'ddg_model.pth')
+
+    # Or save with additional metadata
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'epoch': epoch,
+        'val_loss': val_loss,
+        'val_r2': val_r2
+    }, 'ddg_model_checkpoint.pth')
+
 ##################################################################################3
 ##################################################################################3
 ##################################################################################3
