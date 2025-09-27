@@ -333,6 +333,10 @@ def fixed_train_epoch(model, train_loader, optimizer, criterion, device):
         structure_data = batch['structure_data']
         if structure_data is not None:
             structure_data = structure_data.to(device)
+
+
+
+            
         
         optimizer.zero_grad()
         
@@ -459,7 +463,7 @@ def complete_fixed_training():
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
     
     # Training loop
-    for epoch in range(5):
+    for epoch in range(100):
         print(f"\nEpoch {epoch+1}/5")
         
         # Training
@@ -578,9 +582,10 @@ class DDGInference:
         # Initialize model with the same architecture as training
         model = FixedDDGPredictionModel(
             structure_dim=64,
-            sequence_dim=256,
-            hidden_dim=128
-        )
+            sequence_dim=768,
+            hidden_dim=256
+        ).to(self.device)
+    
 
         # Load state dict
         checkpoint = torch.load(model_path, map_location=self.device)
@@ -637,7 +642,10 @@ class DDGInference:
         # Handle structure data
         if structure_data is None:
             # Create dummy structure data (same as used during training)
-            structure_data = torch.randn(1, 64, device=self.device)
+            # structure_data = torch.randn(1, 64, device=self.device)
+            # LMJ hack
+            # structure_data = self.create_dummy_structure(len(row['wild_type']))
+            pass
         else:
             structure_data = structure_data.to(self.device)
 
@@ -732,6 +740,56 @@ if __name__ == "__main__":
 ##################################################################################3
 ##################################################################################3
 ##################################################################################3
+
+    try:
+        inference = DDGInference('ddg_model.pth')
+    except FileNotFoundError:
+        print("Model file not found.")
+
+    # Example predictions
+    examples = [
+        {
+            'wild_type': 'MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG',
+            'mutant': 'MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGA',
+            'description': 'G->A mutation'
+        },
+        {
+            'wild_type': 'ACDEFGHIKLMNPQRSTVWY',
+            'mutant': 'ACDEFGHIKLMNPQRSTVWY', 
+            'description': 'No mutation (should predict ~0)'
+        },
+        {
+            'wild_type': 'MKTVRQERLK',
+            'mutant': 'MKTVGQERLK',
+            'description': 'R->G mutation'
+        }
+    ]
+    
+    print(f"\nMaking predictions for {len(examples)} examples...")
+    
+    for i, example in enumerate(examples):
+        wild = example['wild_type']
+        mut = example['mutant']
+        desc = example['description']
+        
+        # Make prediction
+        ddg_pred = inference.predict_ddg(wild, mut)
+        
+        print(f"\nExample {i+1}: {desc}")
+        print(f"  Wild type: {wild[:20]}{'...' if len(wild) > 20 else ''} (len={len(wild)})")
+        print(f"  Mutant:    {mut[:20]}{'...' if len(mut) > 20 else ''} (len={len(mut)})")
+        print(f"  Predicted DDG: {ddg_pred:.3f}")
+        
+        # Interpret the result
+        if ddg_pred > 0:
+            stability = "destabilizing"
+        elif ddg_pred < 0:
+            stability = "stabilizing"
+        else:
+            stability = "neutral"
+        
+        print(f"  Interpretation: {stability} mutation (|DDG| = {abs(ddg_pred):.3f})")
+    
 
 '''
 
