@@ -34,7 +34,7 @@ class DDGInference:
     def _load_model(self, model_path):
         """Load the trained model"""
         # Import the model class (assuming you have the FixedDDGPredictionModel)
-        from reasoning.project1_GNN_prior.ddg_prediction_model_v1 import FixedDDGPredictionModel  # Adjust import based on your file
+        from reasoning.project1_GNN_prior.temp.ddg_prediction_model_v1 import FixedDDGPredictionModel  # Adjust import based on your file
         
         # Initialize model with the same architecture as training
         model = FixedDDGPredictionModel(
@@ -157,7 +157,7 @@ def main():
     except FileNotFoundError:
         print("Model file not found. Using dummy model for demonstration.")
         # Create a dummy model for demonstration
-        from reasoning.project1_GNN_prior.ddg_prediction_model_v1 import FixedDDGPredictionModel
+        from reasoning.project1_GNN_prior.temp.ddg_prediction_model_v1 import FixedDDGPredictionModel
         dummy_model = FixedDDGPredictionModel().eval()
         torch.save(dummy_model.state_dict(), 'ddg_model.pth')
         inference = DDGInference('ddg_model.pth')
