@@ -688,7 +688,9 @@ class FixedDDGTrainer:
                     ddg_pred = ddg_pred.unsqueeze(0)  # Add dimension: scalar -> [1]
 
                 # Store for metrics
-                all_predictions.extend(ddg_pred.squeeze().cpu().numpy())
+                # LMJ: hack
+                # all_predictions.extend(ddg_pred.squeeze().cpu().numpy())
+                all_predictions.extend(ddg_pred.cpu().numpy())
                 all_targets.extend(ddg_true.cpu().numpy())
 
                 progress_bar.set_postfix({'loss': loss.item()})
