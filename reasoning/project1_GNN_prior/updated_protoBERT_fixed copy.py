@@ -41,8 +41,8 @@ class TrainingConfig:
     weight_decay: float = 0.01
     num_epochs: int = 200  # More epochs for debugging
     patience: int = 500
-    # device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    device: str = 'cpu'
+    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # device: str = 'cpu'
     best_model_path: str = 'best_protobert_ddg.pth'
     seed: int = 42
     ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
@@ -539,11 +539,11 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         global_count += 1
 
         # Ensure all tensors are on the correct device
-        batch = ensure_device_consistency(batch, device)
-        
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         ddg_labels = batch['ddg_labels']
+        
+        batch = ensure_device_consistency(batch, device)
         
         optimizer.zero_grad()
         
@@ -570,7 +570,7 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
 
         # LMJ: tensorboard
         # Log training loss every N steps
-        if global_count % 10 == 0:  # Log every 10 steps
+        if global_count % 1 == 0:  # Log every 10 steps
             writer.add_scalar('Loss/Train', loss.item(), global_step=global_count)
 
         
@@ -606,12 +606,13 @@ def validate_epoch_ddg(model, dataloader, device, epoch_num=0, total_epochs=0):
     
     with torch.no_grad():
         for batch_idx, batch in enumerate(pbar):
-            # Ensure all tensors are on the correct device
-            batch = ensure_device_consistency(batch, device)
-            
+
             input_ids = batch['input_ids']
             attention_mask = batch['attention_mask']
             ddg_labels = batch['ddg_labels']
+            
+            # Ensure all tensors are on the correct device
+            batch = ensure_device_consistency(batch, device)
             
             outputs = model(
                 input_ids=input_ids,
