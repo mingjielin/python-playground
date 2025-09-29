@@ -31,6 +31,9 @@ except ImportError:
     Data = None
     Batch = None
 
+from torch.utils.tensorboard import SummaryWriter
+# LMJ: tensorboard
+writer = SummaryWriter(log_dir="runs/ddg_experiment")
 
 class DDGDataset(Dataset):
     """
@@ -557,6 +560,11 @@ class FixedDDGTrainer:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
     
+        self.global_step = 0
+
+        # LMJ: tensorboard
+        self.writer = SummaryWriter(log_dir="runs/ddg_experiment")
+
     #def train_epoch(self, optimizer, criterion):
     #    """Train for one epoch"""
     #    self.model.train()
@@ -596,6 +604,8 @@ class FixedDDGTrainer:
     
         progress_bar = tqdm(self.train_loader, desc="Training")
         for batch in progress_bar:
+
+            global_step += 1
             # Move data to device
             # wild_tokens = batch['wild_type_ids'].to(device)
             # mutant_tokens = batch['mutant_tokens'].to(device)
@@ -637,6 +647,11 @@ class FixedDDGTrainer:
         progress_bar.set_postfix({'loss': loss.item()})
     
         avg_loss = total_loss / total_samples
+
+        # Log training loss every N steps
+        if global_step % 10 == 0:  # Log every 10 steps
+            self.writer.add_scalar('Loss/Train', avg_loss, global_step=global_step)
+
         return avg_loss
 
     def fixed_validate(self, criterion, device):
@@ -714,6 +729,8 @@ class FixedDDGTrainer:
         # Setup training
         criterion = nn.MSELoss()
         optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+
+
 
         # Training loop
         for epoch in range(100):

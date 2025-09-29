@@ -11,8 +11,10 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from tqdm import tqdm
 
-from livelossplot import PlotLosses
-import time
+# LMJ: tensorboard
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter(log_dir="runs/ddg_experiment")
+global_count = 0
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -46,6 +48,7 @@ class TrainingConfig:
     ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
     gradient_clipping: float = 1.0
     print_every: int = 1  # Print every epoch
+
 
 # ==================== ENHANCED PROTOBERT MODEL WITH DEBUGGING ====================
 
@@ -525,11 +528,16 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     total_loss = 0
     all_predictions = []
     all_labels = []
+
+    global global_count
     
     # Create progress bar
     pbar = tqdm(dataloader, desc=f'Epoch {epoch_num}/{total_epochs} - Training', leave=False)
     
     for batch_idx, batch in enumerate(pbar):
+
+        global_count += 1
+
         # Ensure all tensors are on the correct device
         batch = ensure_device_consistency(batch, device)
         
@@ -559,6 +567,12 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
             scheduler.step()
         
         total_loss += loss.item()
+
+        # LMJ: tensorboard
+        # Log training loss every N steps
+        if global_count % 10 == 0:  # Log every 10 steps
+            writer.add_scalar('Loss/Train', loss.item(), global_step=global_count)
+
         
         # Get predictions - move to CPU before numpy conversion
         predictions = outputs['ddg_prediction'].squeeze(-1).detach().cpu().numpy()
@@ -663,9 +677,6 @@ def train_model_ddg(model, train_dataloader, val_dataloader, config: TrainingCon
     # Main training loop with progress bar
     epoch_pbar = tqdm(range(config.num_epochs), desc="Training Progress")
     
-    # Initialize the plot
-    plotlosses = PlotLosses()
-
     for epoch in epoch_pbar:
         # Training
         train_loss, train_mse, train_mae, train_r2 = train_epoch_ddg(
@@ -679,12 +690,6 @@ def train_model_ddg(model, train_dataloader, val_dataloader, config: TrainingCon
             epoch_num=epoch+1, total_epochs=config.num_epochs
         )
         
-        # plot the loss dynamicaaly
-        plotlosses.update({'loss': train_loss})
-        plotlosses.send() # Update and redraw the plot
-
-        time.sleep(0.5)
-
         # Store metrics
         training_history['train_loss'].append(train_loss)
         training_history['train_mse'].append(train_mse)
