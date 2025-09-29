@@ -88,8 +88,8 @@ class DDGDataProcessor:
             from Bio.PDB import PDBParser, PPBuilder
                 
             parser = PDBParser()
-            #structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
-            structure = parser.get_structure(pdb_id, f"./data/s669/pdb/{pdb_id}.pdb")
+            structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
+            # structure = parser.get_structure(pdb_id, f"./data/s669/pdb/{pdb_id}.pdb")
                 
             sequence = ""
             for chain in structure[0]:  # First model
@@ -440,8 +440,8 @@ if __name__ == "__main__":
     processor = DDGDataProcessor()
     
     # Process your data
-    # train_loader, val_loader = processor.process_data('./reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
-    train_loader, val_loader = processor.process_data('./data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+    train_loader, val_loader = processor.process_data('./reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+    # train_loader, val_loader = processor.process_data('./data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
     
     # Initialize model
     model = DDGPredictionModel()
