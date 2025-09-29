@@ -24,11 +24,11 @@ warnings.filterwarnings('ignore')
 @dataclass
 class ModelConfig:
     vocab_size: int = 30  # 20 amino acids + 10 special tokens
-    hidden_size: int = 256  # Reduced for debugging
-    num_hidden_layers: int = 16  # Reduced for debugging
-    num_attention_heads: int = 16  # Reduced for debugging
+    hidden_size: int = 1024  # Reduced for debugging
+    num_hidden_layers: int = 64  # Reduced for debugging
+    num_attention_heads: int = 64  # Reduced for debugging
     intermediate_size: int = 1024  # Reduced for debugging
-    max_position_embeddings: int = 128  # Reduced for debugging
+    max_position_embeddings: int = 258  # Reduced for debugging
     dropout: float = 0.1
     activation: str = "gelu"
     regression_head_size: int = 512 
@@ -36,7 +36,7 @@ class ModelConfig:
 
 @dataclass
 class TrainingConfig:
-    batch_size: int = 8  # Reduced batch size
+    batch_size: int = 1  # Reduced batch size
     learning_rate: float = 1e-4  # Reduced learning rate
     weight_decay: float = 0.01
     num_epochs: int = 200  # More epochs for debugging
@@ -539,9 +539,9 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         global_count += 1
 
         # Ensure all tensors are on the correct device
-        input_ids = batch['input_ids']
-        attention_mask = batch['attention_mask']
-        ddg_labels = batch['ddg_labels']
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        ddg_labels = batch['ddg_labels'].to(device)
         
         batch = ensure_device_consistency(batch, device)
         
@@ -607,9 +607,9 @@ def validate_epoch_ddg(model, dataloader, device, epoch_num=0, total_epochs=0):
     with torch.no_grad():
         for batch_idx, batch in enumerate(pbar):
 
-            input_ids = batch['input_ids']
-            attention_mask = batch['attention_mask']
-            ddg_labels = batch['ddg_labels']
+            input_ids = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            ddg_labels = batch['ddg_labels'].to(device)
             
             # Ensure all tensors are on the correct device
             batch = ensure_device_consistency(batch, device)
@@ -912,6 +912,9 @@ def main():
     
     print("Creating ProtoBERT model for DDG prediction...")
     model = ProtoBERTForDDGPrediction(model_config)
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = model.to(device)
     
     # Debug the model before training
     print("Debugging initial model:")
@@ -920,7 +923,9 @@ def main():
     print("Starting DDG prediction training...")
     trained_model, history = train_model_ddg(
         model, train_dataloader, val_dataloader, training_config
-    )
+    ).to(device)
+
+
     
     # Plot training history
     plot_training_history(history)
