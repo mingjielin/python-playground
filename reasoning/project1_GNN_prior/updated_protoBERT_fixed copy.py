@@ -37,7 +37,7 @@ class ModelConfig:
 @dataclass
 class TrainingConfig:
     batch_size: int = 8  # Reduced batch size
-    learning_rate: float = 9e-4  # Reduced learning rate
+    learning_rate: float = 1e-4  # Reduced learning rate
     weight_decay: float = 0.01
     num_epochs: int = 200  # More epochs for debugging
     patience: int = 500
