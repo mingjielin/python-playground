@@ -1,0 +1,438 @@
+# final_complete_example.py
+"""
+Complete example of mutational enzyme transformer with GNN structural priors
+"""
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, Dataset
+from torch_geometric.nn import GCNConv, global_mean_pool
+from torch_geometric.data import Data
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+import pandas as pd
+import numpy as np
+import math
+
+# Device setup
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using device: {device}")
+
+class CompleteMutationalTransformer(nn.Module):
+    """Complete mutational enzyme transformer with GNN structural priors"""
+    
+    def __init__(self, vocab_size=22, d_model=128, nhead=8, num_layers=4,
+                 max_length=200, dropout=0.1, structure_dim=64):
+        super(CompleteMutationalTransformer, self).__init__()
+        
+        self.d_model = d_model
+        self.max_length = max_length
+        
+        # Comprehensive physicochemical properties
+        self.properties = {
+            'hydrophobicity': {
+                'A': 1.8, 'R': -4.5, 'N': -3.5, 'D': -3.5, 'C': 2.5,
+                'Q': -3.5, 'E': -3.5, 'G': -0.4, 'H': -3.2, 'I': 4.5,
+                'L': 3.8, 'K': -3.9, 'M': 1.9, 'F': 2.8, 'P': -1.6,
+                'S': -0.8, 'T': -0.7, 'W': -0.9, 'Y': -1.3, 'V': 4.2,
+                '<PAD>': 0.0, '<UNK>': 0.0
+            },
+            'charge': {
+                'A': 0, 'R': 1, 'N': 0, 'D': -1, 'C': 0,
+                'Q': 0, 'E': -1, 'G': 0, 'H': 1, 'I': 0,
+                'L': 0, 'K': 1, 'M': 0, 'F': 0, 'P': 0,
+                'S': 0, 'T': 0, 'W': 0, 'Y': 0, 'V': 0,
+                '<PAD>': 0, '<UNK>': 0
+            }
+        }
+        
+        # Token mappings
+        self.amino_acids = list(self.properties['hydrophobicity'].keys())
+        self.token_to_idx = {aa: i for i, aa in enumerate(self.amino_acids)}
+        self.idx_to_token = {i: aa for i, aa in enumerate(self.amino_acids)}
+        
+        # Multi-property embeddings
+        embedding_dim = d_model // (len(self.properties) + 1)  # +1 for token identity
+        self.token_embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.property_embeddings = nn.ModuleDict({
+            prop_name: nn.Linear(1, embedding_dim) 
+            for prop_name in self.properties.keys()
+        })
+        
+        # Positional encoding
+        self.positional_encoding = self.create_positional_encoding(max_length, d_model)
+        
+        # Transformer encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dropout=dropout,
+            batch_first=True
+        )
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers)
+        
+        # Structure GNN
+        self.structure_gnn = StructureGNN(
+            node_features=20,
+            hidden_dim=structure_dim * 2,
+            num_layers=3
+        )
+        
+        # Fusion layer
+        fusion_input_dim = d_model + structure_dim  # seq + struct
+        self.fusion_layer = nn.Sequential(
+            nn.Linear(fusion_input_dim, d_model),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model, d_model // 2)
+        )
+        
+        # Output layer
+        self.output_layer = nn.Linear(d_model // 2, 1)
+        
+        self.dropout = nn.Dropout(dropout)
+    
+    def create_positional_encoding(self, max_len, d_model):
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * 
+                           (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        return pe.unsqueeze(0)
+    
+    def get_property_values(self, tokens, property_name):
+        """Get property values for tokens"""
+        batch_size, seq_len = tokens.shape
+        property_values = torch.zeros(batch_size, seq_len, 1)
+        property_scale = self.properties[property_name]
+        
+        for i in range(batch_size):
+            for j in range(seq_len):
+                token_idx = tokens[i, j].item()
+                if token_idx < len(self.amino_acids):
+                    aa = self.idx_to_token[token_idx]
+                    if aa in property_scale:
+                        property_values[i, j, 0] = property_scale[aa]
+        
+        return property_values
+    
+    def forward(self, src, src_mask=None, structure_data=None):
+        batch_size, seq_len = src.shape
+        
+        # Multi-property embeddings
+        token_embeds = self.token_embedding(src)
+        
+        property_embeds = []
+        for prop_name in self.properties.keys():
+            prop_values = self.get_property_values(src, prop_name)
+            prop_embeds = self.property_embeddings[prop_name](prop_values.to(src.device))
+            property_embeds.append(prop_embeds)
+        
+        # Combine embeddings
+        all_embeds = [token_embeds] + property_embeds
+        embeddings = torch.cat(all_embeds, dim=-1)
+        
+        # Add positional encoding
+        pos_encoding = self.positional_encoding[:, :seq_len, :].to(src.device)
+
+
+        # LMJ hack
+        # x = torch.zeros((2,30,1))
+        # Add positional encoding
+        #      Positional encoding: (1, seq_len, d_model)
+        #      Broadcast → (batch_size, seq_len, d_model)
+        # bad: 
+        embeddings = F.pad(embeddings, (0, 1))
+        # embeddings = embeddings.repeat(batch_size, 1, 1)
+
+        embeddings = embeddings + pos_encoding
+        embeddings = self.dropout(embeddings)
+        
+        # Transformer encoder
+        if src_mask is not None:
+            transformer_output = self.transformer_encoder(embeddings, src_key_padding_mask=src_mask)
+        else:
+            transformer_output = self.transformer_encoder(embeddings)
+        
+        # Sequence representation
+        if src_mask is not None:
+            mask_expanded = (~src_mask).unsqueeze(-1).float()
+            seq_representation = (transformer_output * mask_expanded).sum(dim=1) / mask_expanded.sum(dim=1)
+        else:
+            seq_representation = transformer_output.mean(dim=1)
+        
+        # Structure representation
+        if structure_data is not None:
+            structure_representation = self.structure_gnn(
+                structure_data.x,
+                structure_data.edge_index,
+                structure_data.batch
+            )
+        else:
+            # LMJ hack
+            # structure_representation = torch.zeros(batch_size, 32).to(src.device)
+            structure_representation = torch.zeros(batch_size, 64).to(src.device)
+        
+        # Fusion
+        fused_representation = torch.cat([seq_representation, structure_representation], dim=-1)
+        fused_representation = self.fusion_layer(fused_representation)
+        
+        # Output
+        output = self.output_layer(fused_representation)
+        return output
+
+class StructureGNN(nn.Module):
+    """GNN for protein structure processing"""
+    
+    def __init__(self, node_features=20, hidden_dim=128, num_layers=3):
+        super(StructureGNN, self).__init__()
+        
+        self.convs = nn.ModuleList()
+        self.convs.append(GCNConv(node_features, hidden_dim))
+        
+        for _ in range(num_layers - 1):
+            self.convs.append(GCNConv(hidden_dim, hidden_dim))
+        
+        self.output_layer = nn.Linear(hidden_dim, 32)
+    
+    def forward(self, x, edge_index, batch):
+        # Graph convolutional layers
+        for conv in self.convs:
+            x = conv(x, edge_index)
+            x = F.relu(x)
+        
+        # Global pooling
+        x = global_mean_pool(x, batch)
+        x = self.output_layer(x)
+        return x
+
+class MutationalDataset(Dataset):
+    """Dataset for mutational data"""
+    
+    def __init__(self, sequences, labels, max_length=200):
+        self.sequences = sequences
+        self.labels = labels
+        self.max_length = max_length
+        
+        # Token mappings
+        self.amino_acids = list('ACDEFGHIKLMNPQRSTVWY') + ['<PAD>', '<UNK>']
+        self.token_to_idx = {aa: i for i, aa in enumerate(self.amino_acids)}
+    
+    def __len__(self):
+        return len(self.sequences)
+    
+    def __getitem__(self, idx):
+        sequence = self.sequences[idx]
+        label = self.labels[idx]
+        
+        # Convert sequence to tokens
+        token_ids = []
+        for aa in str(sequence)[:self.max_length]:
+            token_ids.append(self.token_to_idx.get(aa.upper(), self.token_to_idx['<UNK>']))
+        
+        # Pad sequence
+        if len(token_ids) < self.max_length:
+            token_ids.extend([self.token_to_idx['<PAD>']] * (self.max_length - len(token_ids)))
+        
+        return {
+            'sequence': torch.tensor(token_ids, dtype=torch.long),
+            'label': torch.tensor(float(label), dtype=torch.float)
+        }
+'''
+def create_sample_mutational_data(n_samples=500):
+    """Create sample mutational data"""
+    amino_acids = list('ACDEFGHIKLMNPQRSTVWY')
+    
+    sequences = []
+    labels = []
+    
+    for i in range(n_samples):
+        length = np.random.randint(30, 150)
+        wild_type = ''.join(np.random.choice(amino_acids, length))
+        
+        # Generate mutant
+        mutant = list(wild_type)
+        num_mutations = np.random.randint(1, min(4, length // 10 + 1))
+        mutation_positions = np.random.choice(len(wild_type), num_mutations, replace=False)
+        
+        for pos in mutation_positions:
+            old_aa = mutant[pos]
+            new_aa = np.random.choice([aa for aa in amino_acids if aa != old_aa])
+            mutant[pos] = new_aa
+        
+        mutant = ''.join(mutant)
+        sequences.append(mutant)
+        
+        # Generate ΔΔG
+        ddG = np.random.normal(0, 1.5)
+        labels.append(ddG)
+    
+    return sequences, labels
+'''
+
+def create_sample_mutational_data(n_samples=500):
+    """Create sample mutational data"""
+    amino_acids = list('ACDEFGHIKLMNPQRSTVWY')
+    
+    sequences = []
+    labels = []
+    
+    for i in range(n_samples):
+        length = np.random.randint(30, 150)
+        wild_type = ''.join(np.random.choice(amino_acids, length))
+        
+        # Generate mutant
+        mutant = list(wild_type)
+        num_mutations = np.random.randint(1, min(4, length // 10 + 1))
+        mutation_positions = np.random.choice(len(wild_type), num_mutations, replace=False)
+        
+        for pos in mutation_positions:
+            old_aa = mutant[pos]
+            new_aa = np.random.choice([aa for aa in amino_acids if aa != old_aa])
+            mutant[pos] = new_aa
+        
+        mutant = ''.join(mutant)
+        sequences.append(mutant)
+        
+        # Generate ΔΔG
+        ddG = np.random.normal(0, 1.5)
+        labels.append(ddG)
+    
+    return sequences, labels
+
+def train_model(model, train_loader, val_loader, num_epochs=10, learning_rate=1e-3):
+    """Train the model"""
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+    
+    model.to(device)
+    
+    for epoch in range(num_epochs):
+        # Training
+        model.train()
+        total_train_loss = 0
+        train_samples = 0
+        
+        for batch in train_loader:
+            sequences = batch['sequence'].to(device)
+            labels = batch['label'].to(device)
+            src_mask = (sequences == 0)
+            
+            optimizer.zero_grad()
+            outputs = model(sequences, src_mask)
+            loss = criterion(outputs.squeeze(), labels.float())
+            loss.backward()
+            optimizer.step()
+            
+            total_train_loss += loss.item() * sequences.size(0)
+            train_samples += sequences.size(0)
+        
+        avg_train_loss = total_train_loss / train_samples
+        
+        # Validation
+        model.eval()
+        total_val_loss = 0
+        val_samples = 0
+        all_preds = []
+        all_labels = []
+        
+        with torch.no_grad():
+            for batch in val_loader:
+                sequences = batch['sequence'].to(device)
+                labels = batch['label'].to(device)
+                src_mask = (sequences == 0)
+                
+                outputs = model(sequences, src_mask)
+                loss = criterion(outputs.squeeze(), labels.float())
+                
+                total_val_loss += loss.item() * sequences.size(0)
+                val_samples += sequences.size(0)
+                all_preds.extend(outputs.squeeze().cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
+        
+        avg_val_loss = total_val_loss / val_samples
+        val_mse = mean_squared_error(all_labels, all_preds)
+        
+        print(f'Epoch [{epoch+1}/{num_epochs}]')
+        print(f'Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Val MSE: {val_mse:.4f}')
+    
+    return model
+
+# Main execution
+if __name__ == "__main__":
+    print("Complete Mutational Enzyme Transformer")
+    print("=" * 40)
+    
+    # Create sample data
+    print("Creating sample mutational data...")
+    sequences, labels = create_sample_mutational_data(300)
+    
+    # Split data
+    train_sequences, test_sequences, train_labels, test_labels = train_test_split(
+        sequences, labels, test_size=0.2, random_state=42
+    )
+    train_sequences, val_sequences, train_labels, val_labels = train_test_split(
+        train_sequences, train_labels, test_size=0.2, random_state=42
+    )
+    
+    # Create datasets
+    print("Creating datasets...")
+    train_dataset = MutationalDataset(train_sequences, train_labels, max_length=100)
+    val_dataset = MutationalDataset(val_sequences, val_labels, max_length=100)
+    test_dataset = MutationalDataset(test_sequences, test_labels, max_length=100)
+    
+    # Create data loaders
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+    
+    # Initialize model
+    print("Initializing model...")
+    model = CompleteMutationalTransformer(
+        vocab_size=len(train_dataset.token_to_idx),
+        d_model=64,
+        nhead=4,
+        num_layers=2,
+        max_length=100
+    )
+    
+    print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+    
+    # Train model
+    print("Training model...")
+    trained_model = train_model(model, train_loader, val_loader, num_epochs=5)
+    
+    # Evaluate model
+    print("Evaluating model...")
+    trained_model.eval()
+    all_preds = []
+    all_labels = []
+    
+    with torch.no_grad():
+        for batch in test_loader:
+            sequences = batch['sequence'].to(device)
+            labels = batch['label'].to(device)
+            src_mask = (sequences == 0)
+            
+            outputs = trained_model(sequences, src_mask)
+            all_preds.extend(outputs.squeeze().cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+    
+    mse = mean_squared_error(all_labels, all_preds)
+    r2 = r2_score(all_labels, all_preds)
+    correlation = np.corrcoef(all_labels, all_preds)[0, 1]
+    
+    print(f"\nFinal Results:")
+    print(f'Test MSE: {mse:.4f}')
+    print(f'Test R²: {r2:.4f}')
+    print(f'Test Correlation: {correlation:.4f}')
+    
+    # Show examples
+    print(f"\nExamples:")
+    for i in range(3):
+        print(f"True: {all_labels[i]:.3f}, Predicted: {all_preds[i]:.3f}")
+    
+    print("\nComplete example finished successfully!")
