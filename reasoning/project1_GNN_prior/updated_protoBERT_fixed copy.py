@@ -451,10 +451,13 @@ class DDGDataset(Dataset):
         # Create more realistic DDG distribution (normal distribution)
         self.data = []
         for i in range(num_samples):
+            """
             # Random sequence length (at least 10, at most max_length)
             seq_len = random.randint(10, config.max_position_embeddings)
             # Random amino acid IDs (10-29 for amino acids, excluding special tokens)
             input_ids = torch.randint(10, 30, (seq_len,))
+
+
             # Add [CLS] at start and [SEP] at end
             input_ids = torch.cat([torch.tensor([2]), input_ids, torch.tensor([3])])
             # Pad to max_length
@@ -473,6 +476,25 @@ class DDGDataset(Dataset):
             # Clip to range
             ddg_value = np.clip(ddg_value, self.ddg_range[0], self.ddg_range[1])
             
+            """
+
+            #######################################################
+            # LMJ: try more meaningfull synthetic data
+
+            seq_len = config.max_position_embeddings # every sequence is max length
+            input_ids = torch.randint(10, 30, (seq_len,))
+            # Add [CLS] at start and [SEP] at end
+            # input_ids = torch.cat([torch.tensor([2]), input_ids, torch.tensor([3])])            
+            aa_counts = torch.bincount(input_ids, minlength=30)
+
+            # Create DDG based on amino acid composition
+            weights = torch.randn(30) * 0.1  # Small weights to avoid extreme values
+            ddg = torch.sum(aa_counts * weights)
+            ddg_value = torch.clamp(ddg, -3.0, 3.0)
+
+            # Create attention mask
+            attention_mask = (input_ids != 0).long()
+
             self.data.append({
                 'input_ids': input_ids,
                 'attention_mask': attention_mask,
@@ -488,8 +510,8 @@ class DDGDataset(Dataset):
 
 # ==================== ENHANCED TRAINING UTILITIES WITH PROPER DEVICE MANAGEMENT ====================
 
+# Add this function to move all tensors to the same device
 def ensure_device_consistency(batch, device):
-    """Ensure all tensors in batch are on the same device"""
     for key, value in batch.items():
         if isinstance(value, torch.Tensor):
             batch[key] = value.to(device)

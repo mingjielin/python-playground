@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-os.environ['CUDA_VISIBLE_DEVICES'] = '' # or '-1'
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+# os.environ['CUDA_VISIBLE_DEVICES'] = '' # or '-1'
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer, AutoModel
