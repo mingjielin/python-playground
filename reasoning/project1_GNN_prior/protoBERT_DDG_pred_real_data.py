@@ -46,8 +46,10 @@ class ModelConfig:
     num_hidden_layers: int = 16 # 64  # Reduced for debugging
     num_attention_heads: int = 16 # 64  # Reduced for debugging
     intermediate_size: int = 1024  # Reduced for debugging
-    max_position_embeddings: int = 256 # 512  # Reduced for debugging
     regression_head_size: int = 256 # 512 
+    # no change for the following, tensor size consistency
+    # assert(max_position_embeddings == max_length)
+    max_position_embeddings: int = 512 # 512  # Reduced for debugging
     dropout: float = 0.1
     activation: str = "gelu"
     # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
@@ -93,6 +95,15 @@ class DDGDataProcessor:
     """
     Complete class for processing DDG (delta-delta G) data for protein transformer training
     """
+    #   # Use existing protein language models
+    #   from transformers import AutoTokenizer
+    #   
+    #   # ProtBERT tokenizer
+    #   tokenizer = AutoTokenizer.from_pretrained("Rostlab/prot_bert")
+    #   
+    #   # ESM (Evolutionary Scale Modeling) tokenizer
+    #   from transformers import AutoTokenizer
+    #   tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
     
     def __init__(self, model_name="Rostlab/prot_bert", max_length=512):
         """
@@ -333,7 +344,8 @@ class DDGDataProcessor:
             input_ids_list.append(tokens['input_ids'].squeeze(0))
             attention_masks_list.append(tokens['attention_mask'].squeeze(0))
             labels_list.append(ddg_score)
-        
+            
+        print(input_ids_list)
         return (
             torch.stack(input_ids_list),
             torch.stack(attention_masks_list),
@@ -853,6 +865,10 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         })
     
     avg_loss = total_loss / len(dataloader)
+    # LMJ: tensorboard
+    # Log training loss every N steps
+    writer.add_scalar('Avg Loss', avg_loss, global_step=epoch_num)
+
     mse = mean_squared_error(all_labels, all_predictions)
     mae = mean_absolute_error(all_labels, all_predictions)
     r2 = r2_score(all_labels, all_predictions)
