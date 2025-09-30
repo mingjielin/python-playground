@@ -46,7 +46,7 @@ class ModelConfig:
     num_hidden_layers: int = 64  # Reduced for debugging
     num_attention_heads: int = 64  # Reduced for debugging
     intermediate_size: int = 1024  # Reduced for debugging
-    max_position_embeddings: int = 258  # Reduced for debugging
+    max_position_embeddings: int = 512  # Reduced for debugging
     dropout: float = 0.1
     activation: str = "gelu"
     regression_head_size: int = 512 
@@ -258,7 +258,6 @@ class DDGDataProcessor:
         df['wild_type'] = wild_types
         df['position'] = positions
         df['mutant_type'] = mutant_types
-        
         return df
     
     def create_mutation_sequence(self, wild_seq, position, mutant_aa):
@@ -808,7 +807,7 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         # Ensure all tensors are on the correct device
         input_ids = batch['input_ids'].to(device)
         attention_mask = batch['attention_mask'].to(device)
-        ddg_labels = batch['ddg_labels'].to(device)
+        ddg_labels = batch['labels'].to(device)
         
         batch = ensure_device_consistency(batch, device)
         
@@ -1028,7 +1027,7 @@ def debug_model(model, dataloader, device):
         
         print(f"Model output shape: {outputs['ddg_prediction'].shape}")
         print(f"Model output value: {outputs['ddg_prediction'].item()}")
-        print(f"Expected DDG: {batch['ddg_labels'][0].item()}")
+        print(f"Expected DDG: {batch['labels'][0].item()}")
         
         # Check for gradients
         print("Model parameters:")
