@@ -4,8 +4,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from typing import Optional, Tuple, List, Dict, Any
+import pandas as pd
 import numpy as np
 import random
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
@@ -18,6 +22,20 @@ global_count = 0
 
 import warnings
 warnings.filterwarnings('ignore')
+
+# Try to import PyTorch Geometric
+try:
+    from torch_geometric.nn import GCNConv, global_mean_pool
+    from torch_geometric.data import Data, Batch
+    PYG_AVAILABLE = True
+    print("PyTorch Geometric is available")
+except ImportError:
+    PYG_AVAILABLE = False
+    print("PyTorch Geometric not available - using fallback implementation")
+    GCNConv = None
+    global_mean_pool = None
+    Data = None
+    Batch = None
 
 # ==================== ENHANCED CONFIGURATION WITH DEBUGGING ====================
 
@@ -48,6 +66,329 @@ class TrainingConfig:
     ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
     gradient_clipping: float = 1.0
     print_every: int = 1  # Print every epoch
+
+# ==================== PREPARE REAL EXPERIMENTAL DATA FOR TRAINING ================
+
+class DDGDataset(Dataset):
+    """
+    PyTorch Dataset for DDG prediction
+    """
+    def __init__(self, input_ids, attention_masks, labels):
+        self.input_ids = input_ids
+        self.attention_masks = attention_masks
+        self.labels = labels
+    
+    def __len__(self):
+        return len(self.labels)
+    
+    def __getitem__(self, idx):
+        return {
+            'input_ids': self.input_ids[idx],
+            'attention_mask': self.attention_masks[idx],
+            'labels': self.labels[idx]
+        }
+
+
+class DDGDataProcessor:
+    """
+    Complete class for processing DDG (delta-delta G) data for protein transformer training
+    """
+    
+    def __init__(self, model_name="Rostlab/prot_bert", max_length=512):
+        """
+        Initialize the DDG data processor
+        
+        Args:
+            model_name (str): Name of the protein transformer model
+            max_length (int): Maximum sequence length for tokenization
+        """
+        self.model_name = model_name
+        self.max_length = max_length
+        self.tokenizer = self.setup_tokenizer()
+        
+        # Amino acid mapping
+        self.amino_acids_3to1 = {
+            'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU': 'E', 'PHE': 'F',
+            'GLY': 'G', 'HIS': 'H', 'ILE': 'I', 'LYS': 'K', 'LEU': 'L',
+            'MET': 'M', 'ASN': 'N', 'PRO': 'P', 'GLN': 'Q', 'ARG': 'R',
+            'SER': 'S', 'THR': 'T', 'VAL': 'V', 'TRP': 'W', 'TYR': 'Y'
+        }
+
+        # Common enzyme cofactors and ligands to identify active sites
+        self.common_cofactors = {
+            'NAD', 'NAP', 'NDP', 'FAD', 'FMN', 'ATP', 'GTP', 'ADP', 'GDP',
+            'COA', 'ACP', 'HEM', 'HEC', 'FES', 'ZN', 'MG', 'CA', 'FE'
+        }
+        
+        
+        # Data storage
+        self.raw_data = None
+        self.processed_data = None
+        self.dataset = None
+        self.train_loader = None
+        self.val_loader = None
+        self.model = None
+    
+    def setup_tokenizer(self):
+        """
+        Setup protein transformer tokenizer
+        """
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        
+        # Add special tokens if needed
+        special_tokens = {"pad_token": "[PAD]", "mask_token": "[MASK]"}
+        tokenizer.add_special_tokens(special_tokens)
+        
+        return tokenizer
+    
+    def load_ddg_data(self, csv_file):
+        """
+        Load DDG data from CSV file
+        Expected format: pdbid, chainid, variant, score
+        """
+        self.raw_data = pd.read_csv(csv_file)
+        print(f"Loaded {len(self.raw_data)} entries")
+        print(self.raw_data.head())
+        return self.raw_data
+    
+    def get_sequence_from_pdb_file(self,  pdb_id, chain_id):
+        """
+        Extract sequence from a local DB file
+        """
+        try:
+            # load a local PDB file
+            # Parse PDB and extract sequence
+            from io import StringIO
+            from Bio.PDB import PDBParser, PPBuilder
+                
+            parser = PDBParser()
+            structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
+            # structure = parser.get_structure(pdb_id, f"./data/s669/pdb/{pdb_id}.pdb")
+                
+            sequence = ""
+            for chain in structure[0]:  # First model
+                if chain.id == chain_id:
+                    for residue in chain:
+                        if residue.get_resname() in self.amino_acids_3to1:
+                            sequence += self.amino_acids_3to1[residue.get_resname()]
+
+            """
+            ppb = PPBuilder()
+            for pp in ppb.build_peptides(structure):
+                # sequence = pp.get_sequence()
+                sequence.append(str(pp.get_sequence()))
+            """
+
+            return sequence
+        except:
+            return None
+
+
+    def get_sequence_from_pdb(self, pdb_id, chain_id):
+        """
+        Extract sequence from PDB file
+        """
+        try:
+            # Download PDB file
+            pdb_url = f"https://files.rcsb.org/download/{pdb_id}.pdb"
+            response = requests.get(pdb_url)
+            
+            if response.status_code == 200:
+                # Parse PDB and extract sequence
+                from io import StringIO
+                from Bio.PDB import PDBParser
+                
+                parser = PDBParser()
+                structure = parser.get_structure(pdb_id, StringIO(response.text))
+                
+                sequence = ""
+                for chain in structure[0]:  # First model
+                    if chain.id == chain_id:
+                        for residue in chain:
+                            if residue.get_resname() in self.amino_acids_3to1:
+                                sequence += self.amino_acids_3to1[residue.get_resname()]
+                
+                return sequence
+            else:
+                return None
+        except:
+            return None
+    
+    def extract_sequences(self, df):
+        """
+        Extract sequences for all PDB entries
+        """
+        sequences = []
+        
+        for _, row in df.iterrows():
+            pdb_id = row['pdbid']
+            chain_id = row['chainid']
+            
+            #sequence = self.get_sequence_from_pdb(pdb_id, chain_id)
+            sequence = self.get_sequence_from_pdb_file(pdb_id, chain_id)
+            sequences.append(sequence)
+        
+        df['sequence'] = sequences
+        return df
+    
+    def parse_variant(self, variant_str):
+        """
+        Parse variant string like 'A123T' into components
+        """
+        if len(variant_str) >= 3:
+            wild_type = variant_str[0]
+            position = int(variant_str[1:-1])
+            mutant_type = variant_str[-1]
+            return wild_type, position, mutant_type
+        return None, None, None
+    
+    def add_mutation_info(self, df):
+        """
+        Add parsed mutation information to dataframe
+        """
+        wild_types, positions, mutant_types = [], [], []
+        
+        for variant in df['variant']:
+            wt, pos, mt = self.parse_variant(variant)
+            wild_types.append(wt)
+            positions.append(pos)
+            mutant_types.append(mt)
+        
+        df['wild_type'] = wild_types
+        df['position'] = positions
+        df['mutant_type'] = mutant_types
+        
+        return df
+    
+    def create_mutation_sequence(self, wild_seq, position, mutant_aa):
+        """
+        Create mutated sequence for training
+        """
+        if position > len(wild_seq) or position < 1:
+            return None
+        
+        mutated_seq = list(wild_seq)
+        mutated_seq[position - 1] = mutant_aa  # Convert to 0-indexed
+        return ''.join(mutated_seq)
+    
+    def create_mutation_encoded_sequence(self, wild_seq, position, mutant_aa, mask_token="[MASK]"):
+        """
+        Create sequence with mutation information encoded
+        """
+        if position > len(wild_seq) or position < 1:
+            return None
+        
+        seq_list = list(wild_seq)
+        original_aa = seq_list[position - 1]  # 0-indexed
+        
+        # Replace with mask token and add mutation info
+        seq_list[position - 1] = mask_token
+        enhanced_seq = ''.join(seq_list) + f"[MUTATION:{original_aa}{position}{mutant_aa}]"
+        
+        return enhanced_seq
+    
+    def prepare_training_data(self, df, enhanced_encoding=True):
+        """
+        Prepare training tensors for protein transformer
+        
+        Args:
+            df: DataFrame with sequence and mutation information
+            enhanced_encoding: Whether to use enhanced mutation encoding
+        """
+        input_ids_list = []
+        attention_masks_list = []
+        labels_list = []
+        
+        for _, row in df.iterrows():
+            wild_seq = row['sequence']
+            position = row['position']
+            mutant_aa = row['mutant_type']
+            ddg_score = row['score']
+            
+            if pd.isna(wild_seq) or wild_seq is None:
+                continue
+            
+            if enhanced_encoding:
+                # Create enhanced sequence with mutation info
+                enhanced_seq = self.create_mutation_encoded_sequence(wild_seq, position, mutant_aa)
+                if enhanced_seq is None:
+                    continue
+                sequence_to_tokenize = enhanced_seq
+            else:
+                # Create mutated sequence
+                mutated_seq = self.create_mutation_sequence(wild_seq, position, mutant_aa)
+                if mutated_seq is None:
+                    continue
+                sequence_to_tokenize = mutated_seq
+            
+            # Tokenize
+            tokens = self.tokenizer(
+                sequence_to_tokenize,
+                max_length=self.max_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors='pt'
+            )
+            
+            input_ids_list.append(tokens['input_ids'].squeeze(0))
+            attention_masks_list.append(tokens['attention_mask'].squeeze(0))
+            labels_list.append(ddg_score)
+        
+        return (
+            torch.stack(input_ids_list),
+            torch.stack(attention_masks_list),
+            torch.tensor(labels_list, dtype=torch.float)
+        )
+    
+    def process_data(self, csv_file, enhanced_encoding=True, test_size=0.2):
+        """
+        Complete data processing pipeline
+        
+        Args:
+            csv_file: Path to CSV file
+            enhanced_encoding: Whether to use enhanced mutation encoding
+            test_size: Proportion of data for validation
+        """
+        # Load data
+        df = self.load_ddg_data(csv_file)
+        
+        # Add mutation info
+        df = self.add_mutation_info(df)
+        
+        # Extract sequences
+        df = self.extract_sequences(df)
+        
+        # Remove entries without sequences
+        df = df.dropna(subset=['sequence'])
+        
+        # Prepare training data
+        input_ids, attention_masks, labels = self.prepare_training_data(df, enhanced_encoding)
+        
+        # Create dataset
+        self.dataset = DDGDataset(input_ids, attention_masks, labels)
+        
+        # Split into train/validation
+        all_indices = list(range(len(self.dataset)))
+        train_idx, val_idx = train_test_split(
+            all_indices,
+            test_size=test_size,
+            random_state=42
+        )
+        
+        train_dataset = torch.utils.data.Subset(self.dataset, train_idx)
+        print(train_dataset)
+        val_dataset = torch.utils.data.Subset(self.dataset, val_idx)
+        print(val_dataset)
+        
+        # Create data loaders
+        self.train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+        self.val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+        
+        print(f"Training samples: {len(train_idx)}")
+        print(f"Validation samples: {len(val_idx)}")
+        
+        return self.train_loader, self.val_loader
 
 
 # ==================== ENHANCED PROTOBERT MODEL WITH DEBUGGING ====================
@@ -436,80 +777,6 @@ class ProtoBERTForDDGPrediction(nn.Module):
         }
 
 
-# ==================== ENHANCED DDG DATASET ====================
-
-class DDGDataset(Dataset):
-    """Enhanced dataset for DDG prediction with better data distribution"""
-    
-    def __init__(self, num_samples: int, config: ModelConfig, seed: int = 42):
-        super().__init__()
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        
-        self.num_samples = num_samples
-        self.config = config
-        self.ddg_range = config.ddg_range
-        
-        # Create more realistic DDG distribution (normal distribution)
-        self.data = []
-        for i in range(num_samples):
-            """
-            # Random sequence length (at least 10, at most max_length)
-            seq_len = random.randint(10, config.max_position_embeddings)
-            # Random amino acid IDs (10-29 for amino acids, excluding special tokens)
-            input_ids = torch.randint(10, 30, (seq_len,))
-
-
-            # Add [CLS] at start and [SEP] at end
-            input_ids = torch.cat([torch.tensor([2]), input_ids, torch.tensor([3])])
-            # Pad to max_length
-            if len(input_ids) < config.max_position_embeddings:
-                padding = torch.zeros(config.max_position_embeddings - len(input_ids), dtype=torch.long)
-                input_ids = torch.cat([input_ids, padding])
-            else:
-                input_ids = input_ids[:config.max_position_embeddings]
-                input_ids[-1] = 3  # Ensure last token is [SEP]
-            
-            # Create attention mask
-            attention_mask = (input_ids != 0).long()
-            
-            # Use normal distribution for DDG values (more realistic)
-            ddg_value = np.random.normal(0, 1)  # Mean 0, std 1
-            # Clip to range
-            ddg_value = np.clip(ddg_value, self.ddg_range[0], self.ddg_range[1])
-            
-            """
-
-            #######################################################
-            # LMJ: try more meaningfull synthetic data
-
-            seq_len = config.max_position_embeddings # every sequence is max length
-            input_ids = torch.randint(10, 30, (seq_len,))
-            # Add [CLS] at start and [SEP] at end
-            # input_ids = torch.cat([torch.tensor([2]), input_ids, torch.tensor([3])])            
-            aa_counts = torch.bincount(input_ids, minlength=30)
-
-            # Create DDG based on amino acid composition
-            weights = torch.randn(30) * 0.1  # Small weights to avoid extreme values
-            ddg = torch.sum(aa_counts * weights)
-            ddg_value = torch.clamp(ddg, -3.0, 3.0)
-
-            # Create attention mask
-            attention_mask = (input_ids != 0).long()
-
-            self.data.append({
-                'input_ids': input_ids,
-                'attention_mask': attention_mask,
-                'ddg_labels': torch.tensor(ddg_value, dtype=torch.float)
-            })
-    
-    def __len__(self):
-        return self.num_samples
-    
-    def __getitem__(self, idx):
-        return self.data[idx]
-
 
 # ==================== ENHANCED TRAINING UTILITIES WITH PROPER DEVICE MANAGEMENT ====================
 
@@ -894,21 +1161,29 @@ def main():
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(training_config.seed)
     
-    print("Creating DDG datasets...")
-    train_dataset = DDGDataset(
-        num_samples=500,  # Reduced for debugging
-        config=model_config,
-        seed=42
-    )
+    # training data preparation
+    # print("Creating DDG datasets...")
+    # train_dataset = DDGDataset(
+    #     num_samples=500,  # Reduced for debugging
+    #     config=model_config,
+    #     seed=42
+    # )
     
-    val_dataset = DDGDataset(
-        num_samples=100,  # Reduced for debugging
-        config=model_config,
-        seed=123
-    )
+    # val_dataset = DDGDataset(
+    #     num_samples=100,  # Reduced for debugging
+    #     config=model_config,
+    #     seed=123
+    # )
     
-    train_dataloader = DataLoader(train_dataset, batch_size=training_config.batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=training_config.batch_size, shuffle=False)
+    # train_dataloader = DataLoader(train_dataset, batch_size=training_config.batch_size, shuffle=True)
+    # val_dataloader = DataLoader(val_dataset, batch_size=training_config.batch_size, shuffle=False)
+
+    # Initialize the processor
+    processor = DDGDataProcessor()
+    
+    # Process your data
+    train_dataloader, val_dataloader = processor.process_data('./reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+    # train_loader, val_loader = processor.process_data('./data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
     
     print("Creating ProtoBERT model for DDG prediction...")
     model = ProtoBERTForDDGPrediction(model_config)
