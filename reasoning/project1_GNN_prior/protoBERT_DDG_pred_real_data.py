@@ -41,14 +41,14 @@ except ImportError:
 
 @dataclass
 class ModelConfig:
-    vocab_size: int = 30  # 20 amino acids + 10 special tokens
     hidden_size: int = 256 # 1024  # Reduced for debugging
-    num_hidden_layers: int = 16 # 64  # Reduced for debugging
+    num_hidden_layers: int = 8 # 64  # Reduced for debugging
     num_attention_heads: int = 16 # 64  # Reduced for debugging
-    intermediate_size: int = 1024  # Reduced for debugging
-    regression_head_size: int = 256 # 512 
+    intermediate_size: int = 512  # Reduced for debugging
+    regression_head_size: int = 128 # 512 
     # no change for the following, tensor size consistency
     # assert(max_position_embeddings == max_length)
+    vocab_size: int = 30  # 20 amino acids + 10 special tokens
     max_position_embeddings: int = 512 # 512  # Reduced for debugging
     dropout: float = 0.1
     activation: str = "gelu"
@@ -56,7 +56,7 @@ class ModelConfig:
 
 @dataclass
 class TrainingConfig:
-    batch_size: int = 1  # Reduced batch size
+    batch_size: int = 4  # Reduced batch size
     learning_rate: float = 1e-4  # Reduced learning rate
     weight_decay: float = 0.01
     num_epochs: int = 200  # More epochs for debugging
@@ -1202,6 +1202,9 @@ def main():
     
     print("Creating ProtoBERT model for DDG prediction...")
     model = ProtoBERTForDDGPrediction(model_config)
+
+    # try using all GPU cards
+    model = nn.DataParallel(model).cuda()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = model.to(device)
