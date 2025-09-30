@@ -875,7 +875,7 @@ def validate_epoch_ddg(model, dataloader, device, epoch_num=0, total_epochs=0):
 
             input_ids = batch['input_ids'].to(device)
             attention_mask = batch['attention_mask'].to(device)
-            ddg_labels = batch['ddg_labels'].to(device)
+            ddg_labels = batch['labels'].to(device)
             
             # Ensure all tensors are on the correct device
             batch = ensure_device_consistency(batch, device)
