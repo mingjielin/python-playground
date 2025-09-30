@@ -42,15 +42,15 @@ except ImportError:
 @dataclass
 class ModelConfig:
     vocab_size: int = 30  # 20 amino acids + 10 special tokens
-    hidden_size: int = 1024  # Reduced for debugging
-    num_hidden_layers: int = 64  # Reduced for debugging
-    num_attention_heads: int = 64  # Reduced for debugging
+    hidden_size: int = 256 # 1024  # Reduced for debugging
+    num_hidden_layers: int = 16 # 64  # Reduced for debugging
+    num_attention_heads: int = 16 # 64  # Reduced for debugging
     intermediate_size: int = 1024  # Reduced for debugging
-    max_position_embeddings: int = 512  # Reduced for debugging
+    max_position_embeddings: int = 256 # 512  # Reduced for debugging
+    regression_head_size: int = 256 # 512 
     dropout: float = 0.1
     activation: str = "gelu"
-    regression_head_size: int = 512 
-    ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
+    # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
 
 @dataclass
 class TrainingConfig:
@@ -63,7 +63,7 @@ class TrainingConfig:
     # device: str = 'cpu'
     best_model_path: str = 'best_protobert_ddg.pth'
     seed: int = 42
-    ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
+    # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
     gradient_clipping: float = 1.0
     print_every: int = 1  # Print every epoch
 
