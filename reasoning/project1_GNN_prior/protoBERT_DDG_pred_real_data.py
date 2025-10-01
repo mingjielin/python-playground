@@ -14,6 +14,11 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from tqdm import tqdm
+# clear_gpu.py
+import gc
+
+
+
 
 # LMJ: tensorboard
 from torch.utils.tensorboard import SummaryWriter
@@ -41,15 +46,15 @@ except ImportError:
 
 @dataclass
 class ModelConfig:
-    hidden_size: int = 256 # 1024  # Reduced for debugging
-    num_hidden_layers: int = 8 # 64  # Reduced for debugging
-    num_attention_heads: int = 16 # 64  # Reduced for debugging
-    intermediate_size: int = 512  # Reduced for debugging
+    hidden_size: int = 1024 # 256 # 1024  # Reduced for debugging
+    num_hidden_layers: int = 16 # 64  # Reduced for debugging
+    num_attention_heads: int = 32 # 64  # Reduced for debugging
+    intermediate_size: int = 1024  # Reduced for debugging
     regression_head_size: int = 128 # 512 
     # no change for the following, tensor size consistency
     # assert(max_position_embeddings == max_length)
     vocab_size: int = 30  # 20 amino acids + 10 special tokens
-    max_position_embeddings: int = 512 # 512  # Reduced for debugging
+    max_position_embeddings: int = 256 # 512  # Reduced for debugging
     dropout: float = 0.1
     activation: str = "gelu"
     # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
@@ -59,8 +64,8 @@ class TrainingConfig:
     batch_size: int = 4  # Reduced batch size
     learning_rate: float = 1e-5  # Reduced learning rate
     weight_decay: float = 0.01
-    num_epochs: int = 200  # More epochs for debugging
-    patience: int = 500
+    num_epochs: int = 20000  # More epochs for debugging
+    patience: int = 50000
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     # device: str = 'cpu'
     best_model_path: str = 'best_protobert_ddg.pth'
@@ -68,6 +73,19 @@ class TrainingConfig:
     # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
     gradient_clipping: float = 1.0
     print_every: int = 1  # Print every epoch
+# ==================== CLEAN GPU MEMORY ===========================================
+# clear_gpu.py
+def clear_gpu_memory():
+    # PyTorch cleanup
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    
+    # TensorFlow cleanup
+    # tf.keras.backend.clear_session()
+    
+    # Force garbage collection
+    gc.collect()
+    print("GPU memory cleared!")
 
 # ==================== PREPARE REAL EXPERIMENTAL DATA FOR TRAINING ================
 
@@ -105,7 +123,7 @@ class DDGDataProcessor:
     #   from transformers import AutoTokenizer
     #   tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
     
-    def __init__(self, model_name="Rostlab/prot_bert", max_length=512):
+    def __init__(self, model_name="Rostlab/prot_bert", max_length=256):
         """
         Initialize the DDG data processor
         
@@ -798,6 +816,30 @@ def ensure_device_consistency(batch, device):
             batch[key] = value.to(device)
     return batch
 
+def create_sample_loss_scatter(sample_ids, losses, title="Sample Losses"):
+    """Create a scatter plot of sample ID vs loss"""
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Create scatter plot
+    scatter = ax.scatter(sample_ids, losses, alpha=0.6, s=30, c=losses, cmap='viridis')
+    
+    # Add trend line
+    if len(losses) > 1:
+        z = np.polyfit(sample_ids, losses, 1)
+        p = np.poly1d(z)
+        ax.plot(sample_ids, p(sample_ids), "r--", alpha=0.8, linewidth=2, label='Trend')
+    
+    ax.set_xlabel('Sample ID')
+    ax.set_ylabel('Loss')
+    ax.set_title(title)
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    
+    # Add colorbar
+    plt.colorbar(scatter, ax=ax, label='Loss Value')
+    plt.tight_layout()
+    
+    return fig
 
 def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None, 
                    epoch_num=0, total_epochs=0, config: TrainingConfig = None):
@@ -812,6 +854,9 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     # Create progress bar
     pbar = tqdm(dataloader, desc=f'Epoch {epoch_num}/{total_epochs} - Training', leave=False)
     
+    all_sample_losses = []
+
+
     for batch_idx, batch in enumerate(pbar):
 
         global_count += 1
@@ -846,6 +891,8 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         
         total_loss += loss.item()
 
+        all_sample_losses.append(loss.item())
+
         # LMJ: tensorboard
         # Log training loss every N steps
         if global_count % 1 == 0:  # Log every 10 steps
@@ -872,6 +919,13 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     mse = mean_squared_error(all_labels, all_predictions)
     mae = mean_absolute_error(all_labels, all_predictions)
     r2 = r2_score(all_labels, all_predictions)
+
+    # Create and log scatter plot
+    fig = create_sample_loss_scatter(range(all_sample_losses), all_sample_losses, "Sample ID vs Loss")
+    writer.add_figure('Sample_Loss_Scatter', fig, global_step=0)
+
+
+
     
     return avg_loss, mse, mae, r2
 
@@ -1165,6 +1219,8 @@ def evaluate_model_performance(model, dataloader, device):
 def main():
     """Complete example usage with debugging"""
     
+    clear_gpu_memory()
+
     # Configuration
     model_config = ModelConfig()
     training_config = TrainingConfig()
@@ -1215,11 +1271,8 @@ def main():
     
     print("Starting DDG prediction training...")
     trained_model, history = train_model_ddg(
-        model, train_dataloader, val_dataloader, training_config
-    ).to(device)
+        model, train_dataloader, val_dataloader, training_config).to(device)
 
-
-    
     # Plot training history
     plot_training_history(history)
     

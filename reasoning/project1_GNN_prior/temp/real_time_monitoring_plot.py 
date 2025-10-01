@@ -1,0 +1,94 @@
+import wandb
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
+import time
+
+# Initialize W&B
+wandb.init(
+    project="real-time-training",
+    config={
+        "learning_rate": 0.001,
+        "batch_size": 32,
+        "epochs": 100
+    }
+)
+
+class RealTimeTrainer:
+    def __init__(self, model, optimizer, criterion):
+        self.model = model
+        self.optimizer = optimizer
+        self.criterion = criterion
+        
+    def train_step(self, data_loader):
+        self.model.train()
+        total_loss = 0
+        correct = 0
+        total = 0
+        
+        for batch_idx, (data, target) in enumerate(data_loader):
+            self.optimizer.zero_grad()
+            output = self.model(data)
+            loss = self.criterion(output, target)
+            loss.backward()
+            self.optimizer.step()
+            
+            total_loss += loss.item()
+            pred = output.argmax(dim=1)
+            correct += pred.eq(target).sum().item()
+            total += target.size(0)
+            
+            # Log metrics every 10 batches
+            if batch_idx % 10 == 0:
+                wandb.log({
+                    "batch_loss": loss.item(),
+                    "batch_accuracy": 100. * correct / total,
+                    "batch_idx": batch_idx
+                })
+        
+        return total_loss / len(data_loader), 100. * correct / total
+    
+    def validate(self, val_loader):
+        self.model.eval()
+        val_loss = 0
+        correct = 0
+        total = 0
+        
+        with torch.no_grad():
+            for data, target in val_loader:
+                output = self.model(data)
+                val_loss += self.criterion(output, target).item()
+                pred = output.argmax(dim=1)
+                correct += pred.eq(target).sum().item()
+                total += target.size(0)
+        
+        val_loss /= len(val_loader)
+        val_acc = 100. * correct / total
+        
+        return val_loss, val_acc
+
+if __name__ == "__main__":
+    # Usage
+    model = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
+    optimizer = torch.optim.Adam(model.parameters())
+    criterion = nn.CrossEntropyLoss()
+
+    trainer = RealTimeTrainer(model, optimizer, criterion)
+
+    # Training loop
+    for epoch in range(100):
+        train_loss, train_acc = trainer.train_step(train_loader)
+        val_loss, val_acc = trainer.validate(val_loader)
+
+        # Log epoch metrics
+        wandb.log({
+            "epoch": epoch,
+            "train_loss": train_loss,
+            "train_accuracy": train_acc,
+            "val_loss": val_loss,
+            "val_accuracy": val_acc
+        })
+
+        print(f"Epoch {epoch}: Train Loss: {train_loss:.4f}, Val Acc: {val_acc:.2f}%")
+
+    wandb.finish()
