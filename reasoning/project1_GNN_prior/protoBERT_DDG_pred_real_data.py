@@ -57,7 +57,7 @@ class ModelConfig:
 @dataclass
 class TrainingConfig:
     batch_size: int = 4  # Reduced batch size
-    learning_rate: float = 1e-4  # Reduced learning rate
+    learning_rate: float = 1e-5  # Reduced learning rate
     weight_decay: float = 0.01
     num_epochs: int = 200  # More epochs for debugging
     patience: int = 500
@@ -1204,7 +1204,7 @@ def main():
     model = ProtoBERTForDDGPrediction(model_config)
 
     # try using all GPU cards
-    model = nn.DataParallel(model).cuda()
+    # model = nn.DataParallel(model).cuda()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = model.to(device)
