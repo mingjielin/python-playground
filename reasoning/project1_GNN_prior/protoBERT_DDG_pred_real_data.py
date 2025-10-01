@@ -46,11 +46,18 @@ except ImportError:
 
 @dataclass
 class ModelConfig:
-    hidden_size: int = 1024 # 256 # 1024  # Reduced for debugging
-    num_hidden_layers: int = 16 # 64  # Reduced for debugging
-    num_attention_heads: int = 32 # 64  # Reduced for debugging
-    intermediate_size: int = 1024  # Reduced for debugging
-    regression_head_size: int = 128 # 512 
+    hidden_size: int = 128 # 256 # 1024  # Reduced for debugging
+    num_hidden_layers: int = 8 # 64  # Reduced for debugging
+    num_attention_heads: int = 8 # 64  # Reduced for debugging
+    intermediate_size: int = 256  # Reduced for debugging
+    regression_head_size: int = 64 # 512 
+    # ========================================================
+    # hidden_size: int = 1024 # 256 # 1024  # Reduced for debugging
+    # num_hidden_layers: int = 16 # 64  # Reduced for debugging
+    # num_attention_heads: int = 32 # 64  # Reduced for debugging
+    # intermediate_size: int = 1024  # Reduced for debugging
+    # regression_head_size: int = 128 # 512 
+    # ========================================================
     # no change for the following, tensor size consistency
     # assert(max_position_embeddings == max_length)
     vocab_size: int = 30  # 20 amino acids + 10 special tokens
@@ -921,10 +928,10 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     r2 = r2_score(all_labels, all_predictions)
 
     # Create and log scatter plot
-    fig = create_sample_loss_scatter(range(all_sample_losses), all_sample_losses, "Sample ID vs Loss")
-    writer.add_figure('Sample_Loss_Scatter', fig, global_step=0)
-
-
+    fig = create_sample_loss_scatter(range(len(all_sample_losses)), all_sample_losses, "Sample ID vs Loss")
+    # writer.add_figure('Sample_Loss_Scatter', fig, global_step=0)
+    writer.add_figure('Loss_vs_Sample_ID', fig, global_step=epoch_num)
+    plt.close(fig)
 
     
     return avg_loss, mse, mae, r2
