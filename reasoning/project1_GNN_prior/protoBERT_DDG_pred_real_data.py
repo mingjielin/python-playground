@@ -14,6 +14,11 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from tqdm import tqdm
+# clear_gpu.py
+import gc
+
+
+
 
 # LMJ: tensorboard
 from torch.utils.tensorboard import SummaryWriter
@@ -41,15 +46,15 @@ except ImportError:
 
 @dataclass
 class ModelConfig:
-    hidden_size: int = 256 # 1024  # Reduced for debugging
-    num_hidden_layers: int = 8 # 64  # Reduced for debugging
-    num_attention_heads: int = 16 # 64  # Reduced for debugging
-    intermediate_size: int = 512  # Reduced for debugging
+    hidden_size: int = 1024 # 256 # 1024  # Reduced for debugging
+    num_hidden_layers: int = 16 # 64  # Reduced for debugging
+    num_attention_heads: int = 32 # 64  # Reduced for debugging
+    intermediate_size: int = 1024  # Reduced for debugging
     regression_head_size: int = 128 # 512 
     # no change for the following, tensor size consistency
     # assert(max_position_embeddings == max_length)
     vocab_size: int = 30  # 20 amino acids + 10 special tokens
-    max_position_embeddings: int = 512 # 512  # Reduced for debugging
+    max_position_embeddings: int = 256 # 512  # Reduced for debugging
     dropout: float = 0.1
     activation: str = "gelu"
     # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
@@ -57,10 +62,10 @@ class ModelConfig:
 @dataclass
 class TrainingConfig:
     batch_size: int = 4  # Reduced batch size
-    learning_rate: float = 1e-4  # Reduced learning rate
+    learning_rate: float = 1e-5  # Reduced learning rate
     weight_decay: float = 0.01
-    num_epochs: int = 200  # More epochs for debugging
-    patience: int = 500
+    num_epochs: int = 20000  # More epochs for debugging
+    patience: int = 50000
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     # device: str = 'cpu'
     best_model_path: str = 'best_protobert_ddg.pth'
@@ -68,6 +73,19 @@ class TrainingConfig:
     # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
     gradient_clipping: float = 1.0
     print_every: int = 1  # Print every epoch
+# ==================== CLEAN GPU MEMORY ===========================================
+# clear_gpu.py
+def clear_gpu_memory():
+    # PyTorch cleanup
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    
+    # TensorFlow cleanup
+    # tf.keras.backend.clear_session()
+    
+    # Force garbage collection
+    gc.collect()
+    print("GPU memory cleared!")
 
 # ==================== PREPARE REAL EXPERIMENTAL DATA FOR TRAINING ================
 
@@ -105,7 +123,7 @@ class DDGDataProcessor:
     #   from transformers import AutoTokenizer
     #   tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
     
-    def __init__(self, model_name="Rostlab/prot_bert", max_length=512):
+    def __init__(self, model_name="Rostlab/prot_bert", max_length=256):
         """
         Initialize the DDG data processor
         
@@ -1165,6 +1183,8 @@ def evaluate_model_performance(model, dataloader, device):
 def main():
     """Complete example usage with debugging"""
     
+    clear_gpu_memory()
+
     # Configuration
     model_config = ModelConfig()
     training_config = TrainingConfig()
@@ -1204,7 +1224,7 @@ def main():
     model = ProtoBERTForDDGPrediction(model_config)
 
     # try using all GPU cards
-    model = nn.DataParallel(model).cuda()
+    # model = nn.DataParallel(model).cuda()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = model.to(device)
@@ -1215,11 +1235,8 @@ def main():
     
     print("Starting DDG prediction training...")
     trained_model, history = train_model_ddg(
-        model, train_dataloader, val_dataloader, training_config
-    ).to(device)
+        model, train_dataloader, val_dataloader, training_config).to(device)
 
-
-    
     # Plot training history
     plot_training_history(history)
     
