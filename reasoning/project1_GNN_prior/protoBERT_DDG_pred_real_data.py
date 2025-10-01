@@ -816,6 +816,30 @@ def ensure_device_consistency(batch, device):
             batch[key] = value.to(device)
     return batch
 
+def create_sample_loss_scatter(sample_ids, losses, title="Sample Losses"):
+    """Create a scatter plot of sample ID vs loss"""
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Create scatter plot
+    scatter = ax.scatter(sample_ids, losses, alpha=0.6, s=30, c=losses, cmap='viridis')
+    
+    # Add trend line
+    if len(losses) > 1:
+        z = np.polyfit(sample_ids, losses, 1)
+        p = np.poly1d(z)
+        ax.plot(sample_ids, p(sample_ids), "r--", alpha=0.8, linewidth=2, label='Trend')
+    
+    ax.set_xlabel('Sample ID')
+    ax.set_ylabel('Loss')
+    ax.set_title(title)
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    
+    # Add colorbar
+    plt.colorbar(scatter, ax=ax, label='Loss Value')
+    plt.tight_layout()
+    
+    return fig
 
 def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None, 
                    epoch_num=0, total_epochs=0, config: TrainingConfig = None):
@@ -830,6 +854,9 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     # Create progress bar
     pbar = tqdm(dataloader, desc=f'Epoch {epoch_num}/{total_epochs} - Training', leave=False)
     
+    all_sample_losses = []
+
+
     for batch_idx, batch in enumerate(pbar):
 
         global_count += 1
@@ -864,6 +891,8 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         
         total_loss += loss.item()
 
+        all_sample_losses.append(loss.item())
+
         # LMJ: tensorboard
         # Log training loss every N steps
         if global_count % 1 == 0:  # Log every 10 steps
@@ -890,6 +919,13 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     mse = mean_squared_error(all_labels, all_predictions)
     mae = mean_absolute_error(all_labels, all_predictions)
     r2 = r2_score(all_labels, all_predictions)
+
+    # Create and log scatter plot
+    fig = create_sample_loss_scatter(range(all_sample_losses), all_sample_losses, "Sample ID vs Loss")
+    writer.add_figure('Sample_Loss_Scatter', fig, global_step=0)
+
+
+
     
     return avg_loss, mse, mae, r2
 
