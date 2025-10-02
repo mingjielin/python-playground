@@ -2,3 +2,6 @@
 .vscode
 __pycache__
 .pth
+epoch_losses/
+ddg_experiment/
+best_protobert_ddg.pth
