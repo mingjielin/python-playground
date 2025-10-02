@@ -17,7 +17,11 @@ from tqdm import tqdm
 # clear_gpu.py
 import gc
 
+from loss_data_dumper_and_plotter import EpochLossDumper
 
+eld = EpochLossDumper('./epoch_losses', 10)
+
+plt.ion() # Turn on interactive mode
 
 
 # LMJ: tensorboard
@@ -861,6 +865,9 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     # Create progress bar
     pbar = tqdm(dataloader, desc=f'Epoch {epoch_num}/{total_epochs} - Training', leave=False)
     
+    # Initialize empty lists to store data
+    x_values = []
+    y_values = []
     all_sample_losses = []
 
 
@@ -928,12 +935,18 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     r2 = r2_score(all_labels, all_predictions)
 
     # Create and log scatter plot
-    fig = create_sample_loss_scatter(range(len(all_sample_losses)), all_sample_losses, "Sample ID vs Loss")
+    fig = create_sample_loss_scatter(range(len(all_sample_losses)), all_sample_losses, f'Epoch {epoch_num} - Sample Losses')
     # writer.add_figure('Sample_Loss_Scatter', fig, global_step=0)
-    writer.add_figure('Loss_vs_Sample_ID', fig, global_step=epoch_num)
-    plt.close(fig)
+    writer.add_figure('Loss_vs_Sample_ID', fig, global_step=epoch_num, close = False)
+    # plt.close(fig)
+    writer.flush()
+
+    # eld = EpochLossDumper('./epoch_losses', 10)
+ 
+    eld.dump_epoch_losses(epoch_num, all_sample_losses)
 
     
+
     return avg_loss, mse, mae, r2
 
 
