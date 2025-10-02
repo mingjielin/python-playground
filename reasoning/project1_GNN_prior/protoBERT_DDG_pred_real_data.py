@@ -390,6 +390,72 @@ class DDGDataProcessor:
             torch.stack(attention_masks_list),
             torch.tensor(labels_list, dtype=torch.float)
         )
+
+    # ===================================================================================================================
+    # ==== data quallity fine-tuning ====
+    # ===================================================================================================================
+
+    def assess_data_quality(df):
+    # Assess the quality of DDG training data
+        analysis = {
+            'ddg_stats': {
+                'mean': df['score'].mean(),
+                'std': df['score'].std(),
+                'min': df['score'].min(),
+                'max': df['score'].max(),
+                'range': df['score'].max() - df['score'].min()
+            },
+            'mutation_analysis': {},
+            'outlier_detection': {}
+        }
+    
+        # Analyze DDG value distribution
+        q75, q25 = np.percentile(df['score'], [75, 25])
+        iqr = q75 - q25
+        lower_bound = q25 - 1.5 * iqr
+        upper_bound = q75 + 1.5 * iqr
+    
+        outliers = df[(df['score'] < lower_bound) | (df['score'] > upper_bound)]
+        analysis['outlier_detection'] = {
+             'outlier_count': len(outliers),
+             'outlier_percentage': len(outliers) / len(df) * 100,
+             'lower_bound': lower_bound,
+             'upper_bound': upper_bound
+        }
+    
+        # Analyze mutation types
+        if 'wild_type' in df.columns and 'mutant_type' in df.columns:
+            mutation_types = df['wild_type'] + '->' + df['mutant_type']
+            analysis['mutation_analysis'] = mutation_types.value_counts().to_dict()
+    
+        return analysis
+
+    def filter_problematic_samples(self, df, std_threshold=3):
+        """
+        Filter out samples with extreme DDG values
+        """
+        z_scores = np.abs((df['score'] - df['score'].mean()) / df['score'].std())
+        filtered_df = df[z_scores <= std_threshold]
+    
+        print(f"Removed {len(df) - len(filtered_df)} extreme samples ({(len(df) - len(filtered_df))/len(df)*100:.1f}%)")
+        return filtered_df
+        
+        # wild_seq = []
+        # position = []
+        # mutant_aa = []
+        # ddg_score = []
+
+        # for _, row in df.iterrows():
+        #     wild_seq.append(row['sequence'])
+        #     position.append(row['position'])
+        #     mutant_aa.append(row['mutant_type'])
+        #     ddg_score.append(row['score'])
+
+        # z_scores = np.abs((ddg_score - ddg_score.mean()) / ddg_score.std())
+        # filtered_df = ddg_score[z_scores <= std_threshold]
+
+        # print(f"Removed {len(df) - len(filtered_df)} extreme samples ({(len(df) - len(filtered_df))/len(df)*100:.1f}%)")
+        # return filtered_df
     
     def process_data(self, csv_file, enhanced_encoding=True, test_size=0.2):
         """
@@ -402,7 +468,13 @@ class DDGDataProcessor:
         """
         # Load data
         df = self.load_ddg_data(csv_file)
-        
+
+        # Assess data quality for now, only print out
+        fdf = self.filter_problematic_samples(df)
+
+        # used filtered df for training 
+        df = fdf
+
         # Add mutation info
         df = self.add_mutation_info(df)
         
