@@ -50,12 +50,22 @@ except ImportError:
 
 @dataclass
 class ModelConfig:
-    hidden_size: int = 128 # 256 # 1024  # Reduced for debugging
-    num_hidden_layers: int = 8 # 64  # Reduced for debugging
-    num_attention_heads: int = 8 # 64  # Reduced for debugging
-    intermediate_size: int = 256  # Reduced for debugging
-    regression_head_size: int = 64 # 512 
-    # ========================================================
+    # ======================= Small setting =================================
+    hidden_size: int = 64 # 256 # 1024  # Reduced for debugging
+    num_hidden_layers: int = 4 # 64  # Reduced for debugging
+    num_attention_heads: int = 4 # 64  # Reduced for debugging
+    intermediate_size: int = 128  # Reduced for debugging
+    regression_head_size: int = 32 # 512 
+
+
+    # ======================= Medium setting =================================
+    # hidden_size: int = 128 # 256 # 1024  # Reduced for debugging
+    # num_hidden_layers: int = 8 # 64  # Reduced for debugging
+    # num_attention_heads: int = 8 # 64  # Reduced for debugging
+    # intermediate_size: int = 256  # Reduced for debugging
+    # regression_head_size: int = 64 # 512 
+
+    # ======================= Large setting =================================
     # hidden_size: int = 1024 # 256 # 1024  # Reduced for debugging
     # num_hidden_layers: int = 16 # 64  # Reduced for debugging
     # num_attention_heads: int = 32 # 64  # Reduced for debugging

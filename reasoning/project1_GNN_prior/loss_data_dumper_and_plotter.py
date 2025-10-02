@@ -26,6 +26,7 @@ class EpochLossDumper:
         self.max_files = max_files
         self.file_counter = 0
     
+
     def dump_epoch_losses(self, epoch, loss_values, sample_indices=None, additional_data=None):
         """
         Dump loss values for all training samples in an epoch
@@ -40,12 +41,23 @@ class EpochLossDumper:
         filename = f"epoch_{epoch:04d}_{timestamp}.json"
         filepath = self.dump_dir / filename
         
-        # Prepare data to dump
+        # Prepare filtered data to dump
+        # only consider losses above the 99th percentile
+        # top 1% loss filtering 
+        if len(loss_values) > 100:
+            threshold = np.percentile(loss_values, 99)
+            filtered_indices = np.where(loss_values >= threshold)[0]    # bad losses only
+            top_loss_array = np.array(loss_values)[filtered_indices]
+            top_loss_values = top_loss_array.tolist()
+
+        # Prepare all sample data to dump
         dump_data = {
             'epoch': epoch,
             'timestamp': timestamp,
             'loss_values': loss_values,
             'sample_count': len(loss_values),
+            'top_loss_values': top_loss_values,
+            'top_loss_sample_indices': filtered_indices.tolist(),
             'stats': {
                 'mean': float(np.mean(loss_values)),
                 'std': float(np.std(loss_values)),
