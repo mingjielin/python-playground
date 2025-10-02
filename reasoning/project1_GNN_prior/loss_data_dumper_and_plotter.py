@@ -45,7 +45,7 @@ class EpochLossDumper:
         # only consider losses above the 99th percentile
         # top 1% loss filtering 
         if len(loss_values) > 100:
-            threshold = np.percentile(loss_values, 99)
+            threshold = np.percentile(loss_values, 95)
             filtered_indices = np.where(loss_values >= threshold)[0]    # bad losses only
             top_loss_array = np.array(loss_values)[filtered_indices]
             top_loss_values = top_loss_array.tolist()
