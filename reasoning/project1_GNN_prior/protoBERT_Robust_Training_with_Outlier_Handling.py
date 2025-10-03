@@ -868,6 +868,7 @@ class ProtoBERTForDDGPrediction(nn.Module):
                 nn.init.xavier_uniform_(layer.weight)
                 if layer.bias is not None:
                     nn.init.zeros_(layer.bias)
+
     
     def forward(self, 
                 input_ids: torch.Tensor,
@@ -989,6 +990,7 @@ def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=N
     # Initialize empty lists to store data
     all_sample_losses = []
 
+    
 
     for batch_idx, batch in enumerate(pbar):
 
@@ -1008,7 +1010,7 @@ def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=N
             attention_mask=attention_mask,
             ddg_labels=ddg_labels
         )
-        
+
         # Calculate loss with analysis
         if criterion_type == 'simple':
             loss = outputs['loss']
@@ -1055,6 +1057,7 @@ def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=N
             'Avg Loss': f'{total_loss / (batch_idx + 1):.4f}'
         })
     
+
     avg_loss = total_loss / len(dataloader)
     # LMJ: tensorboard
     # Log training loss every N steps
@@ -1075,9 +1078,10 @@ def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=N
  
     eld.dump_epoch_losses(epoch_num, all_sample_losses)
 
-    
+    td = [abs(a - b) for a, b in zip(all_predictions, all_labels)]
 
-    return avg_loss, mse, mae, r2
+    return avg_loss, mse, mae, r2, td   
+
 
 
 def validate_epoch_ddg(model, dataloader, val_idx, device, epoch_num=0, total_epochs=0):
@@ -1128,7 +1132,6 @@ def validate_epoch_ddg(model, dataloader, val_idx, device, epoch_num=0, total_ep
     
     return avg_loss, mse, mae, r2
 
-
 def train_model_ddg(model, train_dataloader, train_idx, val_dataloader, val_idx, config: TrainingConfig):
     """Enhanced training with proper device management"""
     device = config.device
@@ -1164,14 +1167,33 @@ def train_model_ddg(model, train_dataloader, train_idx, val_dataloader, val_idx,
     # Main training loop with progress bar
     epoch_pbar = tqdm(range(config.num_epochs), desc="Training Progress")
     
+    # Initialize badness tracking
+    badness_counter = np.zeros(len(train_idx) + len(val_idx), dtype=int)  # Assuming indices are continuous and start from 0    
+
     for epoch in epoch_pbar:
-        # Training
-        train_loss, train_mse, train_mae, train_r2 = train_epoch_ddg(
+        # Training      train_diff: abs(prediction-label)
+        train_loss, train_mse, train_mae, train_r2, train_diff = train_epoch_ddg(
             model, train_dataloader, train_idx, optimizer, device, scheduler,
             'focal',  # Using different criterion types can be tested
             epoch_num=epoch+1, total_epochs=config.num_epochs, config=config
         )
         
+        #badness tracking update: td, train_idx -> update_badness_tracking in train_epoch_ddg
+        assert len(train_diff) == len(train_idx)
+
+        # Use pandas for easy sorting and selection
+        df = pd.DataFrame({'values': train_diff, 'ids': train_idx})
+    
+        # Sort by values in descending order and get top 5
+        top_5_df = df.nlargest(5, 'values')
+
+        for id_val in top_5_df['ids'].values:
+            badness_counter[id_val] += 1
+        
+        print(f"Top 5 badness indices in epoch {epoch+1}: {top_5_df['ids'].values}")
+        print(f"Badness counter for top 5 indices: {badness_counter[top_5_df['ids'].values]}")
+
+
         # Validation
         val_loss, val_mse, val_mae, val_r2 = validate_epoch_ddg(
             model, val_dataloader, val_idx, device,
