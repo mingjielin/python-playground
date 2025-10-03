@@ -457,7 +457,7 @@ class DDGDataProcessor:
         # print(f"Removed {len(df) - len(filtered_df)} extreme samples ({(len(df) - len(filtered_df))/len(df)*100:.1f}%)")
         # return filtered_df
     
-    def process_data(self, csv_file, enhanced_encoding=True, test_size=0.2):
+    def process_data(self, csv_file, enhanced_encoding=True, test_size=0.2, batch_size=4):
         """
         Complete data processing pipeline
         
@@ -504,13 +504,13 @@ class DDGDataProcessor:
         print(val_dataset)
         
         # Create data loaders
-        self.train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-        self.val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+        self.train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+        self.val_loader = DataLoader(val_dataset, batch_size, shuffle=False)
         
         print(f"Training samples: {len(train_idx)}")
         print(f"Validation samples: {len(val_idx)}")
         
-        return self.train_loader, self.val_loader
+        return self.train_loader, train_idx, self.val_loader, val_idx
 
 
 # ==================== ENHANCED PROTOBERT MODEL WITH DEBUGGING ====================
@@ -936,7 +936,7 @@ def create_sample_loss_scatter(sample_ids, losses, title="Sample Losses"):
 
 # =========== cost functions engineering ===========
 
-def huber_loss_with_weighting(predictions, targets, sample_indices=None):
+def huber_loss_with_weighting(predictions, targets, train_idx=None):
     """
     Huber loss with adaptive sample weighting
     """
@@ -951,18 +951,18 @@ def huber_loss_with_weighting(predictions, targets, sample_indices=None):
     )
     
     # Apply adaptive weights based on loss magnitude
-    if sample_indices is not None:
-        # Calculate weights based on historical performance
-        weights = torch.ones_like(huber_loss)
-        for i, idx in enumerate(sample_indices):
-            if idx in sample_weights:
-                # Reduce weight for consistently high-loss samples
-                weights[i] = min(1.0, 1.0 / (self.sample_weights[idx] + 1e-8))
-        huber_loss = huber_loss * weights
+    # if train_idx is not None:
+    #     # Calculate weights based on historical performance
+    #     weights = torch.ones_like(huber_loss)
+    #     for i, idx in enumerate(train_idx):
+    #         if idx in sample_weights:
+    #             # Reduce weight for consistently high-loss samples
+    #             weights[i] = min(1.0, 1.0 / (self.sample_weights[idx] + 1e-8))
+    #     huber_loss = huber_loss * weights
     
     return huber_loss.mean()
 
-def focal_loss_for_outliers(predictions, targets, alpha=1.0, gamma=2.0):
+def focal_loss_for_outliers(predictions, targets, train_idx=None, alpha=1.0, gamma=2.0):
     """
     Focal loss to focus on hard examples while down-weighting easy ones
     """
@@ -972,7 +972,7 @@ def focal_loss_for_outliers(predictions, targets, alpha=1.0, gamma=2.0):
     return focal_loss.mean()
 
 
-def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None, 
+def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=None, 
                    criterion_type='simple',  
                    epoch_num=0, total_epochs=0, config: TrainingConfig = None):
     """Enhanced training epoch with proper device management"""
@@ -1013,14 +1013,13 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
         if criterion_type == 'simple':
             loss = outputs['loss']
         elif criterion_type == 'huber':
-            loss = huber_loss_with_weighting(
-                outputs['loss'], ddg_labels, 
-                batch.get('sample_indices')  # If you track sample indices
-            )
+            loss = huber_loss_with_weighting( outputs['loss'], ddg_labels, train_idx)  # If you track sample indices
         elif criterion_type == 'focal':
-            loss = focal_loss_for_outliers(outputs['loss'], ddg_labels)
-        else:
+            loss = focal_loss_for_outliers(outputs['loss'], ddg_labels, train_idx)
+        elif criterion_type == 'mse':
             loss = F.mse_loss(outputs['loss'], ddg_labels)
+        else:
+            raise ValueError(f"Unknown criterion type: {criterion_type}")
 
         loss.backward()
         
@@ -1081,7 +1080,7 @@ def train_epoch_ddg(model, dataloader, optimizer, device, scheduler=None,
     return avg_loss, mse, mae, r2
 
 
-def validate_epoch_ddg(model, dataloader, device, epoch_num=0, total_epochs=0):
+def validate_epoch_ddg(model, dataloader, val_idx, device, epoch_num=0, total_epochs=0):
     """Enhanced validation epoch with proper device management"""
     model.eval()
     total_loss = 0
@@ -1130,7 +1129,7 @@ def validate_epoch_ddg(model, dataloader, device, epoch_num=0, total_epochs=0):
     return avg_loss, mse, mae, r2
 
 
-def train_model_ddg(model, train_dataloader, val_dataloader, config: TrainingConfig):
+def train_model_ddg(model, train_dataloader, train_idx, val_dataloader, val_idx, config: TrainingConfig):
     """Enhanced training with proper device management"""
     device = config.device
     model.to(device)
@@ -1168,14 +1167,14 @@ def train_model_ddg(model, train_dataloader, val_dataloader, config: TrainingCon
     for epoch in epoch_pbar:
         # Training
         train_loss, train_mse, train_mae, train_r2 = train_epoch_ddg(
-            model, train_dataloader, optimizer, device, scheduler,
-            'huber',  # Using different criterion types can be tested
+            model, train_dataloader, train_idx, optimizer, device, scheduler,
+            'focal',  # Using different criterion types can be tested
             epoch_num=epoch+1, total_epochs=config.num_epochs, config=config
         )
         
         # Validation
         val_loss, val_mse, val_mae, val_r2 = validate_epoch_ddg(
-            model, val_dataloader, device,
+            model, val_dataloader, val_idx, device,
             epoch_num=epoch+1, total_epochs=config.num_epochs
         )
         
@@ -1405,7 +1404,11 @@ def main():
     processor = DDGDataProcessor()
     
     # Process your data
-    train_dataloader, val_dataloader = processor.process_data('./reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+    train_dataloader, train_idx, val_dataloader, val_idx = processor.process_data(
+        './reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', 
+        enhanced_encoding=True, 
+        test_size=0.2, 
+        batch_size=training_config.batch_size)
     # train_loader, val_loader = processor.process_data('./data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
     
     print("Creating ProtoBERT model for DDG prediction...")
@@ -1423,7 +1426,7 @@ def main():
     
     print("Starting DDG prediction training...")
     trained_model, history = train_model_ddg(
-        model, train_dataloader, val_dataloader, training_config).to(device)
+        model, train_dataloader, train_idx, val_dataloader, val_idx, training_config).to(device)
 
     # Plot training history
     plot_training_history(history)
