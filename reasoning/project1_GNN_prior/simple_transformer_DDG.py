@@ -161,7 +161,33 @@ def sequences_to_ids(sequences, max_len=500):
     
     return torch.tensor(all_ids, dtype=torch.long)
 
-# ================================================================================================
+
+        train_dataset = torch.utils.data.Subset(self.dataset, train_idx)
+        print(train_dataset)
+
+        # for i in range(len(train_dataset)):
+        #     try:
+        #         sample = train_dataset[i]
+        #         self.print_sample_content(sample, i)
+
+        #     except Exception as e:
+        #         print(f"Error analyzing sample {i}: {e}")
+
+        #     print()
+
+
+
+
+
+
+        val_dataset = torch.utils.data.Subset(self.dataset, val_idx)
+        print(val_dataset)
+        
+        # Create data loaders
+        self.train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+        self.val_loader = DataLoader(val_dataset, batch_size, shuffle=False)
+        
+        pr# ================================================================================================
 # ================================================================================================
 # ================================================================================================
 
@@ -653,33 +679,7 @@ class DDGDataProcessor:
             test_size=test_size,
             random_state=42
         )
-        
-        train_dataset = torch.utils.data.Subset(self.dataset, train_idx)
-        print(train_dataset)
-
-        # for i in range(len(train_dataset)):
-        #     try:
-        #         sample = train_dataset[i]
-        #         self.print_sample_content(sample, i)
-
-        #     except Exception as e:
-        #         print(f"Error analyzing sample {i}: {e}")
-
-        #     print()
-
-
-
-
-
-
-        val_dataset = torch.utils.data.Subset(self.dataset, val_idx)
-        print(val_dataset)
-        
-        # Create data loaders
-        self.train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
-        self.val_loader = DataLoader(val_dataset, batch_size, shuffle=False)
-        
-        print(f"Training samples: {len(train_idx)}")
+        int(f"Training samples: {len(train_idx)}")
         print(f"Validation samples: {len(val_idx)}")
         
         return self.train_loader, train_idx, self.val_loader, val_idx
