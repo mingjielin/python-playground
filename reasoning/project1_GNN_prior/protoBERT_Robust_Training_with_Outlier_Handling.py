@@ -1024,6 +1024,34 @@ def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=N
             raise ValueError(f"Unknown criterion type: {criterion_type}")
 
         loss.backward()
+
+#==========================================================yy
+
+        # Analyze gradients
+        total_norm = 0
+        max_grad = 0
+        min_grad = float('inf')
+        param_count = 0
+        
+        for name, param in model.named_parameters():
+            if param.grad is not None:
+                grad_norm = param.grad.data.norm(2).item()
+                total_norm += grad_norm ** 2
+                max_grad = max(max_grad, grad_norm)
+                min_grad = min(min_grad, grad_norm)
+                param_count += 1
+                
+                # Print problematic parameters
+                if grad_norm > 10.0:  # High gradient threshold
+                    print(f"High gradient in {name}: {grad_norm:.4f}")
+        
+        total_norm = total_norm ** (1. / 2)
+        
+        print(f"Batch {batch_idx+1}: Loss={loss.item():.4f}, "
+              f"TotalGradNorm={total_norm:.4f}, MaxGrad={max_grad:.4f}")
+
+#==========================================================yy
+
         
         # Gradient clipping
         torch.nn.utils.clip_grad_norm_(
