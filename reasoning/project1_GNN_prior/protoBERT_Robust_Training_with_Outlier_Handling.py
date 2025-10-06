@@ -52,8 +52,8 @@ except ImportError:
 class ModelConfig:
     # ======================= Small setting =================================
     hidden_size: int = 64 # 256 # 1024  # Reduced for debugging
-    num_hidden_layers: int = 4 # 64  # Reduced for debugging
-    num_attention_heads: int = 4 # 64  # Reduced for debugging
+    num_hidden_layers: int = 2 # 64  # Reduced for debugging
+    num_attention_heads: int = 2 # 64  # Reduced for debugging
     intermediate_size: int = 128  # Reduced for debugging
     regression_head_size: int = 32 # 512 
 
@@ -75,18 +75,18 @@ class ModelConfig:
     # no change for the following, tensor size consistency
     # assert(max_position_embeddings == max_length)
     vocab_size: int = 30  # 20 amino acids + 10 special tokens
-    max_position_embeddings: int = 256 # 512  # Reduced for debugging
-    dropout: float = 0.1
+    max_position_embeddings: int = 64 # 512  # Reduced for debugging
+    dropout: float = 0.2
     activation: str = "gelu"
     # ddg_range: Tuple[float, float] = (-3.0, 3.0)  # Reduced range for stability
 
 @dataclass
 class TrainingConfig:
     batch_size: int = 4  # Reduced batch size
-    learning_rate: float = 1e-5  # Reduced learning rate
-    weight_decay: float = 0.01
+    learning_rate: float = 5e-5  # Reduced learning rate
+    weight_decay: float = 0.05
     num_epochs: int = 20000  # More epochs for debugging
-    patience: int = 50000
+    patience: int = 10000
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     # device: str = 'cpu'
     best_model_path: str = 'best_protobert_ddg.pth'
@@ -144,7 +144,7 @@ class DDGDataProcessor:
     #   from transformers import AutoTokenizer
     #   tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
     
-    def __init__(self, model_name="Rostlab/prot_bert", max_length=256):
+    def __init__(self, model_name="Rostlab/prot_bert", max_length=64):
         """
         Initialize the DDG data processor
         
@@ -383,8 +383,114 @@ class DDGDataProcessor:
             input_ids_list.append(tokens['input_ids'].squeeze(0))
             attention_masks_list.append(tokens['attention_mask'].squeeze(0))
             labels_list.append(ddg_score)
-            
-        print(input_ids_list)
+
+        return (
+            torch.stack(input_ids_list),
+            torch.stack(attention_masks_list),
+            torch.tensor(labels_list, dtype=torch.float)
+        )
+
+    # ===================================================================================================================
+    # ==== create high-correlated data for tesing the convergence of model training  ====
+    # ===================================================================================================================
+
+    def create_correlated_data(self, num_samples):
+
+        # Map integers to amino acid letters
+        aa_map = {
+            10: 'A', 11: 'R', 12: 'N', 13: 'D', 14: 'C',
+            15: 'E', 16: 'Q', 17: 'G', 18: 'H', 19: 'I',
+            20: 'L', 21: 'K', 22: 'M', 23: 'F', 24: 'P',
+            25: 'S', 26: 'T', 27: 'W', 28: 'Y', 29: 'V'
+        }
+
+        input_ids_list = []
+        attention_masks_list = []
+        labels_list = []
+        
+        for i in range(num_samples):
+            seq_ints = torch.randint(10, 30, (50,))  # Random sequence
+
+            # Simple pattern: count certain amino acids
+            if torch.sum(seq_ints == 15) > 2:  # If amino acid 15 appears > 2 times
+                ddg = 2.0
+            elif torch.sum(seq_ints == 20) > 1:  # If amino acid 20 appears > 1 time  
+                ddg = -1.5
+            else:
+                ddg = 0.0  # Neutral DDG
+
+            sequence = ''.join([aa_map.get(int_val.item(), 'X') for int_val in seq_ints])
+
+            # Tokenize
+            tokens = self.tokenizer(
+                sequence,
+                max_length=self.max_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors='pt'
+            )
+
+            input_ids_list.append(tokens['input_ids'].squeeze(0))
+            attention_masks_list.append(tokens['attention_mask'].squeeze(0))
+            labels_list.append(ddg)
+
+        return (
+            torch.stack(input_ids_list),
+            torch.stack(attention_masks_list),
+            torch.tensor(labels_list, dtype=torch.float)
+        )
+
+
+    def create_learnable_data(self, num_samples):
+
+        # Map integers to amino acid letters
+        aa_map = {
+            10: 'A', 11: 'R', 12: 'N', 13: 'D', 14: 'C',
+            15: 'E', 16: 'Q', 17: 'G', 18: 'H', 19: 'I',
+            20: 'L', 21: 'K', 22: 'M', 23: 'F', 24: 'P',
+            25: 'S', 26: 'T', 27: 'W', 28: 'Y', 29: 'V'
+        }
+
+        input_ids_list = []
+        attention_masks_list = []
+        labels_list = []
+
+        sequence_set = []
+        ddg_values = []
+        
+        for i in range(num_samples):
+            seq_ints = torch.randint(10, 30, (32,))  # Random sequence
+
+            # Create DDG based on actual sequence content
+            # Example: count specific amino acids
+            aa_15_count = (seq_ints == 15).sum().item()
+            aa_20_count = (seq_ints == 20).sum().item()
+        
+            # DDG = function of amino acid composition
+            ddg = 0.5 * aa_15_count - 0.3 * aa_20_count + torch.randn(1).item() * 0.1
+        
+            sequence = ''.join([aa_map.get(int_val.item(), 'X') for int_val in seq_ints])
+
+            # Tokenize
+            tokens = self.tokenizer(
+                sequence,
+                max_length=self.max_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors='pt'
+            )
+
+            input_ids_list.append(tokens['input_ids'].squeeze(0))
+            attention_masks_list.append(tokens['attention_mask'].squeeze(0))
+            labels_list.append(ddg)
+
+            sequence_set.append(sequence)
+            ddg_values.append(ddg)
+
+            # Check correlation
+            # correlation = np.corrcoef([s[0].item() for s in sequence_set], ddg_values)[0, 1]
+            # print(f"Correlation: {correlation} (should be > 0.1)")  # Should be > 0.1
+
         return (
             torch.stack(input_ids_list),
             torch.stack(attention_masks_list),
@@ -466,6 +572,8 @@ class DDGDataProcessor:
             enhanced_encoding: Whether to use enhanced mutation encoding
             test_size: Proportion of data for validation
         """
+        #    using real data
+        
         # Load data
         df = self.load_ddg_data(csv_file)
 
@@ -486,6 +594,16 @@ class DDGDataProcessor:
         
         # Prepare training data
         input_ids, attention_masks, labels = self.prepare_training_data(df, enhanced_encoding)
+
+
+
+        #    using fake data
+        # opt to use highly-correlated data for training process debug
+        # input_ids, attention_masks, labels = self.create_correlated_data(
+        #     100)
+        # input_ids, attention_masks, labels = self.create_learnable_data(
+        #     100)
+
         
         # Create dataset
         self.dataset = DDGDataset(input_ids, attention_masks, labels)
@@ -1062,6 +1180,8 @@ def train_epoch_ddg(model, dataloader, train_idx, optimizer, device, scheduler=N
         optimizer.step()
         if scheduler is not None:
             scheduler.step()
+            # scheduler 2
+            # scheduler.step(metrics=loss.item())
         
         total_loss += loss.item()
 
@@ -1174,12 +1294,23 @@ def train_model_ddg(model, train_dataloader, train_idx, val_dataloader, val_idx,
         eps=1e-8
     )
     
-    # Scheduler
+    # Scheduler 1
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=config.num_epochs * len(train_dataloader),
         eta_min=1e-7  # Even lower min learning rate
     )
+
+    # scheduler 2
+    # Start with higher LR, then reduce
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    #     optimizer, 
+    #     mode='min', 
+    #     factor=0.5,      # Reduce LR by half
+    #     patience=3       # Reduce after 3 epochs without improvement
+    # )
+
+    
     
     best_val_loss = float('inf')
     patience_counter = 0
@@ -1202,7 +1333,8 @@ def train_model_ddg(model, train_dataloader, train_idx, val_dataloader, val_idx,
         # Training      train_diff: abs(prediction-label)
         train_loss, train_mse, train_mae, train_r2, train_diff = train_epoch_ddg(
             model, train_dataloader, train_idx, optimizer, device, scheduler,
-            'focal',  # Using different criterion types can be tested
+            #'focal',  # Using different criterion types can be tested
+            'mse',  # Using different criterion types can be tested
             epoch_num=epoch+1, total_epochs=config.num_epochs, config=config
         )
         
@@ -1220,6 +1352,7 @@ def train_model_ddg(model, train_dataloader, train_idx, val_dataloader, val_idx,
         
         print(f"Top 5 badness indices in epoch {epoch+1}: {top_5_df['ids'].values}")
         print(f"Badness counter for top 5 indices: {badness_counter[top_5_df['ids'].values]}")
+        print(f"Badness counter for all indices: {badness_counter}")
 
 
         # Validation
@@ -1414,6 +1547,23 @@ def evaluate_model_performance(model, dataloader, device):
         'labels': all_labels
     }
 
+# Check if there's any correlation between input and output
+def debug_data(train_dataloader):
+    sequences = []
+    ddg_values = []
+    
+    for batch in train_dataloader:
+        sequences.extend(batch['input_ids'].cpu().numpy())
+        ddg_values.extend(batch['labels'].cpu().numpy())
+    
+    # Check correlation
+    correlation = np.corrcoef(sequences, ddg_values)[0,1]  # This should be > 0.1
+    print(f"Correlation: {correlation}")
+    
+    if abs(correlation) < 0.01:
+        print("❌ NO CORRELATION - Your data is random!")
+        return False
+    return True
 
 # ==================== MAIN EXECUTION WITH DEBUGGING ====================
 
@@ -1460,6 +1610,10 @@ def main():
         test_size=0.2, 
         batch_size=training_config.batch_size)
     # train_loader, val_loader = processor.process_data('./data/s669/ddG_experimental/ddg.csv', enhanced_encoding=True)
+
+    # not making sense now
+    # debug_data(train_dataloader)
+
     
     print("Creating ProtoBERT model for DDG prediction...")
     model = ProtoBERTForDDGPrediction(model_config)
