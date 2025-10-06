@@ -962,26 +962,31 @@ def main():
     #     print(f"Attention mask: {sample_0['attention_mask']}")
     #     print(f"DDG: {sample_0['labels']}")
 
-    #===================================================================
-    train_sequence_ids = []
-    train_ddg_tensor = []
+    sequence_ids = []
+    ddg_tensor = []
 
     for i in range(len(train_dataloader.dataset)):
         sample = train_dataloader.dataset[i]
-        train_input_ids = sample['input_ids'] 
-        train_label = sample['labels']
-        train_sequence_ids.append(train_input_ids)
-        train_ddg_tensor.append(train_label)
+        sample_input_ids = sample['input_ids'] 
+        sample_label = sample['labels']
+        sequence_ids.append(sample_input_ids)
+        ddg_tensor.append(sample_label)
         # print(f"sample: {i} -> {sample}")
 
-    train_sequence_ids = torch.stack(train_sequence_ids, dim = 0)    
-    train_ddg_tensor = torch.tensor(train_ddg_tensor, dtype=torch.float)
+    # # If sample is a dictionary, then access by string key
+    # if isinstance(sample_0, dict):
+    #     print(f"Input IDs: {sample_0['input_ids']}")
+    #     print(f"Attention mask: {sample_0['attention_mask']}")
+    #     print(f"DDG: {sample_0['labels']}")
 
-    train_dataset = TensorDataset(train_sequence_ids, train_ddg_tensor)
-    train_dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True)
+    sequence_ids = torch.stack(sequence_ids, dim = 0)    
+    ddg_tensor = torch.tensor(ddg_tensor, dtype=torch.float)
+
+    dataset = TensorDataset(sequence_ids, ddg_tensor)
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
     # prinit out
-    for batch_idx, (sequences, ddg_values) in enumerate(train_dataloader):
+    for batch_idx, (sequences, ddg_values) in enumerate(dataloader):
         print(f"Batch {batch_idx}:")
         print(f"  Sequences shape: {sequences.shape}")
         print(f"  DDG values shape: {ddg_values.shape}")
@@ -991,41 +996,8 @@ def main():
         if batch_idx == 0:  # Just show first batch
             break
 
-    predictions = model(train_sequence_ids)
-    ddg_values = train_ddg_tensor
-    #===================================================================
-    #===================================================================
-    val_sequence_ids = []
-    val_ddg_tensor = []
-
-    for i in range(len(val_dataloader.dataset)):
-        sample = val_dataloader.dataset[i]
-        val_input_ids = sample['input_ids'] 
-        val_label = sample['labels']
-        val_sequence_ids.append(val_input_ids)
-        val_ddg_tensor.append(val_label)
-        # print(f"sample: {i} -> {sample}")
-
-    val_sequence_ids = torch.stack(val_sequence_ids, dim = 0)    
-    val_ddg_tensor = torch.tensor(val_ddg_tensor, dtype=torch.float)
-
-    val_dataset = TensorDataset(val_sequence_ids, val_ddg_tensor)
-    val_dataloader = DataLoader(val_dataset, batch_size=2, shuffle=False)
-
-    # prinit out
-    for batch_idx, (sequences, ddg_values) in enumerate(val_dataloader):
-        print(f"Batch {batch_idx}:")
-        print(f"  Sequences shape: {sequences.shape}")
-        print(f"  DDG values shape: {ddg_values.shape}")
-        print(f"  First sequence (first 10): {sequences[0][:10]}")
-        print(f"  First DDG: {ddg_values[0]:.3f}")
-
-        if batch_idx == 0:  # Just show first batch
-            break
-
-    predictions = model(val_sequence_ids)
-    ddg_values = val_ddg_tensor
-    #===================================================================
+    predictions = model(sequence_ids)
+    ddg_values = ddg_tensor
 
     print(f"Predictions shape: {predictions.shape}")
     print(f"Predictions: {predictions}")
@@ -1035,7 +1007,7 @@ def main():
     print(f"\nModel parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}")
 
 
-    train_ddg_model(model, train_dataloader, val_dataloader, 10000, 0.0001)
+    train_ddg_model(model, dataloader, dataloader, 10000, 0.0001)
 
 
     exit(0)
