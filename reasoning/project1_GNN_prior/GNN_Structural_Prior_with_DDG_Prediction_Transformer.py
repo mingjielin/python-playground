@@ -184,6 +184,7 @@ class DDGDataProcessor:
         self.train_loader = None
         self.val_loader = None
         self.model = None
+        self.structural_data = None
     
     def print_sample_content(self, sample, index=0):
         """
@@ -323,13 +324,14 @@ class DDGDataProcessor:
                 return None
         except:
             return None
-    
-    def extract_sequences(self, df):
+
+    def extract_sequences_and_structures(self, df):
         """
-        Extract sequences for all PDB entries
+        Extract sequences and structures for all PDB entries
         """
         sequences = []
-        
+        structures = []
+
         for _, row in df.iterrows():
             pdb_id = row['pdbid']
             chain_id = row['chainid']
@@ -337,8 +339,13 @@ class DDGDataProcessor:
             #sequence = self.get_sequence_from_pdb(pdb_id, chain_id)
             sequence = self.get_sequence_from_pdb_file(pdb_id, chain_id)
             sequences.append(sequence)
-        
+
+            #structure = self.get_structure_from_pdb_file(pdb_id, chain_id)
+            structure = self.get_structure_from_pdb_file(pdb_id, chain_id)
+            structures.append(structure)
+
         df['sequence'] = sequences
+        df['structure'] = structures
         return df
     
     def parse_variant(self, variant_str):
@@ -395,6 +402,17 @@ class DDGDataProcessor:
         enhanced_seq = ''.join(seq_list) + f"[MUTATION:{original_aa}{position}{mutant_aa}]"
         
         return enhanced_seq
+
+    # Prepare GNN structural training data
+    # =============================================================
+    # =============================================================
+    def get_structure_from_pdb_file(self,  pdb_id, chain_id):
+        """
+        Extract GNN structural info from a local DB file
+        """
+        return
+    # =============================================================
+    # =============================================================
     
     def prepare_training_data(self, df, enhanced_encoding=True):
         """
@@ -832,6 +850,8 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
         
         print(f'Epoch {epoch+1}/{epochs}: Train Loss: {train_loss/len(train_loader):.4f}, '
               f'Val Loss: {val_loss/len(val_loader):.4f}')
+
+        writer.add_scalar('Loss/Train', train_loss/len(train_loader), global_step=epoch)
 
 def main_with_gnn_prior():
     """
