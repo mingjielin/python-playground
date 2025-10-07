@@ -871,12 +871,17 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
             
             # Forward pass
             predictions = model(sequences, attention_mask, gnn_data)
-            loss = criterion(predictions, ddg_values)
 
             all_predictions.extend(predictions)
             all_labels.extend(ddg_values)
             
+            loss = criterion(predictions, ddg_values)
             loss.backward()
+            # after loss computation, predictions are detached from the graph
+            # all_predictions.extend(predictions.detach().cpu().numpy())
+            # all_labels.extend(ddg_values.detach().cpu().numpy())
+            # CRITICAL!!!   
+
             optimizer.step()
             
             train_loss += loss.item()
