@@ -195,7 +195,7 @@ class DDGDataProcessor:
 
         # GNN components (structural features)
         self.gnn = ProteinGNN(node_features=1, hidden_dim=64, 
-                              num_layers=3, output_dim=32)
+                              num_layers=3, output_dim=64)
         
     
     def print_sample_content(self, sample, index=0):
@@ -791,24 +791,25 @@ class DDGTransformerWithGNNPrior(nn.Module):
         seq_output = self.transformer(seq_embedding, src_key_padding_mask=attention_mask)
         seq_pooled = seq_output.mean(dim=1)  # [batch, d_model]
         
-        # Process structure with GNN
-        if gnn_data is not None:
-            # Process each graph in the batch
-            gnn_outputs = []
-            for data in gnn_data:
-                gnn_out = self.gnn(data.x, data.edge_index, data.batch)
-                gnn_outputs.append(gnn_out)
-            
-            # Concatenate all outputs
-            gnn_output = torch.cat(gnn_outputs, dim=0)  # [batch, gnn_output_dim]
-        else:
-            # If no structural data provided, use zeros
-            gnn_output = torch.zeros(batch_size, self.gnn.output_layer.out_features, 
-                                   device=input_ids.device)
+       #  # Process structure with GNN
+       #  if gnn_data is not None:
+       #      # Process each graph in the batch
+       #      gnn_outputs = []
+       #      for data in gnn_data:
+       #          gnn_out = self.gnn(data.x, data.edge_index, data.batch)
+       #          gnn_outputs.append(gnn_out)
+       #      
+       #      # Concatenate all outputs
+       #      gnn_output = torch.cat(gnn_outputs, dim=0)  # [batch, gnn_output_dim]
+       #  else:
+       #      # If no structural data provided, use zeros
+       #      gnn_output = torch.zeros(batch_size, self.gnn.output_layer.out_features, 
+       #                             device=input_ids.device)
         
+
         # Project both features to fusion dimension
         seq_features = self.sequence_projector(seq_pooled)      # [batch, fusion_dim//2]
-        struct_features = self.structure_projector(gnn_output)  # [batch, fusion_dim//2]
+        struct_features = self.structure_projector(gnn_data)  # [batch, fusion_dim//2]
         
         # Concatenate sequence and structural features
         combined_features = torch.cat([seq_features, struct_features], dim=1)  # [batch, fusion_dim]
@@ -849,6 +850,8 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
     for epoch in range(epochs):
         model.train()
         train_loss = 0.0
+        all_predictions = []
+        all_labels = []
         
         for batch_idx, batch in enumerate(train_loader):
             # Extract sequence data
@@ -869,11 +872,28 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
             # Forward pass
             predictions = model(sequences, attention_mask, gnn_data)
             loss = criterion(predictions, ddg_values)
+
+            all_predictions.extend(predictions)
+            all_labels.extend(ddg_values)
             
             loss.backward()
             optimizer.step()
             
             train_loss += loss.item()
+    
+
+        avg_train_loss = train_loss / len(train_loader)
+        # LMJ: tensorboard
+        # Log training loss every N steps
+        writer.add_scalar('Avg train Loss', avg_train_loss, global_step=epoch)
+
+        train_mse = mean_squared_error(all_labels, all_predictions)
+        train_mae = mean_absolute_error(all_labels, all_predictions)
+        train_r2 = r2_score(all_labels, all_predictions)
+
+        writer.flush()
+
+
         
         # Validation
         model.eval()
@@ -889,7 +909,10 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
                 val_loss += criterion(predictions, ddg_values).item()
         
         print(f'Epoch {epoch+1}/{epochs}: Train Loss: {train_loss/len(train_loader):.4f}, '
-              f'Val Loss: {val_loss/len(val_loader):.4f}')
+              f'mse: {train_mse:.4f}',
+              f'mae: {train_mae:.4f}',
+              f'r2: {train_r2:.4f}'
+              )
 
         writer.add_scalar('Loss/Train', train_loss/len(train_loader), global_step=epoch)
 
