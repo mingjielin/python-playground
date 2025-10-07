@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch_geometric.nn import GCNConv, global_mean_pool
-from torch_geometric.data import Data
+from torch_geometric.data import Data, Batch
 from torch_geometric.loader import DataLoader as PyGDataLoader
 from Bio.PDB import PDBParser
 from Bio.PDB.DSSP import DSSP
@@ -28,6 +28,7 @@ from tqdm import tqdm
 import gc
 
 
+
 # LMJ: tensorboard
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter(log_dir="runs/ddg_experiment")
@@ -42,10 +43,11 @@ class DDGDataset(Dataset):
     """
     PyTorch Dataset for DDG prediction
     """
-    def __init__(self, input_ids, attention_masks, labels):
+    def __init__(self, input_ids, attention_masks, labels, structures):
         self.input_ids = input_ids
         self.attention_masks = attention_masks
         self.labels = labels
+        self.structures = structures
     
     def __len__(self):
         return len(self.labels)
@@ -54,7 +56,8 @@ class DDGDataset(Dataset):
         return {
             'input_ids': self.input_ids[idx],
             'attention_mask': self.attention_masks[idx],
-            'labels': self.labels[idx]
+            'labels': self.labels[idx],
+            'structures': self.structures[idx]
         }
 
 
@@ -135,6 +138,10 @@ class SimpleAATokenizer:
         
         return tokens
 
+
+
+
+
 class DDGDataProcessor:
     """
     Complete class for processing DDG (delta-delta G) data for protein transformer training
@@ -185,6 +192,11 @@ class DDGDataProcessor:
         self.val_loader = None
         self.model = None
         self.structural_data = None
+
+        # GNN components (structural features)
+        self.gnn = ProteinGNN(node_features=1, hidden_dim=64, 
+                              num_layers=3, output_dim=32)
+        
     
     def print_sample_content(self, sample, index=0):
         """
@@ -295,36 +307,108 @@ class DDGDataProcessor:
             return None
 
 
-    def get_sequence_from_pdb(self, pdb_id, chain_id):
-        """
-        Extract sequence from PDB file
-        """
-        try:
-            # Download PDB file
-            pdb_url = f"https://files.rcsb.org/download/{pdb_id}.pdb"
-            response = requests.get(pdb_url)
-            
-            if response.status_code == 200:
-                # Parse PDB and extract sequence
-                from io import StringIO
-                from Bio.PDB import PDBParser
-                
-                parser = PDBParser()
-                structure = parser.get_structure(pdb_id, StringIO(response.text))
-                
-                sequence = ""
-                for chain in structure[0]:  # First model
-                    if chain.id == chain_id:
-                        for residue in chain:
-                            if residue.get_resname() in self.amino_acids_3to1:
-                                sequence += self.amino_acids_3to1[residue.get_resname()]
-                
-                return sequence
-            else:
-                return None
-        except:
-            return None
+    # def get_sequence_from_pdb(self, pdb_id, chain_id):
+    #     """
+    #     Extract sequence from PDB file
+    #     """
+    #     try:
+    #         # Download PDB file
+    #         pdb_url = f"https://files.rcsb.org/download/{pdb_id}.pdb"
+    #         response = requests.get(pdb_url)
+    #         
+    #         if response.status_code == 200:
+    #             # Parse PDB and extract sequence
+    #             from io import StringIO
+    #             from Bio.PDB import PDBParser
+    #             
+    #             parser = PDBParser()
+    #             structure = parser.get_structure(pdb_id, StringIO(response.text))
+    #             
+    #             sequence = ""
+    #             for chain in structure[0]:  # First model
+    #                 if chain.id == chain_id:
+    #                     for residue in chain:
+    #                         if residue.get_resname() in self.amino_acids_3to1:
+    #                             sequence += self.amino_acids_3to1[residue.get_resname()]
+    #             
+    #             return sequence
+    #         else:
+    #             return None
+    #     except:
+    #         return None
 
+
+
+
+    
+
+    # Prepare GNN structural training data
+    # =============================================================
+    # =============================================================
+    def get_structure_from_pdb_file(self,  pdb_id, chain_id = 'A', distance_threshold=8.0):
+    # def create_protein_graph(self, pdb_file, chain_id='A', distance_threshold=8.0):
+        """
+        Extract GNN structural info from a local DB file
+        Create a protein graph from PDB file
+        """
+        parser = PDBParser()
+        structure = parser.get_structure(pdb_id, f"./reasoning/project1_GNN_prior/data/s669/pdb/{pdb_id}.pdb")
+        
+        # Extract coordinates and amino acid types
+        coords = []
+        amino_acids = []
+        
+        for model in structure:
+            for chain in model:
+                if chain.id != chain_id:
+                    continue
+                for residue in chain:
+                    if residue.get_resname() in self.amino_acids_3to1:
+                        # Get CA atom coordinates
+                        if 'CA' in residue:
+                            ca_atom = residue['CA']
+                            coords.append(ca_atom.get_coord())
+                            amino_acids.append(residue.get_resname())
+        
+        if len(coords) == 0:
+            return None
+        
+        coords = np.array(coords)
+        n_nodes = len(coords)
+        
+        # Create edges based on distance
+        edge_index = []
+        for i in range(n_nodes):
+            for j in range(i + 1, n_nodes):
+                dist = np.linalg.norm(coords[i] - coords[j])
+                if dist <= distance_threshold:
+                    edge_index.append([i, j])
+                    edge_index.append([j, i])  # Add reverse edge for undirected graph
+        
+        if len(edge_index) == 0:
+            return None
+        
+        edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
+        
+        # Create node features (amino acid type + position)
+        aa_to_id = {aa: i+1 for i, aa in enumerate("ACDEFGHIKLMNPQRSTVWY")}
+        node_features = []
+        for aa in amino_acids:
+            aa_1letter = self.amino_acids_3to1.get(aa, 'X')
+            node_features.append(aa_to_id.get(aa_1letter, 1))  # Use 1 for unknown
+        
+        x = torch.tensor(node_features, dtype=torch.long).unsqueeze(1).float()
+        
+        # Create PyG Data object
+        data = Data(x=x, edge_index=edge_index)
+        return data
+
+
+
+
+    # =============================================================
+    # Prepare GNN structural training data
+    # =============================================================
     def extract_sequences_and_structures(self, df):
         """
         Extract sequences and structures for all PDB entries
@@ -403,15 +487,29 @@ class DDGDataProcessor:
         
         return enhanced_seq
 
-    # Prepare GNN structural training data
-    # =============================================================
-    # =============================================================
-    def get_structure_from_pdb_file(self,  pdb_id, chain_id):
-        """
-        Extract GNN structural info from a local DB file
-        """
-        return
-    # =============================================================
+    def GNN_graph_2_embedding(self, GNN_structures, node_features=1, hidden_dim=64, 
+                              num_layers=3, output_dim=32, batch_size=4):
+
+        # Process structure with GNN
+        if GNN_structures is not None:
+            # Process each graph in the batch
+            gnn_outputs = []
+            for data in GNN_structures:
+                gnn_out = self.gnn(data.x, data.edge_index, data.batch)
+                gnn_outputs.append(gnn_out)
+            
+            # Concatenate all outputs
+            gnn_output = torch.cat(gnn_outputs, dim=0)  # [batch, gnn_output_dim]
+        else:
+            # If no structural data provided, use zeros
+            gnn_output = torch.zeros(batch_size, self.gnn.output_layer.out_features)
+
+        return gnn_output
+        # return torch.stack(gnn_output)
+
+
+
+
     # =============================================================
     
     def prepare_training_data(self, df, enhanced_encoding=True):
@@ -425,6 +523,7 @@ class DDGDataProcessor:
         input_ids_list = []
         attention_masks_list = []
         labels_list = []
+        structure_list = []
 
         df.to_csv('data_check.csv', index=False)  
 
@@ -433,6 +532,7 @@ class DDGDataProcessor:
             position = row['position']
             mutant_aa = row['mutant_type']
             ddg_score = row['score']
+            structure = row['structure']
             
             if pd.isna(wild_seq) or wild_seq is None:
                 continue
@@ -472,7 +572,7 @@ class DDGDataProcessor:
             input_ids_list.append(tokens['input_ids'].squeeze(0))
             attention_masks_list.append(tokens['attention_mask'].squeeze(0))
             labels_list.append(ddg_score)
-        
+            structure_list.append(structure) 
         # for i in range(len(input_ids_list)):
         #     print(input_ids_list[i])
 
@@ -503,7 +603,8 @@ class DDGDataProcessor:
         return (
             torch.stack(input_ids_list),
             torch.stack(attention_masks_list),
-            torch.tensor(labels_list, dtype=torch.float)
+            torch.tensor(labels_list, dtype=torch.float),
+            structure_list
         )
 
     def process_data(self, csv_file, enhanced_encoding=True, test_size=0.2, batch_size=4):
@@ -524,16 +625,22 @@ class DDGDataProcessor:
         df = self.add_mutation_info(df)
         
         # Extract sequences
-        df = self.extract_sequences(df)
+        df = self.extract_sequences_and_structures(df)
         
         # Remove entries without sequences
         df = df.dropna(subset=['sequence'])
         
         # Prepare training data
-        input_ids, attention_masks, labels = self.prepare_training_data(df, enhanced_encoding)
+        input_ids, attention_masks, labels, GNN_structures = self.prepare_training_data(df, enhanced_encoding)
+
+
+        # turn GNN graph into embeddings
+        graph_embeddings = self.GNN_graph_2_embedding(
+            GNN_structures, node_features=1, hidden_dim=64, 
+            num_layers=3, output_dim=32)
 
         # Create dataset
-        self.dataset = DDGDataset(input_ids, attention_masks, labels)
+        self.dataset = DDGDataset(input_ids, attention_masks, labels, graph_embeddings)
         
         # Split into train/validation
         all_indices = list(range(len(self.dataset)))
@@ -583,7 +690,7 @@ class ProteinGNN(nn.Module):
     """
     Graph Neural Network for protein structure processing
     """
-    def __init__(self, node_features=21, hidden_dim=64, num_layers=3, output_dim=64):
+    def __init__(self, node_features=1, hidden_dim=64, num_layers=3, output_dim=64):
         super().__init__()
         self.convs = nn.ModuleList()
         
@@ -640,7 +747,7 @@ class DDGTransformerWithGNNPrior(nn.Module):
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
         
         # GNN components (structural features)
-        self.gnn = ProteinGNN(node_features=21, hidden_dim=64, num_layers=3, output_dim=gnn_output_dim)
+        # self.gnn = ProteinGNN(node_features=21, hidden_dim=64, num_layers=3, output_dim=gnn_output_dim)
         
         # Fusion mechanism to combine sequence and structural features
         self.fusion_dim = fusion_dim
@@ -729,77 +836,6 @@ class PositionalEncoding(nn.Module):
         x = x + self.pe[:x.size(1), :].transpose(0, 1)
         return self.dropout(x)
 
-def create_protein_graph(pdb_file, chain_id='A', distance_threshold=8.0):
-    """
-    Create a protein graph from PDB file
-    """
-    parser = PDBParser()
-    structure = parser.get_structure("protein", pdb_file)
-    
-    # Extract coordinates and amino acid types
-    coords = []
-    amino_acids = []
-    
-    for model in structure:
-        for chain in model:
-            if chain.id != chain_id:
-                continue
-            for residue in chain:
-                if residue.get_resname() in processor.amino_acids_3to1:
-                    # Get CA atom coordinates
-                    if 'CA' in residue:
-                        ca_atom = residue['CA']
-                        coords.append(ca_atom.get_coord())
-                        amino_acids.append(residue.get_resname())
-    
-    if len(coords) == 0:
-        return None
-    
-    coords = np.array(coords)
-    n_nodes = len(coords)
-    
-    # Create edges based on distance
-    edge_index = []
-    for i in range(n_nodes):
-        for j in range(i + 1, n_nodes):
-            dist = np.linalg.norm(coords[i] - coords[j])
-            if dist <= distance_threshold:
-                edge_index.append([i, j])
-                edge_index.append([j, i])  # Add reverse edge for undirected graph
-    
-    if len(edge_index) == 0:
-        return None
-    
-    edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
-    
-    # Create node features (amino acid type + position)
-    aa_to_id = {aa: i+1 for i, aa in enumerate("ACDEFGHIKLMNPQRSTVWY")}
-    node_features = []
-    for aa in amino_acids:
-        aa_1letter = processor.amino_acids_3to1.get(aa, 'X')
-        node_features.append(aa_to_id.get(aa_1letter, 1))  # Use 1 for unknown
-    
-    x = torch.tensor(node_features, dtype=torch.long).unsqueeze(1).float()
-    
-    # Create PyG Data object
-    data = Data(x=x, edge_index=edge_index)
-    return data
-
-def prepare_structural_data(pdb_dir, pdb_ids, chain_ids):
-    """
-    Prepare structural data for all proteins
-    """
-    structural_data = []
-    for pdb_id, chain_id in zip(pdb_ids, chain_ids):
-        pdb_file = os.path.join(pdb_dir, f"{pdb_id}.pdb")
-        if os.path.exists(pdb_file):
-            graph = create_protein_graph(pdb_file, chain_id)
-            structural_data.append(graph)
-        else:
-            structural_data.append(None)
-    
-    return structural_data
-
 def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, lr=0.001):
     """
     Training function for the combined model
@@ -816,13 +852,17 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
         
         for batch_idx, batch in enumerate(train_loader):
             # Extract sequence data
-            sequences = batch[0].to(device)
-            attention_mask = batch[1].to(device)
-            ddg_values = batch[2].to(device)
+            sequences = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            ddg_values = batch['labels'].to(device)
+            gnn_data = batch['structures'].to(device)
             
             # Extract structural data if available
             # In a real scenario, you would pass structural data as well
-            gnn_data = None  # Placeholder - would contain PyG Data objects
+            # gnn_data = None  # Placeholder - would contain PyG Data objects
+            # gnn_data is from train_dataloader
+            # gnn_data = None  # Placeholder - would contain PyG Data objects
+
             
             optimizer.zero_grad()
             
@@ -853,6 +893,29 @@ def train_ddg_model_with_gnn_prior(model, train_loader, val_loader, epochs=50, l
 
         writer.add_scalar('Loss/Train', train_loss/len(train_loader), global_step=epoch)
 
+
+def create_pyg_dataset(graph_list):
+    """
+    Convert to PyTorch Geometric Data objects
+    """
+    pyg_data_list = []
+    
+    for graph in graph_list:
+        # Create PyG Data object
+        data = Data(
+            x=graph.node_features,      # Node features
+            edge_index=graph.edge_index, # Edge connectivity
+            y=graph.labels              # Labels
+        )
+        
+        if graph.edge_features is not None:
+            data.edge_attr = graph.edge_features
+        
+        pyg_data_list.append(data)
+    
+    return pyg_data_list
+
+
 def main_with_gnn_prior():
     """
     Main function with GNN structural prior integration
@@ -865,12 +928,32 @@ def main_with_gnn_prior():
         './reasoning/project1_GNN_prior/data/s669/ddG_experimental/ddg.csv', 
         enhanced_encoding=True, 
         test_size=0.2, 
-        batch_size=2)
+        batch_size=1)
+
+    ######################################################################################### 
+    
+    # Create the combined model with GNN prior
+    model = DDGTransformerWithGNNPrior(
+        vocab_size=25, 
+        max_seq_len=1000, 
+        d_model=64, 
+        nhead=4, 
+        num_layers=2,
+        gnn_output_dim=64,
+        fusion_dim=128
+    )
+
+    print("Let the fun begin!")
+    
+    # Training with the combined model
+    train_ddg_model_with_gnn_prior(model, train_dataloader, val_dataloader, 
+                                   epochs=100, lr=0.0001)
 
     #===================================================================
     train_sequence_ids = []
     train_sequence_attention_mask = []
     train_ddg_tensor = []
+    train_structure_tensor = []
 
     for i in range(len(train_dataloader.dataset)):
         sample = train_dataloader.dataset[i]
@@ -880,11 +963,15 @@ def main_with_gnn_prior():
         train_sequence_ids.append(train_input_ids)
         train_sequence_attention_mask.append(train_attention_mask)
         train_ddg_tensor.append(train_label)
+        train_structure = sample['structures']
+        train_structure_tensor.append(train_structure)
         # print(f"sample: {i} -> {sample}")
 
     train_sequence_ids = torch.stack(train_sequence_ids, dim = 0)    
     train_sequence_attention_mask = torch.stack(train_sequence_attention_mask, dim = 0)
     train_ddg_tensor = torch.tensor(train_ddg_tensor, dtype=torch.float)
+
+
 
     train_dataset = TensorDataset(train_sequence_ids, train_sequence_attention_mask, train_ddg_tensor)
     train_dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True)
@@ -944,25 +1031,6 @@ def main_with_gnn_prior():
     # print(f"Predictions: {predictions}")
     # print(f"DDG values: {ddg_values}")
 
-
-    ######################################################################################### 
-    
-    # Create the combined model with GNN prior
-    model = DDGTransformerWithGNNPrior(
-        vocab_size=25, 
-        max_seq_len=1000, 
-        d_model=64, 
-        nhead=4, 
-        num_layers=2,
-        gnn_output_dim=64,
-        fusion_dim=128
-    )
-
-    print("Let the fun begin!")
-    
-    # Training with the combined model
-    train_ddg_model_with_gnn_prior(model, train_dataloader, val_dataloader, 
-                                   epochs=100, lr=0.0001)
 
 if __name__ == "__main__":
     main_with_gnn_prior()
