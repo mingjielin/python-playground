@@ -1,0 +1,61 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: paper.aux
+The style file: plainnat.bst
+Database file #1: citations.bib
+Warning--I didn't find a database entry for "jing2021learning"
+Warning--I didn't find a database entry for "capriotti2005mutant"
+Warning--I didn't find a database entry for "cheng2006prediction"
+Warning--I didn't find a database entry for "meier2021language"
+Warning--I didn't find a database entry for "rives2021biological"
+Warning--I didn't find a database entry for "li2020predicting"
+Warning--I didn't find a database entry for "cao2019deepddg"
+Warning--I didn't find a database entry for "zhou2020mutation"
+Warning--I didn't find a database entry for "kipf2017semi"
+Warning--I didn't find a database entry for "velivckovic2018graph"
+Warning--I didn't find a database entry for "vaswani2017attention"
+Warning--I didn't find a database entry for "rao2021transformer"
+Warning--I didn't find a database entry for "klicpera2019diffusion"
+Warning--I didn't find a database entry for "li2020deepergcn"
+You've used 11 entries,
+            2773 wiz_defined-function locations,
+            714 strings with 9316 characters,
+and the built_in function-call counts, 9165 in all, are:
+= -- 759
+> -- 914
+< -- 3
++ -- 304
+- -- 293
+* -- 947
+:= -- 1504
+add.period$ -- 56
+call.type$ -- 11
+change.case$ -- 129
+chr.to.int$ -- 11
+cite$ -- 22
+duplicate$ -- 244
+empty$ -- 453
+format.name$ -- 306
+if$ -- 1818
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 11
+newline$ -- 85
+num.names$ -- 46
+pop$ -- 221
+preamble$ -- 1
+purify$ -- 118
+quote$ -- 0
+skip$ -- 243
+stack$ -- 0
+substring$ -- 264
+swap$ -- 33
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 121
+warning$ -- 0
+while$ -- 50
+width$ -- 0
+write$ -- 194
+(There were 14 warnings)

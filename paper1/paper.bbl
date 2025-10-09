@@ -1,0 +1,128 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bashour et~al.(2024)Bashour, Smorodina, Pariset, Zhong, Akbar,
+  Chernigovskaya, L{\^e}~Qu{\'y}, Snapkow, Rawat, Krawczyk, Sandve,
+  Gutierrez-Marcos, Gutierrez, Andersen, and Greiff]{Bashour2024}
+Habib Bashour, Eva Smorodina, Matteo Pariset, Jahn Zhong, Rahmad Akbar, Maria
+  Chernigovskaya, Khang L{\^e}~Qu{\'y}, Igor Snapkow, Puneet Rawat, Konrad
+  Krawczyk, Geir~Kjetil Sandve, Jose Gutierrez-Marcos, Daniel Nakhaee-Zadeh
+  Gutierrez, Jan~Terje Andersen, and Victor Greiff.
+\newblock Biophysical cartography of the native and human-engineered antibody
+  landscapes quantifies the plasticity of antibody developability.
+\newblock \emph{Communications Biology}, 7\penalty0 (1):\penalty0 922, Jul
+  2024.
+\newblock ISSN 2399-3642.
+\newblock \doi{10.1038/s42003-024-06561-3}.
+\newblock URL \url{https://doi.org/10.1038/s42003-024-06561-3}.
+
+\bibitem[Braun et~al.(2024)Braun, Tripp, Chakatok, Kaltenbrunner, Totaro,
+  Stoll, Bijelic, Elaily, Hoch, Aleotti, Hall, and Oberdorfer]{Braun2024}
+Markus Braun, Adrian Tripp, Morakot Chakatok, Sigrid Kaltenbrunner, Massimo
+  Totaro, David Stoll, Aleksandar Bijelic, Wael Elaily, Shlomo~Yakir Hoch,
+  Matteo Aleotti, M{\'e}lanie Hall, and Gustav Oberdorfer.
+\newblock Computational design of highly active de novo enzymes.
+\newblock \emph{bioRxiv}, 2024.
+\newblock \doi{10.1101/2024.08.02.606416}.
+\newblock URL
+  \url{https://www.biorxiv.org/content/early/2024/08/03/2024.08.02.606416}.
+
+\bibitem[Braun et~al.(2025)Braun, Tripp, Chakatok, Kaltenbrunner, Fischer,
+  Stoll, Bijelic, Elaily, Totaro, Moser, Hoch, Lechner, Rossi, Aleotti, Hall,
+  and Oberdorfer]{Braun2024.08.02.606416}
+Markus Braun, Adrian Tripp, Morakot Chakatok, Sigrid Kaltenbrunner, Celina
+  Fischer, David Stoll, Aleksandar Bijelic, Wael Elaily, Massimo~G. Totaro,
+  Melanie Moser, Shlomo~Y. Hoch, Horst Lechner, Federico Rossi, Matteo Aleotti,
+  M{\'e}lanie Hall, and Gustav Oberdorfer.
+\newblock Computational enzyme design by catalytic motif scaffolding.
+\newblock \emph{bioRxiv}, 2025.
+\newblock \doi{10.1101/2024.08.02.606416}.
+\newblock URL
+  \url{https://www.biorxiv.org/content/early/2025/06/11/2024.08.02.606416}.
+
+\bibitem[Jain et~al.(2017)Jain, Sun, Durand, Hall, Houston, Nett, Sharkey,
+  Bobrowicz, Caffry, Yu, Cao, Lynaugh, Brown, Baruah, Gray, Krauland, Xu,
+  Vásquez, and Wittrup]{Jain2017}
+Tanya Jain, Tong Sun, Stéphane Durand, Andrew Hall, Nathan~R. Houston,
+  Jason~H. Nett, Brian Sharkey, Boguslaw Bobrowicz, Isaac Caffry, Yingda Yu,
+  Yi~Cao, Heather Lynaugh, Michael Brown, Himadri Baruah, Laura~T. Gray,
+  Eric~M. Krauland, Yan Xu, Martha Vásquez, and K.~Dane Wittrup.
+\newblock Biophysical properties of the clinical-stage antibody landscape.
+\newblock \emph{Proceedings of the National Academy of Sciences of the United
+  States of America}, 114\penalty0 (5):\penalty0 944--949, January 2017.
+\newblock \doi{10.1073/pnas.1616408114}.
+\newblock URL \url{https://doi.org/10.1073/pnas.1616408114}.
+
+\bibitem[Kellogg et~al.(2011)Kellogg, Leaver-Fay, and Baker]{Kellogg2011}
+Elizabeth~H. Kellogg, Andrew Leaver-Fay, and David Baker.
+\newblock Role of conformational sampling in computing mutation-induced changes
+  in protein structure and stability.
+\newblock \emph{Proteins: Structure, Function, and Bioinformatics}, 79\penalty0
+  (3):\penalty0 830--838, March 2011.
+\newblock \doi{10.1002/prot.22921}.
+\newblock URL \url{https://doi.org/10.1002/prot.22921}.
+
+\bibitem[Listov et~al.(2025)Listov, Vos, Hoffka, Hoch, Berg, Hamer-Rogotner,
+  Dym, Kamerlin, and Fleishman]{Listov2025}
+Dina Listov, Eva Vos, Gyula Hoffka, Shlomo~Yakir Hoch, Andrej Berg, Shelly
+  Hamer-Rogotner, Orly Dym, Shina Caroline~Lynn Kamerlin, and Sarel~J.
+  Fleishman.
+\newblock Complete computational design of high-efficiency kemp elimination
+  enzymes.
+\newblock \emph{Nature}, 643\penalty0 (8074):\penalty0 1421--1427, Jul 2025.
+\newblock ISSN 1476-4687.
+\newblock \doi{10.1038/s41586-025-09136-2}.
+\newblock URL \url{https://doi.org/10.1038/s41586-025-09136-2}.
+
+\bibitem[Meier et~al.(2021)Meier, Rao, Verkuil, Liu, Sercu, and
+  Rives]{NEURIPS2021_f51338d7}
+Joshua Meier, Roshan Rao, Robert Verkuil, Jason Liu, Tom Sercu, and Alex Rives.
+\newblock Language models enable zero-shot prediction of the effects of
+  mutations on protein function.
+\newblock In M.~Ranzato, A.~Beygelzimer, Y.~Dauphin, P.S. Liang, and J.~Wortman
+  Vaughan, editors, \emph{Advances in Neural Information Processing Systems},
+  volume~34, pages 29287--29303. Curran Associates, Inc., 2021.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper_files/paper/2021/file/f51338d736f95dd42427296047067694-Paper.pdf}.
+
+\bibitem[Schymkowitz et~al.(2005)Schymkowitz, Borg, Stricher, Nys, Rousseau,
+  and Serrano]{Schymkowitz2005}
+Joost Schymkowitz, Jan Borg, Florian Stricher, Robin Nys, Frederic Rousseau,
+  and Luis Serrano.
+\newblock The foldx web server: an online force field.
+\newblock \emph{Nucleic Acids Research}, 33\penalty0 (Web Server
+  issue):\penalty0 W382--W388, July 2005.
+\newblock \doi{10.1093/nar/gki387}.
+\newblock URL \url{https://doi.org/10.1093/nar/gki387}.
+
+\bibitem[Tokuriki and Tawfik(2009)]{tokuriki2009stability}
+Nobuhiko Tokuriki and Dan~S Tawfik.
+\newblock Stability effects of mutations and protein evolvability.
+\newblock \emph{Current Opinion in Structural Biology}, 19\penalty0
+  (5):\penalty0 596--604, 2009.
+\newblock \doi{10.1016/j.sbi.2009.08.003}.
+
+\bibitem[Yue et~al.(2005)Yue, Li, and Moult]{Yue2005}
+Peiqi Yue, Zhen Li, and John Moult.
+\newblock Loss of protein structure stability as a major causative factor in
+  monogenic disease.
+\newblock \emph{Journal of Molecular Biology}, 353\penalty0 (2):\penalty0
+  459--473, October 2005.
+\newblock \doi{10.1016/j.jmb.2005.08.020}.
+
+\bibitem[Zhou et~al.(2023)Zhou, Pan, Pires, Rodrigues, and Ascher]{Zhou2023}
+Yunzhuo Zhou, Qisheng Pan, Douglas E~V Pires, Carlos H~M Rodrigues, and
+  David B Ascher.
+\newblock Ddmut: predicting effects of mutations on protein stability using
+  deep learning.
+\newblock \emph{Nucleic Acids Research}, 51\penalty0 (W1):\penalty0 W122--W128,
+  06 2023.
+\newblock ISSN 0305-1048.
+\newblock \doi{10.1093/nar/gkad472}.
+\newblock URL \url{https://doi.org/10.1093/nar/gkad472}.
+
+\end{thebibliography}
