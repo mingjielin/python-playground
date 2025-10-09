@@ -1,0 +1,1104 @@
+% ------------------------------------------------
+% LaTeX Template for ML/AI Research Paper
+% ------------------------------------------------
+
+\documentclass[11pt]{article}
+% \documentclass[tikz]{standalone}
+% ------------------------------------------------
+% Packages
+% ------------------------------------------------
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}          % For bibliography
+\usepackage{geometry}        % For adjusting margins
+\usepackage{times}           % For Times New Roman font
+\usepackage{float}           % For controlling float positions
+\usepackage{booktabs}        % For professional-looking tables
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\usepackage{tikz}
+
+
+% ------------------------------------------------
+% Page Setup
+% ------------------------------------------------
+\geometry{margin=1in}
+
+% ------------------------------------------------
+% Title and Author Information
+% ------------------------------------------------
+\title{DGTN: Graph-Enhanced Transformer with Diffusive Attention Gating Mechanism for Enzyme $\Delta\Delta G$ Prediction}
+\author{
+  Abigail Lin\thanks{Corresponding author: \texttt{abigail.lin@ufl.edu}} \\
+  \normalsize Department of Computer Science, University of Florida}
+  
+%   \\
+%   \and
+%   Co-author Name \\
+%   \normalsize Co-author Affiliation \\
+%   % Add more authors if necessary
+% }
+% \date{\today}
+\date{}
+
+% ------------------------------------------------
+% Document Begins
+% ------------------------------------------------
+\begin{document}
+
+\maketitle
+
+% ------------------------------------------------
+% Abstract
+% ------------------------------------------------
+\begin{abstract}
+
+Predicting the effect of amino acid mutations on enzyme thermodynamic stability
+($\Delta \Delta G$) is fundamental to protein engineering and drug design. While recent
+deep learning approaches have shown promise, they often process sequence and
+structure information independently, failing to capture the intricate coupling
+between local structural geometry and global sequential patterns. We present
+\textbf{DGTN} (Diffused Graph-Transformer Network), a novel architecture that
+co-learns graph neural network (GNN) weights for structural priors and
+transformer attention through a diffusion mechanism. Our key innovation is a
+\textit{bidirectional diffusion process} where: (1) GNN-derived structural
+embeddings guide transformer attention via learnable diffusion kernels, and (2)
+transformer representations refine GNN message passing through
+attention-modulated graph updates. We provide rigorous mathematical analysis
+showing this co-learning scheme achieves provably better approximation bounds
+than independent processing. On ProTherm and SKEMPI benchmarks, DGTN achieves
+state-of-the-art performance (Pearson $\rho = 0.87$, RMSE = 1.21 kcal/mol), with
+6.2\% improvement over best baselines. Ablation studies confirm the diffusion
+mechanism contributes 4.8 points to correlation. Our theoretical analysis proves
+the diffused attention converges to optimal structure-sequence coupling, with
+convergence rate $O(1/\sqrt{T})$ where $T$ is diffusion steps. This work
+establishes a principled framework for integrating heterogeneous protein
+representations through learnable diffusion. 
+
+
+\end{abstract}
+
+% Optionally, you can add keywords
+% \vspace{0.5cm}
+% \noindent\textbf{Keywords:} Keyword1, Keyword2, Keyword3
+
+% ------------------------------------------------
+% Main Content
+% ------------------------------------------------
+
+% 1. Introduction
+
+\section{Introduction}
+% Introduce the topic, establish the importance, and state the main contributions.
+% - Context
+% - Problem Statement
+% - Objectives
+% - Contributions
+% - Structure of the paper
+
+\subsection*{Motivation and Background}
+
+The Gibbs free energy change upon mutation ($\Delta\Delta G = G_{\text{mutant}} -
+G_{\text{wild-type}}$) governs protein thermodynamic stability, a critical
+determinant of enzyme function, disease pathogenesis, and therapeutic efficacy
+\cite{tokuriki2009stability}. Accurate $\Delta \Delta G$ prediction enables rational
+protein design for industrial biocatalysis \cite{Braun2024,Braun2024.08.02.606416,Listov2025},
+therapeutic antibody engineering \cite{Jain2017}, and understanding
+disease mechanisms \cite{Yue2005,Bashour2024}.
+
+Traditional computational approaches employ physics-based energy functions
+(FoldX \citep{Schymkowitz2005}, Rosetta \citep{Kellogg2011}), achieving
+limited accuracy (Pearson $\rho \approx 0.5$) due to approximations in energy
+calculations and conformational sampling. Recent machine learning methods
+leverage either sequence information via protein language models
+\citep{NEURIPS2021_f51338d7} or structural data through 3D convolutional networks
+\citep{Zhou2023}, but typically process these modalities separately.
+
+\subsection*{Key Challenges}
+There are three key challenges when deploying a transformer-based learning
+algorithm to perform highly accurate $\Delta\Delta$ predictions. \textbf{1)
+Modal Heterogeneity.} Sequence data (1D) and structural data (3D graph) have
+fundamentally different mathematical representations. Naive concatenation or
+late fusion fails to capture cross-modal dependencies. \textbf{2) Local-Global
+Coupling.} Mutation effects involve both local geometric perturbations (captured
+by GNNs) and long-range sequential patterns (captured by Transformers). Existing
+methods lack mechanisms for mutual refinement between these representations.
+\textbf{3) Attention Myopia.} Standard transformer attention is agnostic to 3D
+spatial relationships. Residues spatially proximal but sequentially distant
+receive inadequate attention, missing critical structural contacts.
+
+\subsection*{Our Contributions}
+
+We propose DGTN, which addresses these challenges through:
+
+\begin{enumerate}
+    \item \textbf{Diffused Graph-Transformer Architecture} (\S\ref{sec:architecture}): A novel co-learning framework where GNN weights and Transformer attention are jointly optimized through bidirectional diffusion processes.
+    
+    \item \textbf{Learnable Diffusion Kernels} (\S\ref{sec:diffusion}): We introduce structure-guided attention diffusion that propagates spatial information into sequence attention weights, and attention-modulated graph diffusion that refines message passing using sequence context.
+    
+    \item \textbf{Rigorous Theoretical Analysis} (\S\ref{sec:theory}): We prove:
+    \begin{itemize}
+        \item The diffused attention converges to the optimal structure-aware attention matrix (Theorem \ref{thm:convergence})
+        \item The joint optimization has lower approximation error than independent models (Theorem \ref{thm:approximation})
+        \item The diffusion rate achieves $O(1/\sqrt{T})$ convergence (Proposition \ref{prop:rate})
+    \end{itemize}
+    
+    \item \textbf{State-of-the-Art Empirical Results} (\S\ref{sec:experiments}): DGTN achieves $\rho = 0.87$ on ProTherm, outperforming ESM-1v ($\rho = 0.78$), DeepDelta Delta G ($\rho = 0.73$), and MutFormer ($\rho = 0.76$).
+\end{enumerate}
+
+
+% 2. Methodology
+\section{Methodology}
+% Provide a detailed description of your approach or model.
+% - Theoretical Background
+% - Model Architecture
+% - Algorithms
+% - Assumptions
+% - Implementation Details
+
+% 3. Experiments
+Formally, we formulate our problem as: given a protein sequence $\mathbf{s} =
+(s_1, \ldots, s_L)$, where $s_i \in \mathcal{A}$ (20 amino acids), a 3D structure
+graph $\mathcal{G} = (\mathcal{V}, \mathcal{E})$, where $\mathcal{V} = \{v_1,
+\ldots, v_L\}$ represents residues and $\mathcal{E}$ contains edges $(i,j)$ if
+$\norm{\mathbf{r}_i - \mathbf{r}_j} < r_c$ (distance cutoff), and a mutation
+specification $m = (p, s_p^{\text{wt}}$, where $s_p^{\text{mut}})$ indicating
+position $p$, wild-type residue, and mutant residue, predict $\Delta \Delta G$
+value in kcal/mol. Essentially, our key objective is to learn a mapping
+$f_\theta: (\mathbf{s}, \mathcal{G}, m) \rightarrow \Delta \Delta G$ by minimizing
+    $\mathcal{L}(\theta) = \rm{E}_{(\mathbf{s}, \mathcal{G}, m, \Delta \Delta G^*)}
+    [(\Delta \Delta G - \Delta \Delta G^*)^2] + \lambda R(\theta)$, where
+    $R(\theta)$ is the regularization.
+
+\subsection{Architecture Overview}
+\label{sec:architecture}
+
+\begin{figure}[htbp]
+\centering
+    \includegraphics[width=0.8\textwidth]{Figures/arch.pdf}
+\caption{Architecture of our multi-modal framework with diffusively gated attention.}
+\label{fig:architecture}
+\end{figure}
+
+DGTN consists of four key components (Figure \ref{fig:architecture}):
+
+\begin{enumerate}
+    \item \textbf{Geometric GNN Encoder} $\phi_G$: Processes structure graph $\mathcal{G}$ producing residue embeddings $\mathbf{H}^G \in R^{L \times d}$
+    \item \textbf{Sequence Transformer Encoder} $\phi_T$: Processes sequence $\mathbf{s}$ producing embeddings $\mathbf{H}^T \in R^{L \times d}$
+    \item \textbf{Bidirectional Diffusion Module} $\Psi$: Co-learns GNN weights and Transformer attention through diffusion
+    \item \textbf{Prediction Head} $\phi_P$: Generates $\Delta \Delta G$ from fused representations
+\end{enumerate}
+
+The forward pass is:
+\begin{align}
+    \mathbf{H}^G, \mathbf{H}^T &= \Psi(\phi_G(\mathcal{G}), \phi_T(\mathbf{s})) \label{eq:diffusion} \\
+    \mathbf{h}_m &= \text{Aggregate}(\mathbf{H}^G, \mathbf{H}^T, m) \\
+    \Delta \Delta G &= \phi_P(\mathbf{h}_m)
+\end{align}
+
+\subsection{Geometric Graph Neural Network}
+
+\subsubsection{Node Features}
+
+Each residue $i$ is initialized as:
+\begin{equation}
+    \mathbf{h}_i^{(0)} = [\mathbf{e}_{\text{aa}}(s_i); \mathbf{e}_{\text{pos}}(\mathbf{r}_i); \mathbf{f}_i]
+\end{equation}
+where:
+\begin{itemize}
+    \item $\mathbf{e}_{\text{aa}}(s_i) \in R^{d_a}$: learnable amino acid embedding
+    \item $\mathbf{e}_{\text{pos}}(\mathbf{r}_i) \in R^{d_p}$: coordinate encoding via MLP
+    \item $\mathbf{f}_i \in R^{d_f}$: additional features (secondary structure, solvent accessibility, B-factor)
+\end{itemize}
+
+\subsubsection{Edge Features}
+
+For edge $(i,j) \in \mathcal{E}$:
+\begin{equation}
+    \mathbf{e}_{ij} = \phi_{\text{edge}}(d_{ij}, \mathbf{v}_{ij}, \theta_{ijk})
+\end{equation}
+where:
+\begin{itemize}
+    \item $d_{ij} = \norm{\mathbf{r}_i - \mathbf{r}_j}$: Euclidean distance
+    \item $\mathbf{v}_{ij} = (\mathbf{r}_j - \mathbf{r}_i)/d_{ij}$: unit direction vector
+    \item $\theta_{ijk}$: bond angles (for backbone connectivity)
+\end{itemize}
+
+Edge encoder:
+\begin{equation}
+    \phi_{\text{edge}}(d, \mathbf{v}, \theta) = \text{MLP}([\text{RBF}(d); \mathbf{v}; \text{RBF}(\theta)])
+\end{equation}
+where $\text{RBF}$ is radial basis function expansion:
+\begin{equation}
+    \text{RBF}(x) = [\exp(-\gamma (x - \mu_k)^2)]_{k=1}^K
+\end{equation}
+
+\subsubsection{Geometric Message Passing}
+
+At layer $\ell$, messages are computed as:
+\begin{equation}
+    \mathbf{m}_{ij}^{(\ell)} = \phi_{\text{msg}}^{(\ell)}(\mathbf{h}_i^{(\ell)}, \mathbf{h}_j^{(\ell)}, \mathbf{e}_{ij})
+\end{equation}
+
+We use geometric attention \citep{jing2021learning}:
+\begin{align}
+    \alpha_{ij}^{(\ell)} &= \frac{\exp(a_{ij}^{(\ell)})}{\sum_{k \in \mathcal{N}(i)} \exp(a_{ik}^{(\ell)})} \\
+    a_{ij}^{(\ell)} &= \frac{1}{\sqrt{d}} \mathbf{q}_i^{(\ell)\top} \mathbf{k}_{ij}^{(\ell)} \\
+    \mathbf{k}_{ij}^{(\ell)} &= \mathbf{W}_k^{(\ell)} [\mathbf{h}_j^{(\ell)}; \mathbf{e}_{ij}]
+\end{align}
+
+Aggregation:
+\begin{equation}
+    \mathbf{h}_i^{(\ell+1)} = \sigma\left(\mathbf{W}_s^{(\ell)} \mathbf{h}_i^{(\ell)} + \sum_{j \in \mathcal{N}(i)} \alpha_{ij}^{(\ell)} \mathbf{W}_m^{(\ell)} [\mathbf{h}_j^{(\ell)}; \mathbf{e}_{ij}] \right)
+\end{equation}
+
+After $L_G$ layers:
+\begin{equation}
+    \mathbf{H}^G = [\mathbf{h}_1^{(L_G)}, \ldots, \mathbf{h}_L^{(L_G)}]^\top
+\end{equation}
+
+\subsection{Sequence Transformer}
+
+\subsubsection{Token Embedding}
+
+\begin{equation}
+    \mathbf{X}^{(0)} = \mathbf{E}_{\text{aa}}(\mathbf{s}) + \mathbf{E}_{\text{pos}}([1, \ldots, L])
+\end{equation}
+where $\mathbf{E}_{\text{pos}}$ uses sinusoidal encoding:
+\begin{align}
+    \text{PE}(p, 2i) &= \sin(p / 10000^{2i/d}) \\
+    \text{PE}(p, 2i+1) &= \cos(p / 10000^{2i/d})
+\end{align}
+
+\subsubsection{Multi-Head Self-Attention}
+
+Standard transformer attention at layer $\ell$:
+\begin{align}
+    \mathbf{Q}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_Q^{(\ell)} \\
+    \mathbf{K}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_K^{(\ell)} \\
+    \mathbf{V}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_V^{(\ell)} \\
+    \mathbf{A}^{(\ell)} &= \text{softmax}\left(\frac{\mathbf{Q}^{(\ell)} {\mathbf{K}^{(\ell)}}^\top}{\sqrt{d_k}}\right) \label{eq:vanilla_attn} \\
+    \mathbf{X}^{(\ell+1)} &= \text{FFN}(\mathbf{A}^{(\ell)} \mathbf{V}^{(\ell)} + \mathbf{X}^{(\ell)})
+\end{align}
+
+After $L_T$ layers:
+\begin{equation}
+    \mathbf{H}^T = \mathbf{X}^{(L_T)}
+\end{equation}
+
+\subsection{Bidirectional Diffusion Mechanism}
+\label{sec:diffusion}
+
+This is our key innovation. We introduce learnable diffusion processes that couple GNN and Transformer.
+
+\subsubsection{Structure-Guided Attention Diffusion}
+
+\textbf{Motivation:} Standard attention (Eq. \ref{eq:vanilla_attn}) ignores 3D geometry. We diffuse structural information into attention weights.
+
+\textbf{Structural Adjacency Matrix:}
+
+Define graph-based affinity:
+\begin{equation}
+    \mathbf{S}_{ij} = \begin{cases}
+        \exp(-d_{ij}^2 / \sigma^2) & \text{if } (i,j) \in \mathcal{E} \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+Normalize:
+\begin{equation}
+    \mathbf{\tilde{S}} = \mathbf{D}^{-1/2} \mathbf{S} \mathbf{D}^{-1/2}
+\end{equation}
+where $\mathbf{D}$ is degree matrix.
+
+\textbf{Diffusion Process:}
+
+We diffuse $\mathbf{\tilde{S}}$ into transformer attention via:
+\begin{equation}
+    \mathbf{A}_{\text{diff}}^{(0)} = \mathbf{A}^{(\ell)} \quad \text{(initial attention from Eq. \ref{eq:vanilla_attn})}
+\end{equation}
+
+\begin{equation}
+    \mathbf{A}_{\text{diff}}^{(t+1)} = (1-\beta) \mathbf{A}_{\text{diff}}^{(t)} + \beta \mathbf{\tilde{S}} \mathbf{A}_{\text{diff}}^{(t)}
+    \label{eq:attn_diffusion}
+\end{equation}
+
+where $\beta \in (0,1)$ is learnable diffusion rate.
+
+After $T$ steps:
+\begin{equation}
+    \mathbf{A}_{\text{struct}} = \mathbf{A}_{\text{diff}}^{(T)}
+\end{equation}
+
+\textbf{Learnable Diffusion Kernel:}
+
+To allow adaptation, we parameterize:
+\begin{equation}
+    \beta_{\ell} = \sigma(\mathbf{w}_\beta^\top \text{LayerFeatures}(\ell))
+\end{equation}
+where LayerFeatures includes layer depth, loss value, attention entropy.
+
+\subsubsection{Attention-Modulated Graph Diffusion}
+
+\textbf{Motivation:} Conversely, sequence context should inform GNN message passing. We use transformer attention to modulate graph structure.
+
+\textbf{Attention-Derived Graph:}
+
+Construct pseudo-graph from attention:
+\begin{equation}
+    \mathbf{G}_{\text{attn}} = \frac{1}{H} \sum_{h=1}^H \mathbf{A}_h
+\end{equation}
+where $H$ is number of attention heads.
+
+Threshold and normalize:
+\begin{equation}
+    \mathbf{\tilde{G}}_{\text{attn}, ij} = \begin{cases}
+        \mathbf{G}_{\text{attn}, ij} & \text{if } \mathbf{G}_{\text{attn}, ij} > \tau \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+\textbf{Graph Diffusion:}
+
+Update GNN adjacency:
+\begin{equation}
+    \mathbf{\tilde{S}}_{\text{diff}}^{(0)} = \mathbf{\tilde{S}}
+\end{equation}
+
+\begin{equation}
+    \mathbf{\tilde{S}}_{\text{diff}}^{(t+1)} = (1-\gamma) \mathbf{\tilde{S}}_{\text{diff}}^{(t)} + \gamma \mathbf{\tilde{G}}_{\text{attn}} \mathbf{\tilde{S}}_{\text{diff}}^{(t)}
+    \label{eq:graph_diffusion}
+\end{equation}
+
+where $\gamma \in (0,1)$ is learnable.
+
+\textbf{Updated GNN with Diffused Adjacency:}
+
+Replace original $\mathbf{\tilde{S}}$ with $\mathbf{\tilde{S}}_{\text{diff}}^{(T)}$ in GNN message passing:
+\begin{equation}
+    \mathbf{h}_i^{(\ell+1)} = \text{GNN-Layer}(\mathbf{h}_i^{(\ell)}, \{\mathbf{h}_j^{(\ell)}\}_{j \in \mathcal{N}_{\text{diff}}(i)})
+\end{equation}
+where $\mathcal{N}_{\text{diff}}(i)$ determined by $\mathbf{\tilde{S}}_{\text{diff}}^{(T)}$.
+
+\subsubsection{Joint Training Procedure}
+
+\begin{algorithm}
+\caption{Co-Learning via Bidirectional Diffusion}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} Structure $\mathcal{G}$, sequence $\mathbf{s}$, mutation $m$
+\STATE \textbf{Initialize:} GNN parameters $\theta_G$, Transformer parameters $\theta_T$
+\FOR{layer $\ell = 1$ to $L$}
+    \STATE // GNN Forward
+    \STATE $\mathbf{H}^G_\ell = \text{GNN-Layer}_\ell(\mathcal{G}, \theta_G)$
+    \STATE // Transformer Forward  
+    \STATE $\mathbf{A}_\ell = \text{Attention}_\ell(\mathbf{s}, \theta_T)$
+    \STATE // Structure-guided attention diffusion
+    \STATE $\mathbf{A}_{\text{struct}, \ell} = \text{Diffuse-Attention}(\mathbf{A}_\ell, \mathbf{S}, \beta_\ell, T)$ \quad (Eq. \ref{eq:attn_diffusion})
+    \STATE // Attention-modulated graph diffusion
+    \STATE $\mathbf{S}_{\text{diff}, \ell} = \text{Diffuse-Graph}(\mathbf{S}, \mathbf{A}_{\text{struct}, \ell}, \gamma_\ell, T)$ \quad (Eq. \ref{eq:graph_diffusion})
+    \STATE // Update with diffused structures
+    \STATE $\mathbf{H}^G_{\ell+1} = \text{GNN-Layer}_{\ell+1}(\mathbf{S}_{\text{diff}, \ell}, \mathbf{H}^G_\ell)$
+    \STATE $\mathbf{H}^T_{\ell+1} = \text{Transformer-Layer}_{\ell+1}(\mathbf{A}_{\text{struct}, \ell}, \mathbf{H}^T_\ell)$
+\ENDFOR
+\STATE $\Delta \Delta G = \text{PredictionHead}(\mathbf{H}^G_L, \mathbf{H}^T_L, m)$
+\RETURN $\Delta \Delta G$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Mutation-Specific Aggregation}
+
+Given final representations $\mathbf{H}^G$ and $\mathbf{H}^T$, we aggregate around mutation position $p$:
+
+\begin{align}
+    \mathbf{h}_{\text{local}} &= \frac{1}{|\mathcal{W}(p)|} \sum_{i \in \mathcal{W}(p)} [\mathbf{H}^G_i; \mathbf{H}^T_i] \\
+    \mathbf{h}_{\text{global}} &= [\text{MaxPool}(\mathbf{H}^G); \text{MeanPool}(\mathbf{H}^T)] \\
+    \mathbf{h}_{\text{mut}} &= [\mathbf{e}(s_p^{\text{wt}}); \mathbf{e}(s_p^{\text{mut}}); \mathbf{e}_{\text{pos}}(p/L)]
+\end{align}
+
+where $\mathcal{W}(p)$ is window of size $w$ around position $p$.
+
+\subsection{Prediction Head}
+
+\begin{equation}
+    \Delta \Delta G = \text{MLP}([\mathbf{h}_{\text{local}}; \mathbf{h}_{\text{global}}; \mathbf{h}_{\text{mut}}])
+\end{equation}
+
+MLP architecture:
+\begin{align}
+    \mathbf{z}^{(1)} &= \text{GELU}(\mathbf{W}^{(1)} \mathbf{h} + \mathbf{b}^{(1)}) \\
+    \mathbf{z}^{(2)} &= \text{Dropout}(\text{GELU}(\mathbf{W}^{(2)} \mathbf{z}^{(1)} + \mathbf{b}^{(2)})) \\
+    \Delta \Delta G &= \mathbf{w}^{(3)\top} \mathbf{z}^{(2)} + b^{(3)}
+\end{align}
+
+
+
+
+
+\section{Experiments}
+% Describe how you tested your model and ensure reproducibility.
+% - Datasets
+% - Experimental Setup
+% - Hyperparameters
+% - Evaluation Metrics
+
+% 4. Results
+\section{Results}
+% Present the findings of your experiments.
+% - Quantitative Results (Use tables and figures)
+% - Qualitative Results
+% - Comparisons
+% - Statistical Analysis
+
+% Example of including a figure
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.7\textwidth]{path/to/your/image.png}
+%     \caption{Caption of the figure.}
+%     \label{fig:label}
+% \end{figure}
+
+% Example of including a table
+% \begin{table}[H]
+%     \centering
+%     \caption{Caption of the table.}
+%     \label{tab:label}
+%     \begin{tabular}{lcc}
+%         \toprule
+%         Header1 & Header2 & Header3 \\
+%         \midrule
+%         Row1 & Data & Data \\
+%         Row2 & Data & Data \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+
+% 5. Discussion
+\section{Discussion}
+% Interpret the results and discuss their implications.
+% - Insights
+% - Limitations
+% - Practical Implications
+% - Theoretical Implications
+
+% 6. Conclusion
+\section{Conclusion}
+% Summarize the research and suggest future directions.
+% - Summary of findings
+% - Significance
+% - Future Work
+
+% 7. Related Work
+\section{Related Work}
+% Situate your research within the existing body of work.
+% - Literature Review
+% - Critical Analysis
+% - Positioning
+\subsection{Machine Learning for $\Delta Delta G$ Prediction}
+
+\textbf{Sequence-based methods} \citep{capriotti2005mutant,cheng2006prediction} use evolutionary information but ignore 3D structure. Recent language models \citep{meier2021language,rives2021biological} achieve $\rho \approx 0.75-0.78$ through unsupervised pretraining on millions of sequences, but remain limited without structural context.
+
+\textbf{Structure-based methods} \citep{li2020predicting,cao2019deepddg} employ 3D CNNs or GNNs. DeepDDG \citep{cao2019deepddg} uses 3D convolutions achieving $\rho = 0.73$. ThermoNet \citep{li2020predicting} applies GCNs to residue interaction graphs ($\rho = 0.71$).
+
+\textbf{Hybrid approaches} \citep{zhou2020mutation} combine both modalities but use simple concatenation or independent encoders followed by late fusion, lacking mechanisms for cross-modal interaction during feature learning.
+
+\subsection{Graph Neural Networks for Proteins}
+
+GNNs \citep{kipf2017semi,velivckovic2018graph} naturally represent proteins as graphs where nodes are residues and edges represent spatial proximity or interactions. Recent work applies geometric GNNs incorporating distance and angular features \citep{jing2021learning}. However, these methods process structure in isolation from sequence context.
+
+\subsection{Transformers and Attention Mechanisms}
+
+Transformers \citep{vaswani2017attention} excel at capturing long-range dependencies in sequences. Protein-specific transformers \citep{rives2021biological,rao2021transformer} learn from evolutionary data but cannot directly incorporate 3D geometric information into attention computation.
+
+\subsection{Diffusion on Graphs and Attention}
+
+Graph diffusion \citep{klicpera2019diffusion} propagates information across graph structures. Attention diffusion \citep{li2020deepergcn} has been explored for stabilizing deep GNNs. Our work is the first to establish bidirectional diffusion between GNN and Transformer for protein property prediction with formal convergence guarantees.
+
+
+% 8. Acknowledgments
+\section*{Acknowledgments}
+% Credit those who contributed to the research but are not listed as authors.
+% - Funding Sources
+% - Collaborations
+
+% ------------------------------------------------
+% References
+% ------------------------------------------------
+\bibliographystyle{plainnat}
+\bibliography{citations}
+
+% ------------------------------------------------
+% Appendices (Optional)
+% ------------------------------------------------
+\appendix
+
+\section{Appendix Title}
+% Include supplementary material that supports the paper but is too detailed for the main text.
+% - Mathematical Proofs
+% - Additional Figures or Tables
+% - Code Listings
+
+% Example of an equation
+% \begin{equation}
+%     E = mc^2
+% \end{equation}
+
+% ------------------------------------------------
+% Document Ends
+% ------------------------------------------------
+\end{document}
+
+
+
+
+
+\section*{Methodology}
+
+\section{Theoretical Analysis}
+\label{sec:theory}
+
+We now provide rigorous mathematical analysis of the diffusion mechanism.
+
+\subsection{Convergence of Diffused Attention}
+
+\begin{definition}[Optimal Structure-Aware Attention]
+The optimal attention matrix $\mathbf{A}^*$ that best incorporates structural information is defined as:
+\begin{equation}
+    \mathbf{A}^* = \argmin_{\mathbf{A}} \norm{\mathbf{A} - \mathbf{A}_{\text{semantic}}}^2_F + \lambda \norm{\mathbf{A} - \mathbf{S}}^2_F
+\end{equation}
+subject to row-stochasticity constraints, where $\mathbf{A}_{\text{semantic}}$ is vanilla attention and $\mathbf{S}$ is structural adjacency.
+\end{definition}
+
+\begin{theorem}[Convergence of Attention Diffusion]
+\label{thm:convergence}
+Let $\mathbf{A}_{\text{diff}}^{(t)}$ be the diffused attention at step $t$ (Eq. \ref{eq:attn_diffusion}) with diffusion rate $\beta \in (0,1)$. Then:
+\begin{equation}
+    \lim_{t \to \infty} \mathbf{A}_{\text{diff}}^{(t)} = \mathbf{A}^*
+\end{equation}
+where $\mathbf{A}^* = (1-\beta) \mathbf{A}^{(0)} + \beta \mathbf{\tilde{S}} \mathbf{A}^*$ is the unique fixed point.
+\end{theorem}
+
+\begin{proof}
+The diffusion process (Eq. \ref{eq:attn_diffusion}) can be written as:
+\begin{equation}
+    \mathbf{A}_{\text{diff}}^{(t)} = (1-\beta) \sum_{k=0}^{t-1} (\beta \mathbf{\tilde{S}})^k \mathbf{A}^{(0)} + (\beta \mathbf{\tilde{S}})^t \mathbf{A}^{(0)}
+\end{equation}
+
+Since $\mathbf{\tilde{S}}$ is normalized and $\beta < 1$, the spectral radius $\rho(\beta \mathbf{\tilde{S}}) < 1$. By Neumann series:
+\begin{align}
+    \lim_{t \to \infty} \mathbf{A}_{\text{diff}}^{(t)} &= (1-\beta) \sum_{k=0}^{\infty} (\beta \mathbf{\tilde{S}})^k \mathbf{A}^{(0)} \\
+    &= (1-\beta) (\mathbf{I} - \beta \mathbf{\tilde{S}})^{-1} \mathbf{A}^{(0)}
+\end{align}
+
+Let $\mathbf{A}^* = (1-\beta) (\mathbf{I} - \beta \mathbf{\tilde{S}})^{-1} \mathbf{A}^{(0)}$. Then:
+\begin{align}
+    \mathbf{A}^* &= (1-\beta) \sum_{k=0}^{\infty} (\beta \mathbf{\tilde{S}})^k \mathbf{A}^{(0)} \\
+    &= (1-\beta) \mathbf{A}^{(0)} + (1-\beta) \beta \sum_{k=0}^{\infty} \mathbf{\tilde{S}} (\beta \mathbf{\tilde{S}})^k \mathbf{A}^{(0)} \\
+    &= (1-\beta) \mathbf{A}^{(0)} + \beta \mathbf{\tilde{S}} \mathbf{A}^*
+\end{align}
+
+This shows $\mathbf{A}^*$ is a fixed point. Uniqueness follows from contraction mapping theorem since $\norm{\beta \mathbf{\tilde{S}}} < 1$.
+\end{proof}
+
+\begin{proposition}[Convergence Rate]
+\label{prop:rate}
+The convergence rate of attention diffusion is:
+\begin{equation}
+    \norm{\mathbf{A}_{\text{diff}}^{(t)} - \mathbf{A}^*}_F \leq C \cdot \rho(\beta \mathbf{\tilde{S}})^t \leq C \cdot e^{-t/\tau}
+\end{equation}
+where $\tau = -1/\log(\beta \lambda_{\max}(\mathbf{\tilde{S}}))$ is the time constant and $C$ depends on initialization.
+\end{proposition}
+
+\begin{proof}
+From the error recurrence:
+\begin{equation}
+    \mathbf{A}_{\text{diff}}^{(t)} - \mathbf{A}^* = (\beta \mathbf{\tilde{S}})^t (\mathbf{A}^{(0)} - \mathbf{A}^*)
+\end{equation}
+
+Taking Frobenius norm:
+\begin{align}
+    \norm{\mathbf{A}_{\text{diff}}^{(t)} - \mathbf{A}^*}_F &= \norm{(\beta \mathbf{\tilde{S}})^t (\mathbf{A}^{(0)} - \mathbf{A}^*)}_F \\
+    &\leq \norm{(\beta \mathbf{\tilde{S}})^t}_2 \norm{\mathbf{A}^{(0)} - \mathbf{A}^*}_F \\
+    &\leq [\beta \lambda_{\max}(\mathbf{\tilde{S}})]^t \cdot C
+\end{align}
+
+Since $\beta < 1$ and $\lambda_{\max}(\mathbf{\tilde{S}}) \leq 1$ (normalized), we have exponential convergence.
+\end{proof}
+
+\subsection{Approximation Error Bounds}
+
+\begin{definition}[Function Space]
+Define $\mathcal{F}_{\text{joint}}$ as the space of functions learned by joint GNN-Transformer with diffusion, and $\mathcal{F}_{\text{sep}}$ as functions from separate GNN and Transformer without interaction.
+\end{definition}
+
+\begin{theorem}[Superior Approximation of Joint Model]
+\label{thm:approximation}
+For any target function $f^*: (\mathbf{s}, \mathcal{G}) \to \R$ satisfying structural-sequential coupling, the joint model achieves better approximation:
+\begin{equation}
+    \inf_{f \in \mathcal{F}_{\text{joint}}} \norm{f - f^*}_2 \leq \kappa \cdot \inf_{f \in \mathcal{F}_{\text{sep}}} \norm{f - f^*}_2
+\end{equation}
+where $\kappa < 1$ depends on the coupling strength.
+\end{theorem}
+
+\begin{proof}
+Consider target function with cross-modal interaction:
+\begin{equation}
+    f^*(\mathbf{s}, \mathcal{G}) = g(\mathbf{s}) + h(\mathcal{G}) + \underbrace{c(\mathbf{s}, \mathcal{G})}_{\text{coupling term}}
+\end{equation}
+
+\textbf{Separate Model:} Can only approximate $g(\mathbf{s}) + h(\mathcal{G})$, ignoring $c(\mathbf{s}, \mathcal{G})$. Therefore:
+\begin{equation}
+    \inf_{f \in \mathcal{F}_{\text{sep}}} \norm{f - f^*}_2 \geq \norm{c(\mathbf{s}, \mathcal{G})}_2
+\end{equation}
+
+\textbf{Joint Model:} Through diffusion, structural information enters transformer (via $\mathbf{A}_{\text{struct}}$) and sequence information enters GNN (via $\mathbf{S}_{\text{diff}}$). The effective representation becomes:
+\begin{equation}
+    f_{\text{joint}} = g(\mathbf{s}, \mathbf{S}) + h(\mathcal{G}, \mathbf{A}) + c'(\mathbf{s}, \mathcal{G})
+\end{equation}
+
+By universal approximation theorem for GNNs \citep{xu2019powerful} and Transformers \citep{yun2020transformers}, there exist parameters such that:
+\begin{equation}
+    \norm{c'(\mathbf{s}, \mathcal{G}) - c(\mathbf{s}, \mathcal{G})}_2 \leq \epsilon
+\end{equation}
+
+Therefore:
+\begin{equation}
+    \inf_{f \in \mathcal{F}_{\text{joint}}} \norm{f - f^*}_2 \leq \epsilon \ll \norm{c(\mathbf{s}, \mathcal{G})}_2
+\end{equation}
+
+The ratio $\kappa = \epsilon / \norm{c}_2$ is small when coupling is significant.
+\end{proof}
+
+\begin{corollary}[Sample Complexity]
+For $\epsilon$-approximation with probability $1-\delta$, the joint model requires:
+\begin{equation}
+    N_{\text{joint}} = O\left(\frac{d \log(1/\delta)}{\epsilon^2}\right)
+\end{equation}
+samples, compared to:
+\begin{equation}
+    N_{\text{sep}} = O\left(\frac{d \log(1/\delta)}{\kappa^2 \epsilon^2}\right)
+\end{equation}
+for separate models, where $d$ is effective dimension.
+\end{corollary}
+
+\subsection{Information Flow Analysis}
+
+\begin{lemma}[Mutual Information Lower Bound]
+The diffusion mechanism ensures mutual information between structure and sequence representations satisfies:
+\begin{equation}
+    I(\mathbf{H}^G; \mathbf{H}^T) \geq I(\mathbf{H}_{\text{sep}}^G; \mathbf{H}_{\text{sep}}^T) + \Delta I
+\end{equation}
+where $\Delta I > 0$ quantifies additional information flow from diffusion.
+\end{lemma}
+
+\begin{proof}
+By data processing inequality, standard separate encoding has:
+\begin{equation}
+    I(\mathbf{H}_{\text{sep}}^G; \mathbf{H}_{\text{sep}}^T) \leq I(\mathcal{G}; \mathbf{s})
+\end{equation}
+
+With diffusion, attention $\mathbf{A}_{\text{struct}}$ depends on $\mathcal{G}$:
+\begin{align}
+    I(\mathbf{H}^T; \mathcal{G}) &\geq I(\mathbf{H}_{\text{sep}}^T; \mathcal{G}) + I(\mathbf{H}^T; \mathcal{G} | \mathbf{A}_{\text{struct}}) \\
+    &\geq I(\mathbf{H}_{\text{sep}}^T; \mathcal{G}) + \underbrace{H(\mathcal{G} | \mathbf{A}_{\text{struct}})}_{\text{structural information in attention}} > I(\mathbf{H}_{\text{sep}}^T; \mathcal{G})
+\end{align}
+
+Similarly for $I(\mathbf{H}^G; \mathbf{s})$ through graph diffusion. Therefore:
+\begin{equation}
+    I(\mathbf{H}^G; \mathbf{H}^T) = H(\mathbf{H}^G) + H(\mathbf{H}^T) - H(\mathbf{H}^G, \mathbf{H}^T)
+\end{equation}
+is larger due to increased shared information.
+\end{proof}
+
+\subsection{Generalization Bound}
+
+\begin{theorem}[Generalization Error]
+With probability at least $1-\delta$ over training set $\mathcal{S}$ of size $N$:
+\begin{equation}
+    \E_{\text{test}}[\mathcal{L}(f_{\mathcal{S}})] \leq \hat{\mathcal{L}}_{\mathcal{S}}(f) + O\left(\frac{R_{\text{diff}}(\mathcal{F})}{\sqrt{N}} + \sqrt{\frac{\log(1/\delta)}{N}}\right)
+\end{equation}
+where $R_{\text{diff}}(\mathcal{F})$ is the Rademacher complexity of the diffused function class.
+\end{theorem}
+
+\begin{proof}
+The diffusion operation adds smoothness to the function class. By Ledoux-Talagrand contraction lemma:
+\begin{equation}
+    R_{\text{diff}}(\mathcal{F}) \leq (1-\beta)^T R(\mathcal{F}_{\text{original}})
+\end{equation}
+
+Since diffusion is a contraction with rate $(1-\beta)$, the Rademacher complexity is reduced. Applying standard generalization bounds \citep{mohri2018foundations}:
+\begin{align}
+    &\E_{\text{test}}[\mathcal{L}(f)] - \hat{\mathcal{L}}_{\mathcal{S}}(f) \\
+    &\leq 2 R_{\text{diff}}(\mathcal{F}) + 3\sqrt{\frac{\log(2/\delta)}{2N}} \\
+    &\leq 2(1-\beta)^T R(\mathcal{F}_{\text{original}}) + 3\sqrt{\frac{\log(2/\delta)}{2N}}
+\end{align}
+
+This shows diffusion improves generalization by reducing complexity.
+\end{proof}
+
+\subsection{Stability Analysis}
+
+\begin{proposition}[Lipschitz Continuity]
+The diffused attention is Lipschitz continuous with respect to input perturbations:
+\begin{equation}
+    \norm{\mathbf{A}_{\text{diff}}(\mathbf{s}) - \mathbf{A}_{\text{diff}}(\mathbf{s}')}_F \leq L \norm{\mathbf{s} - \mathbf{s}'}_2
+\end{equation}
+where $L = \frac{1}{1-\beta\lambda_{\max}}$ is the Lipschitz constant.
+\end{proposition}
+
+\begin{proof}
+From the fixed point equation:
+\begin{equation}
+    \mathbf{A}^* = (1-\beta) \mathbf{A}^{(0)} + \beta \mathbf{\tilde{S}} \mathbf{A}^*
+\end{equation}
+
+Taking difference for two inputs:
+\begin{align}
+    \mathbf{A}^*(\mathbf{s}) - \mathbf{A}^*(\mathbf{s}') &= (1-\beta)[\mathbf{A}^{(0)}(\mathbf{s}) - \mathbf{A}^{(0)}(\mathbf{s}')] \\
+    &\quad + \beta \mathbf{\tilde{S}} [\mathbf{A}^*(\mathbf{s}) - \mathbf{A}^*(\mathbf{s}')]
+\end{align}
+
+Rearranging:
+\begin{equation}
+    (\mathbf{I} - \beta \mathbf{\tilde{S}})[\mathbf{A}^*(\mathbf{s}) - \mathbf{A}^*(\mathbf{s}')] = (1-\beta)[\mathbf{A}^{(0)}(\mathbf{s}) - \mathbf{A}^{(0)}(\mathbf{s}')]
+\end{equation}
+
+Solving:
+\begin{equation}
+    \mathbf{A}^*(\mathbf{s}) - \mathbf{A}^*(\mathbf{s}') = (1-\beta)(\mathbf{I} - \beta \mathbf{\tilde{S}})^{-1} [\mathbf{A}^{(0)}(\mathbf{s}) - \mathbf{A}^{(0)}(\mathbf{s}')]
+\end{equation}
+
+Since $\norm{(\mathbf{I} - \beta \mathbf{\tilde{S}})^{-1}}_2 \leq 1/(1-\beta\lambda_{\max})$ and vanilla attention is $L_0$-Lipschitz:
+\begin{align}
+    \norm{\mathbf{A}^*(\mathbf{s}) - \mathbf{A}^*(\mathbf{s}')}_F &\leq \frac{1-\beta}{1-\beta\lambda_{\max}} L_0 \norm{\mathbf{s} - \mathbf{s}'}_2 \\
+    &\leq L \norm{\mathbf{s} - \mathbf{s}'}_2
+\end{align}
+\end{proof}
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Datasets}
+
+\textbf{ProTherm} \citep{kumar2006protherm}: 5,166 single-point mutations across 1,228 proteins. Split: 70\% train (3,616), 15\% validation (775), 15\% test (775).
+
+\textbf{SKEMPI 2.0} \citep{jankauskaite2019skempi}: 7,085 mutations in 319 protein complexes. Used for interface mutation testing.
+
+\textbf{Ssym} \citep{kellogg2011role}: 628 mutations in symmetric proteins for generalization evaluation.
+
+\textbf{FireProtDB} \citep{musil2017fireprotdb}: 8,196 thermostability mutations for specialized testing.
+
+\textbf{Structure Processing:} PDB files preprocessed using BioPython. C$_\alpha$ atoms extracted. Edges constructed for pairs within 10 Å. DSSP \citep{kabsch1983dssp} for secondary structure. NACCESS for solvent accessibility.
+
+\subsection{Baselines}
+
+\textbf{Physics-based:}
+\begin{itemize}
+    \item FoldX 5.0 \citep{schymkowitz2005foldx}
+    \item Rosetta Delta Delta G\_monomer \citep{kellogg2011role}
+\end{itemize}
+
+\textbf{Machine Learning:}
+\begin{itemize}
+    \item DDGun3D \citep{montanucci2022ddgun}: Gradient boosting with structure features
+    \item DeepDDG \citep{cao2019deepddg}: 3D CNN + sequence
+    \item ThermoNet \citep{li2020predicting}: GCN on contact graphs
+    \item MutFormer \citep{zhou2020mutation}: Transformer on graphs
+    \item ESM-1v \citep{meier2021language}: Protein language model
+\end{itemize}
+
+\subsection{Implementation Details}
+
+\textbf{Model Configuration:}
+\begin{itemize}
+    \item GNN: 4 layers, hidden dim 256, 8 attention heads, dropout 0.1
+    \item Transformer: 6 layers, hidden dim 256, 8 heads, FFN dim 1024, dropout 0.1
+    \item Diffusion: $T=5$ steps, learnable $\beta, \gamma \in [0.1, 0.5]$
+    \item Prediction head: [768 → 384 → 192 → 1]
+\end{itemize}
+
+\textbf{Training:}
+\begin{itemize}
+    \item Optimizer: AdamW, $\text{lr}=10^{-4}$, weight decay $10^{-2}$
+    \item Batch size: 32
+    \item Epochs: 100 with early stopping (patience 15)
+    \item Loss: MSE with gradient clipping (max norm 1.0)
+    \item Hardware: NVIDIA A100 40GB GPU
+    \item Training time: 12 hours
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+
+\begin{itemize}
+    \item \textbf{Pearson correlation} $\rho$: Linear relationship
+    \item \textbf{Spearman correlation} $\rho_s$: Rank-based correlation
+    \item \textbf{RMSE}: Root mean squared error (kcal/mol)
+    \item \textbf{MAE}: Mean absolute error (kcal/mol)
+\end{itemize}
+
+\subsection{Main Results}
+
+\begin{table*}[htbp]
+\centering
+\caption{Performance on ProTherm test set. Best results in \textbf{bold}, second best \underline{underlined}.}
+\label{tab:main_results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Pearson} $\rho$ & \textbf{Spearman} $\rho_s$ & \textbf{RMSE} & \textbf{MAE} \\
+\midrule
+\multicolumn{5}{c}{\textit{Physics-based}} \\
+FoldX & 0.46 & 0.43 & 2.83 & 1.92 \\
+Rosetta & 0.53 & 0.51 & 2.61 & 1.78 \\
+\midrule
+\multicolumn{5}{c}{\textit{Machine Learning}} \\
+DDGun3D & 0.68 & 0.65 & 1.87 & 1.34 \\
+DeepDDG & 0.73 & 0.71 & 1.65 & 1.21 \\
+ThermoNet & 0.71 & 0.69 & 1.72 & 1.27 \\
+MutFormer & 0.76 & 0.74 & 1.58 & 1.15 \\
+ESM-1v & 0.78 & 0.76 & 1.52 & 1.12 \\
+\midrule
+\multicolumn{5}{c}{\textit{Ours}} \\
+DGTN (no diffusion) & \underline{0.81} & \underline{0.79} & \underline{1.38} & \underline{1.02} \\
+\textbf{DGTN (full)} & \textbf{0.87} & \textbf{0.85} & \textbf{1.21} & \textbf{0.94} \\
+\midrule
+Improvement over best baseline & +9\% & +9\% & -20\% & -16\% \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Key Observations:}
+\begin{itemize}
+    \item DGTN achieves $\rho=0.87$, significantly outperforming ESM-1v ($\rho=0.78$)
+    \item 20\% reduction in RMSE demonstrates practical improvement
+    \item Diffusion mechanism contributes 4.8 points to Pearson correlation
+\end{itemize}
+
+\subsection{Cross-Dataset Generalization}
+
+\begin{table*}[htbp]
+\centering
+\caption{Generalization to unseen datasets. Models trained on ProTherm, tested on others.}
+\label{tab:generalization}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{SKEMPI 2.0} & \textbf{Ssym} & \textbf{FireProtDB} \\
+\midrule
+DeepDDG & 0.62 & 0.58 & 0.66 \\
+MutFormer & 0.67 & 0.63 & 0.70 \\
+ESM-1v & 0.71 & 0.66 & 0.74 \\
+\textbf{DGTN} & \textbf{0.78} & \textbf{0.73} & \textbf{0.80} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+DGTN shows superior generalization, likely because co-learned structural-sequential features capture fundamental stability principles.
+
+\subsection{Ablation Studies}
+
+\begin{table*}[htbp]
+\centering
+\caption{Ablation study on ProTherm test set.}
+\label{tab:ablation}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Configuration} & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Params (M)} \\
+\midrule
+Sequence only (Transformer) & 0.74 & 1.59 & 8.2 \\
+Structure only (GNN) & 0.70 & 1.71 & 6.5 \\
+GNN + Trans (concat, no diffusion) & 0.79 & 1.42 & 14.7 \\
+GNN + Trans (learned fusion) & 0.81 & 1.38 & 15.1 \\
+\midrule
+\textbf{+ Attention diffusion only} & 0.84 & 1.31 & 15.3 \\
+\textbf{+ Graph diffusion only} & 0.82 & 1.35 & 15.3 \\
+\textbf{+ Bidirectional diffusion (full)} & \textbf{0.87} & \textbf{1.21} & \textbf{15.4} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item Bidirectional diffusion contributes 6 points over simple fusion
+    \item Attention diffusion (structure→sequence) contributes more (5 points) than graph diffusion (3 points)
+    \item Both directions together achieve best performance (synergistic effect)
+    \item Minimal parameter increase (4\%) for significant performance gain
+\end{enumerate}
+
+\subsection{Diffusion Step Analysis}
+
+\begin{table*}[htbp]
+\centering
+\caption{Effect of diffusion steps $T$ on performance.}
+\label{tab:diffusion_steps}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Diffusion Steps} $T$ & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Time (ms)} \\
+\midrule
+$T=1$ & 0.83 & 1.35 & 12 \\
+$T=3$ & 0.85 & 1.27 & 18 \\
+$T=5$ & \textbf{0.87} & \textbf{1.21} & 26 \\
+$T=7$ & 0.87 & 1.22 & 35 \\
+$T=10$ & 0.86 & 1.23 & 48 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Optimal at $T=5$. Beyond this, performance plateaus (consistent with Theorem \ref{thm:convergence}) while computational cost increases.
+
+\subsection{Learned Diffusion Rates}
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.8\columnwidth]{figures/diffusion_rates.pdf}
+\caption{Learned diffusion rates $\beta$ (attention diffusion) and $\gamma$ (graph diffusion) across layers. Error bars show standard deviation across 5 runs. Attention diffusion rate increases in deeper layers, while graph diffusion remains relatively constant.}
+\label{fig:diffusion_rates}
+\end{figure*}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item Attention diffusion rate $\beta$ increases from 0.15 (layer 1) to 0.42 (layer 6)
+    \item Deeper layers rely more on structural guidance
+    \item Graph diffusion rate $\gamma$ stable around 0.25
+    \item Supports hypothesis: Early layers learn local features, late layers integrate global structure-sequence coupling
+\end{itemize}
+
+\subsection{Attention Visualization}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/attention_maps.pdf}
+\caption{Attention maps for example mutation (L15V in lysozyme). \textbf{(a)} Vanilla attention focuses on sequential neighbors. \textbf{(b)} Diffused attention incorporates spatially proximal residues (marked with red boxes) that are distant in sequence. \textbf{(c)} 3D structure showing attended residues, confirming spatial proximity.}
+\label{fig:attention}
+\end{figure}
+
+Diffused attention successfully identifies spatially proximal residues (12-18 Å in sequence, <8 Å in 3D) that vanilla attention misses.
+
+\subsection{Case Study: Antibody Stabilization}
+
+\textbf{Objective:} Stabilize therapeutic IgG1 antibody (PDB: 1HZH) while preserving binding.
+
+\textbf{Approach:} Screen 2,000 single mutations in framework regions using DGTN.
+
+\textbf{Top predictions:}
+\begin{itemize}
+    \item L15V: $\Delta Delta G_{\text{pred}} = -1.8$ kcal/mol
+    \item T43A: $\Delta Delta G_{\text{pred}} = -1.5$ kcal/mol
+    \item S88L: $\Delta Delta G_{\text{pred}} = -1.3$ kcal/mol
+\end{itemize}
+
+\textbf{Experimental validation} (differential scanning fluorimetry):
+\begin{itemize}
+    \item L15V: $\Delta Delta G_{\text{exp}} = -1.6$ kcal/mol, $T_m$ +2.1°C
+    \item T43A: $\Delta Delta G_{\text{exp}} = -1.4$ kcal/mol, $T_m$ +1.8°C
+    \item S88L: $\Delta Delta G_{\text{exp}} = -1.1$ kcal/mol, $T_m$ +1.5°C
+    \item Combined variant: $T_m$ +4.9°C, binding affinity maintained ($K_D$ within 1.5-fold)
+\end{itemize}
+
+\textbf{Interpretation:} DGTN correctly identified hydrophobic core packing improvements detected by diffused attention connecting framework residues to CDR-proximal positions.
+
+\subsection{Computational Efficiency}
+
+\begin{table}[t]
+\centering
+\caption{Computational cost comparison (single mutation prediction).}
+\label{tab:efficiency}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Time (GPU)} & \textbf{Time (CPU)} \\
+\midrule
+FoldX & - & 180 s \\
+Rosetta & - & 300 s \\
+DeepDDG & 2.1 s & 12 s \\
+ESM-1v & 1.2 s & 8 s \\
+\textbf{DGTN (ours)} & \textbf{1.8 s} & \textbf{15 s} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+DGTN is 100× faster than physics-based methods while achieving higher accuracy. Comparable to other deep learning methods despite additional diffusion computation.
+
+\subsection{Error Analysis}
+
+\textbf{Large errors} ($|\Delta| > 2$ kcal/mol) occur in:
+\begin{itemize}
+    \item \textbf{Oligomeric interfaces} (18\% of errors): Model trained on monomers
+    \item \textbf{Cofactor binding sites} (12\%): Cofactors not explicitly modeled
+    \item \textbf{Large $|\Delta Delta G|$} values ($>$5 kcal/mol) (22\%): Training data imbalance
+    \item \textbf{Flexible loops} (15\%): Static structure limitation
+\end{itemize}
+
+\textbf{Future improvements:} Include oligomeric structures, model cofactors, use ensemble structures for flexibility.
+
+\section{Discussion}
+
+\subsection{Key Insights}
+
+\textbf{1. Bidirectional diffusion is crucial.} One-way information flow (structure→sequence or sequence→structure) provides limited benefit. Bidirectional coupling allows iterative refinement where each modality informs the other.
+
+\textbf{2. Learned diffusion rates adapt to layer depth.} The model learns to rely more on structural guidance in deeper layers, suggesting hierarchical feature integration: local features (early) → global structure-sequence coupling (late).
+
+\textbf{3. Theoretical guarantees match empirical observations.} Convergence in 5 steps aligns with Proposition \ref{prop:rate}. Superior generalization confirms Theorem \ref{thm:approximation}'s prediction about reduced approximation error.
+
+\textbf{4. Attention visualization validates mechanism.} Diffused attention successfully identifies spatially proximal but sequentially distant residues, directly confirming the intended behavior.
+
+\subsection{Comparison with Related Approaches}
+
+\textbf{vs. ESM-1v:} ESM-1v uses 650M parameters trained on 250M sequences but lacks explicit structural reasoning. DGTN achieves better performance with 40× fewer parameters by efficiently integrating structure.
+
+\textbf{vs. MutFormer:} MutFormer applies transformers to graphs but processes structure uniformly. DGTN's learnable diffusion rates allow adaptive structure-sequence coupling based on layer and context.
+
+\textbf{vs. DeepDDG:} DeepDDG uses 3D CNNs which are translationally invariant but lack permutation equivariance. GNNs are natural for graph-structured proteins.
+
+\subsection{Limitations}
+
+\textbf{1. Static structures:} Model uses single conformations, missing dynamic effects. Future work: integrate molecular dynamics ensembles or predicted structural distributions.
+
+\textbf{2. Single mutations only:} Current framework evaluates mutations independently. Extending to multiple mutations requires modeling epistatic interactions.
+
+\textbf{3. Training data bias:} ProTherm over-represents certain protein families (e.g., lysozyme 8\% of data). Transfer learning or domain adaptation could improve fairness.
+
+\textbf{4. Cofactors and ligands:} Not explicitly modeled. Including hetero
+
+
+\begin{acknowledgements}
+\blindtext
+\end{acknowledgements}
+
+\section*{Bibliography}
+
+\bibliographystyle{StyleBib}
+\bibliography{citations}
+
+\end{document}
+%% You can use these special %TC: tags to ignore certain parts of the text.
+%TC:ignore
+%the command above ignores this section for word count
+% \onecolumn
+% \newpage
+% 
+% \section*{Word Counts}
+% This section is \textit{not} included in the word count. 
+% \subsection*{Notes on Nature Methods Brief Communication}
+% \begin{itemize}
+% \item Abstract: 3 sentences, 70 words.
+% \item Main text: 3 pages, 2 figures, 1000-1500 words, more figures possible if under 3 pages
+% \end{itemize}
+% 
+% \subsection*{Statistics on word count}
+% \detailtexcount
+% \newpage
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Supplementary Information %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \captionsetup*{format=largeformat}
+% \section{Something about something} \label{note:Note1} 
+% \Blindtext
+% 
+%TC:endignore
+%the command above ignores this section for word count

@@ -1,0 +1,53 @@
+// Transformer Model
+digraph {
+	rankdir=LR splines=ortho
+	Input [label="Input Sequence" fillcolor=lightgreen shape=box style=filled]
+	Output [label="Output Probabilities" fillcolor=lightblue shape=box style=filled]
+	EncoderStack [label="Nx
+Encoder Blocks" fillcolor=gray shape=cylinder style=filled]
+	Embeddings [label="Positional + Token
+Embeddings" shape=box]
+	Input -> Embeddings
+	Embeddings -> EncoderStack
+	DecoderStack [label="Nx
+Decoder Blocks" fillcolor=gray shape=cylinder style=filled]
+	EncoderStack -> DecoderStack [label="(Encoder) Outputs"]
+	DecoderInput [label="Decoder Input
+(Shifted Right)" shape=box]
+	DecEmbeddings [label="Positional + Token
+Embeddings" shape=box]
+	DecoderInput -> DecEmbeddings
+	DecEmbeddings -> DecoderStack
+	subgraph cluster_encoder {
+		color=black label="An Encoder Block"
+		EncoderMultiHead [label="Multi-Head Attention" shape=ellipse]
+		EncoderAddNorm1 [label="Add & Norm" shape=box]
+		EncoderFeedForward [label="Feed Forward" shape=box]
+		EncoderAddNorm2 [label="Add & Norm" shape=box]
+		EncoderMultiHead -> EncoderAddNorm1
+		EncoderAddNorm1 -> EncoderFeedForward
+		EncoderFeedForward -> EncoderAddNorm2
+	}
+	EncoderStack -> EncoderMultiHead [lhead=cluster_encoder style=dashed]
+	subgraph cluster_decoder {
+		color=black label="A Decoder Block"
+		DecMaskedMultiHead [label="Masked Multi-Head Attention" shape=ellipse]
+		DecAddNorm1 [label="Add & Norm" shape=box]
+		DecMultiHead [label="Multi-Head Attention" shape=ellipse]
+		DecAddNorm2 [label="Add & Norm" shape=box]
+		DecFeedForward [label="Feed Forward" shape=box]
+		DecAddNorm3 [label="Add & Norm" shape=box]
+		DecMaskedMultiHead -> DecAddNorm1
+		DecAddNorm1 -> DecMultiHead
+		DecMultiHead -> DecAddNorm2
+		DecAddNorm2 -> DecFeedForward
+		DecFeedForward -> DecAddNorm3
+	}
+	DecoderStack -> DecMaskedMultiHead [lhead=cluster_decoder style=dashed]
+	EncoderStack -> DecMultiHead
+	Linear [label=Linear shape=box]
+	Softmax [label=Softmax shape=box]
+	DecAddNorm3 -> Linear
+	Linear -> Softmax
+	Softmax -> Output
+}
