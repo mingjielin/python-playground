@@ -1,0 +1,271 @@
+% NSF GRFP Research Statement
+% Formatting requirements: 1-inch margins, 11pt or 12pt font, single-spaced
+% Maximum 2 pages for Graduate Research Plan Statement
+
+\documentclass[11pt]{article}
+
+% Page formatting - NSF GRFP requires 1-inch margins
+\usepackage[margin=1in]{geometry}
+\usepackage{times} % Times New Roman font (similar to NSF standard)
+\usepackage{setspace}
+% \usepackage{enumitem}
+% \usepackage{hyperref}
+
+% Remove page numbers if desired (check current NSF requirements)
+\pagestyle{plain}
+
+% Reduce spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Section formatting
+% \usepackage{titlesec}
+% \titleformat{\section}{\normalfont\fontsize{12}{14}\bfseries}{\thesection}{1em}{}
+% \titleformat{\subsection}{\normalfont\fontsize{11}{13}\bfseries}{\thesubsection}{1em}{}
+% \titlespacing*{\section}{0pt}{8pt}{4pt}
+% \titlespacing*{\subsection}{0pt}{6pt}{2pt}
+% 
+\begin{document}
+
+\begin{center}
+\textbf{\large Graduate Research Plan Statement}\\
+\textbf{Provably Reliable and Interpretable AI Systems for Therapeutic Enzyme Engineering}
+\end{center}
+
+\section*{My Research Vision} 
+
+Publicly funded biological data—built on billions in taxpayer investment through
+NSF, NIH, and other agencies—represents one of science’s greatest untapped
+assets. Yet despite its scale and richness, we lack AI systems capable of {\bf
+reasoning over this data with rigor, transparency, and reliability}. Today’s
+dominant models are black boxes: they predict, but don’t explain; they
+correlate, but don’t guarantee. In therapeutic contexts—where a single error
+could mean toxic side effects or failed treatments—this opacity is unacceptable.
+My PhD research will pioneer the first generation of {\bf Verifiable,
+Interpretable, and Provable AI agents (VIP-AI)} for therapeutic enzyme
+engineering, closing the critical trust gap between AI and clinical application.
+
+I will integrate cutting-edge neural architectures—protein language models,
+state-space models (e.g., Mamba), and biophysically constrained attention
+mechanisms—with formal verification and mathematical priors from structural
+biology to build models that deliver not just {\bf accuracy}, but {\bf certified safety
+bounds} and {\bf human-understandable mechanistic explanations}. This work advances
+core computer science in trustworthy AI while directly enabling safer, more
+rational design of {\bf enzyme therapeutics—a rapidly growing frontier in precision
+medicine for cancer, aging, and genetic disease}. By transforming public data
+into provably reliable knowledge, my research ensures AI earns its place in the
+lab and the clinic: not as a mysterious oracle, but as a transparent,
+accountable partner in human health.
+
+
+
+
+\section*{Intellectual Merit}
+
+\subsection*{Goal 1: Verifiable Neural Architectures for Mutation Effect Prediction}
+
+\textbf{Research Question:} How can we design neural architectures with formal
+verification guarantees that accurately predict mutation effects while
+respecting fundamental biochemical constraints?
+
+\textbf{Approach:} Current approaches to predicting mutation effects ($\Delta
+\Delta G$ stability changes, catalytic efficiency) rely on transformers (ESM-2,
+ProteinMPNN) or physics-based methods (Rosetta, FoldX), but lack formal
+reliability guarantees and ignore physical constraints. I will develop a novel
+hybrid architecture combining: (1) \textit{Mamba-based sequence encoders}
+leveraging linear-time complexity to efficiently process long protein sequences
+(500+ residues) while maintaining biophysically meaningful hidden states, (2)
+\textit{constrained attention mechanisms} where QK-V attention weights respect
+biochemical principles through differentiable projection operators from convex
+optimization, and (3) \textit{formal verification layers} that provide certified
+uncertainty bounds using abstract interpretation and SMT solvers, outputting
+provable guarantees such as "With 95\% confidence, the actual $\Delta \Delta G$ lies within
+[-0.5, 0.3] kcal/mol."
+
+\textbf{Expected Outcomes:} This will produce theoretical guarantees on model
+reliability quantified through PAC-learning bounds adapted to structured
+biochemical data, empirically validated architectures on benchmarks (SKEMPI 2.0,
+Mega-scale), and open-source verification tools for the computational biology
+community.
+
+\subsection*{Goal 2: Interpretable Reasoning for Enzyme Mechanism Understanding}
+
+\textbf{Research Question:} Can we develop AI systems that generate verifiable,
+mechanistically accurate explanations that structural biologists can validate?
+
+\textbf{Approach:} Understanding \textit{why} mutations improve function is
+crucial for rational design. I will create neuro-symbolic architectures
+performing explicit reasoning over enzyme mechanisms through: (1)
+\textit{structured reasoning with graph neural networks} representing
+biochemical mechanisms as computational graphs where nodes denote active sites,
+transition states, and cofactors, with message-passing generating "chains of
+thought" mirroring expert reasoning, (2) \textit{attention-based mechanism
+discovery} using mechanistic interpretability to identify which attention heads
+in protein language models correspond to specific biochemical features
+(catalytic triads, electrostatic complementarity), and (3) \textit{theorem
+prover integration} using differentiable theorem provers to verify explanations
+against biochemical rules and quantum mechanical calculations.
+
+\textbf{Expected Outcomes:} This advances AI interpretability theory while
+providing practical tools, including formalization of enzyme mechanisms as
+logical constraints, models generating verifiable explanations with $>$80\%
+expert agreement, and case studies designing improved therapeutic enzymes (e.g.,
+L-asparaginase for acute lymphoblastic leukemia).
+
+\subsection*{Goal 3: Certified Safety Guarantees for Therapeutic Enzyme Design}
+
+\textbf{Research Question:} How can we provide formal safety certificates for
+AI-designed therapeutic enzymes, ensuring substrate specificity, stability, and
+lack of off-target activity?
+
+\textbf{Approach:} Therapeutic enzymes must satisfy stringent safety
+criteria—enzymes for prodrug activation must be exquisitely substrate-specific,
+while those degrading toxic metabolites must not cleave essential proteins.
+Current generative models (ProteinMPNN, ESM-IF) offer no such guarantees. I will
+develop: (1) \textit{constraint-guided generative models} incorporating hard
+constraints during sequence generation using projected gradient descent and
+Lagrangian optimization, provably satisfying constraints like "$>$100-fold
+binding selectivity," (2) \textit{uncertainty quantification with certified
+coverage} through conformal prediction methods providing guaranteed coverage
+("With 99\% probability, true activity falls within the predicted set"), and (3)
+\textit{multi-objective optimization with Pareto guarantees} identifying
+provably Pareto-optimal enzyme variants balancing efficiency, stability, and
+specificity using Bayesian optimization.
+
+\textbf{Expected Outcomes:} This establishes theoretical foundations for
+trustworthy AI in protein engineering: formal definitions of safety expressed in
+temporal logic, algorithms with provable constraint satisfaction guarantees, and
+experimental validation demonstrating AI-certified enzymes meet predicted
+specifications.
+
+\section*{Broader Impacts}
+
+\textbf{Advancing Human Health and Longevity:} This research directly addresses
+aging and disease challenges. Enzyme replacement therapies for lysosomal storage
+disorders cost $>$\$200,000 per patient annually; improved variants could reduce
+costs and improve efficacy. My focus on longevity-relevant enzymes (DNA repair
+glycosylases, NAD+ biosynthesis enzymes, senolytic proteases) accelerates paths
+from computational prediction to clinical application.
+
+\textbf{Democratizing Therapeutic Development:} Current enzyme engineering
+requires expensive high-throughput screening accessible only to well-funded
+institutions. Open-source, reliable AI tools democratize this capability,
+enabling researchers at resource-limited institutions and developing countries
+to design therapeutic enzymes computationally. I will release all software with
+comprehensive documentation and tutorials for structural biologists without
+extensive ML backgrounds.
+
+\textbf{Interdisciplinary Education and Mentorship:} I am committed to training
+researchers at the intersection of AI and biology through: (1) workshop series
+"Trustworthy AI for Drug Discovery" bringing together ML researchers and
+biochemists, (2) mentoring undergraduates from underrepresented groups through
+university STEM diversity initiatives, and (3) curriculum development
+integrating formal verification into computational biology courses.
+
+\textbf{Responsible AI Development:} By prioritizing interpretability and
+verification, this work contributes to AI safety and responsible innovation.
+Methods developed—certified predictions, mechanistic explanations, formal
+guarantees—transfer to other high-stakes medical AI applications. I will engage
+with bioethics communities to ensure appropriate safeguards and equitable
+access.
+
+\section*{Conclusion}
+
+The convergence of efficient neural architectures, formal verification methods,
+and computational biology creates an unprecedented opportunity to transform
+therapeutic enzyme design. My research advances fundamental computer
+science—developing theory for verifiable learning, interpretable AI, and
+constrained optimization on structured spaces—while addressing human health
+challenges. By creating AI systems that are provably reliable and
+understandable, I aim to establish a new paradigm for trustworthy machine
+learning in life sciences, embodying NSF's mission to support research advancing
+both scientific knowledge and societal well-being.
+
+\end{document}
+
+% Enzyme therapeutics represent a rapidly growing
+% frontier in precision medicine, with applications ranging from cancer treatment
+% to age-related disease intervention. However, rational enzyme design faces a
+% fundamental challenge: current machine learning models lack the reliability
+% guaranties and interpretability needed for therapeutic applications. When
+% prediction errors could mean the difference between life-saving treatments and
+% toxic therapies, we cannot rely on black-box models that offer no formal
+% guaranties or mechanistic understanding.
+% 
+% My research aims to develop the first generation of \textbf{V.I.P.}
+% --Verifiable, Interpretable, and Provable  AI systems for therapeutic enzyme
+% engineering. By integrating advances in efficient neural architectures—including
+% state-space models (Mamba), novel attention mechanisms, and protein language
+% models—with formal verification methods and mathematical constraints from
+% biophysics, I will create AI systems that provide certified safety guarantees
+% and human-interpretable explanations. This work advances fundamental computer
+% science theory while addressing pressing societal challenges in human health and
+% longevity.
+
+Every year, U.S. taxpayers invest billions in scientific discovery—fueling
+breakthroughs in genomics, structural biology, and enzyme engineering through
+visionary agencies like the NSF and NIH. The result? A goldmine of public
+biological data, richer and more detailed than ever before.
+
+Yet here’s the paradox: while we’ve mastered generating data, we’re still
+fumbling in the dark when it comes to reasoning with it. Most AI tools used in
+biomedicine today are black boxes—impressive at pattern-matching, but silent on
+why they make a prediction or whether we can trust it. In drug design, that
+silence isn’t just inconvenient—it can be dangerous.
+
+That’s why my PhD research will build the first generation of V.I.P. AI:
+Verifiable, Interpretable, and Provable systems engineered from the ground up
+for therapeutic enzyme design. Imagine an AI that doesn’t just say “this enzyme
+will work”—but shows you how, proves it won’t misfire, and explains its logic in
+terms a biologist (or clinician) can understand.
+
+I’ll fuse the best of modern deep learning—protein language models, state-space
+architectures like Mamba, and biophysically grounded attention—with the rigor of
+formal verification and mathematical constraints from molecular physics. The
+result? AI that delivers not just predictions, but certified guarantees: “This
+design is safe within these bounds,” or “This mutation disrupts catalysis—here’s
+the evidence.”
+
+This isn’t just incremental AI—it’s a new paradigm for trustworthy science.
+Enzyme therapeutics are already revolutionizing precision medicine, from
+targeting cancer cells to reversing age-related decline. But to unlock their
+full potential, we need models we can trust like a colleague, not just use like
+a calculator.
+
+My vision is clear: AI that earns its place in the lab—and in the clinic—by
+being as transparent as it is intelligent. By turning public data into provably
+reliable knowledge, this work will advance the frontiers of computer science
+while directly serving human health, longevity, and the public good.
+
+
+formal tone:
+
+Publicly funded biological data—generated through billions of dollars in
+taxpayer investment via agencies like the NSF and NIH—represents one of the most
+valuable scientific resources of our time. Yet surprisingly little research has
+focused on developing AI systems capable of reasoning over this data with the
+rigor, transparency, and reliability demanded by high-stakes applications in
+human health.
+
+My PhD research will pioneer the first generation of V.I.P. AI
+systems—Verifiable, Interpretable, and Provable—specifically designed for
+therapeutic enzyme engineering. By unifying cutting-edge neural architectures
+(including state-space models like Mamba, protein language models, and
+biophysically informed attention mechanisms) with formal verification techniques
+and mathematical constraints from structural biology, I will build AI that not
+only predicts enzyme function with high accuracy but also provides certified
+safety guarantees and human-understandable explanations of its reasoning.
+
+This work bridges fundamental computer science—advancing theories in trustworthy
+AI, formal methods, and geometric deep learning—with urgent societal needs in
+precision medicine. Enzyme therapeutics are emerging as a transformative
+frontier, with applications from oncology to age-related disease intervention.
+Yet rational enzyme design remains bottlenecked by a critical gap: current
+machine learning models are black boxes that offer neither reliability
+guarantees nor mechanistic insight. In therapeutic contexts—where a prediction
+error could mean the difference between a life-saving treatment and a toxic
+outcome—trust must be earned through verifiability, not assumed through accuracy
+alone. My research aims to close this gap, ensuring that AI becomes a truly
+reliable partner in the quest for safer, more effective medicines.
+
+
