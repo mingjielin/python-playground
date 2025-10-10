@@ -25,33 +25,46 @@ much as possible.
 \begin{document}
 \pagestyle{empty}
 
+
+
+
+
+
+
+
 % We need layers to draw the block diagram
 \pgfdeclarelayer{background}
 \pgfdeclarelayer{foreground}
 \pgfsetlayers{background,main,foreground}
 
 % Define a few styles and constants
-\tikzstyle{sensor}=[draw, fill=blue!20, text width=5em, 
+\tikzstyle{sensor}=[draw, fill=blue!20, text width=10em, 
     text centered, minimum height=2.5em]
-\tikzstyle{ann} = [above, text width=5em]
-\tikzstyle{naveqs} = [sensor, text width=6em, fill=red!20, 
-    minimum height=12em, rounded corners]
+\tikzstyle{ann} = [above, text width=10em]
+\tikzstyle{naveqs} = [sensor, text width=8em, fill=red!30, 
+    minimum height=5em, rounded corners]
 \def\blockdist{2.3}
 \def\edgedist{2.5}
+
+
+
 
 \begin{tikzpicture}
 
 
 
-    \node (naveq) [naveqs] {Navigation equations};
+    \node (naveq) [naveqs] {\textbf{Bidirectional Diffusion Module} $\Psi$};
 
-
-    % Note the use of \path instead of \node at ... below. 
-    \path (naveq.140)+(-\blockdist,0) node (gyros) [sensor] {Gyros};
-    \path (naveq.-150)+(-\blockdist,0) node (accel) [sensor] {Accelero-meters};
+    \path (naveq.east)+(-\blockdist,0) node (gyros) [sensor] 
+        {\textbf{Sequence Transformer Encoder}$\phi_T$};
+    \path (naveq.-150)+(-\blockdist,0) node (accel) [sensor] 
+        {\textbf{Geometric GNN Encoder} $\phi_G$};
     
-    \draw[->, thick] (gyros.west)+(-2, 0) -- (gyros.west);
-    node[midway, above] {Text Label};
+    \draw[->] (gyros.west)+(-2, 0) -- (gyros.west) 
+    node[midway, above] {Sequence \par $\mathbf{s}$};
+
+    \draw[->] (accel.west)+(-2, 0) -- (accel.west) 
+    node[midway, above] {Structure Graph \\ $\mathcal{G}$};
 
     % Unfortunately we cant use the convenient \path (fromnode) -- (tonode) 
     % syntax here. This is because TikZ draws the path from the node centers
