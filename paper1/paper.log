@@ -1,8 +1,8 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2025.10.9)  9 OCT 2025 15:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2025.10.9)  10 OCT 2025 14:40
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**paper
+**paper.tex
 (./paper.tex
 LaTeX2e <2021-11-15> patch level 1
 L3 programming layer <2022-01-21>
@@ -814,119 +814,249 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+<Figures/arch1.pdf, id=253, 464.93398pt x 106.27304pt>
+File: Figures/arch1.pdf Graphic file (type pdf)
+<use Figures/arch1.pdf>
+Package pdftex.def Info: Figures/arch1.pdf  used on input line 185.
+(pdftex.def)             Requested size: 469.75502pt x 107.38033pt.
 
-LaTeX Warning: Reference `sec:theory' on page 2 undefined on input line 146.
+! Misplaced alignment tab character &.
+l.198 governed by i) $\mathbf{H}^G, \mathbf{H}^T &
+                                                  = \Psi(\phi_G(\mathcal{G}),
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
+! Misplaced alignment tab character &.
+l.199 ...label{eq:diffusion}$; ii) $\mathbf{h}_m &
+                                                  =
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
-LaTeX Warning: Reference `thm:convergence' on page 2 undefined on input line 14
-8.
+! Misplaced alignment tab character &.
+l.201 iii) $\Delta \Delta G &
+                             =\phi_P(\mathbf{h}_m) $$.
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
 
+! Missing $ inserted.
+<inserted text> 
+                $
+l.202 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
-LaTeX Warning: Reference `thm:approximation' on page 2 undefined on input line 
-149.
-
-
-LaTeX Warning: Reference `prop:rate' on page 2 undefined on input line 150.
-
-
-LaTeX Warning: Reference `sec:experiments' on page 2 undefined on input line 15
-3.
-
-<Figures/arch.pdf, id=163, 269.51692pt x 159.68658pt>
-File: Figures/arch.pdf Graphic file (type pdf)
-<use Figures/arch.pdf>
-Package pdftex.def Info: Figures/arch.pdf  used on input line 185.
-(pdftex.def)             Requested size: 375.80544pt x 222.67273pt.
-[2] [3 <./Figures/arch.pdf>]
-
-Package natbib Warning: Citation `jing2021learning' on page 4 undefined on inpu
-t line 250.
-
-[4] [5]
+[2 <./Figures/arch1.pdf>] [3]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 393.
- [6]
+put line 302.
+ [4]
+
+Package natbib Warning: Citation `kumar2006protherm' on page 5 undefined on inp
+ut line 363.
+
+
+Package natbib Warning: Citation `jankauskaite2019skempi' on page 5 undefined o
+n input line 365.
+
+
+Package natbib Warning: Citation `kellogg2011role' on page 5 undefined on input
+ line 367.
+
+
+Package natbib Warning: Citation `musil2017fireprotdb' on page 5 undefined on i
+nput line 369.
+
+
+Package natbib Warning: Citation `kabsch1983dssp' on page 5 undefined on input 
+line 371.
+
+
+Package natbib Warning: Citation `schymkowitz2005foldx' on page 5 undefined on 
+input line 377.
+
+
+Package natbib Warning: Citation `kellogg2011role' on page 5 undefined on input
+ line 378.
+
+
+Package natbib Warning: Citation `montanucci2022ddgun' on page 5 undefined on i
+nput line 383.
+
+
+Package natbib Warning: Citation `cao2019deepddg' on page 5 undefined on input 
+line 384.
+
+
+Package natbib Warning: Citation `li2020predicting' on page 5 undefined on inpu
+t line 385.
+
+
+Package natbib Warning: Citation `zhou2020mutation' on page 5 undefined on inpu
+t line 386.
+
+
+Package natbib Warning: Citation `meier2021language' on page 5 undefined on inp
+ut line 387.
+
+[5]
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 397.
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 397.
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 397.
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 501.
+ [6] [7]
+
+LaTeX Warning: File `figures/diffusion_rates.pdf' not found on input line 531.
+
+
+! Package pdftex.def Error: File `figures/diffusion_rates.pdf' not found: using
+ draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.531 ...columnwidth]{figures/diffusion_rates.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+LaTeX Warning: File `figures/attention_maps.pdf' not found on input line 548.
+
+
+! Package pdftex.def Error: File `figures/attention_maps.pdf' not found: using 
+draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.548 ...\columnwidth]{figures/attention_maps.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+[8] [9]
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 652.
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 652.
+
+Overfull \hbox (11.74312pt too wide) in paragraph at lines 652--653
+\OT1/ptm/b/n/10.95 1. Bidi-rec-tional dif-fu-sion is cru-cial. \OT1/ptm/m/n/10.
+95 One-way in-for-ma-tion flow (struc-ture\TS1/cmr/m/n/10.95 ^^Y\OT1/ptm/m/n/10
+.95 sequence or se-quence\TS1/cmr/m/n/10.95 ^^Y\OT1/ptm/m/n/10.95 structure)
+ []
+
+[10]
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 654.
+
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 503.
+(hyperref)                removing `math shift' on input line 685.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\Delta' on input line 503.
+(hyperref)                removing `\Delta' on input line 685.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 503.
+(hyperref)                removing `math shift' on input line 685.
 
 
-Package natbib Warning: Citation `capriotti2005mutant' on page 7 undefined on i
-nput line 505.
+Package natbib Warning: Citation `capriotti2005mutant' on page 11 undefined on 
+input line 687.
 
 
-Package natbib Warning: Citation `cheng2006prediction' on page 7 undefined on i
-nput line 505.
+Package natbib Warning: Citation `cheng2006prediction' on page 11 undefined on 
+input line 687.
 
 
-Package natbib Warning: Citation `meier2021language' on page 7 undefined on inp
-ut line 505.
+Package natbib Warning: Citation `meier2021language' on page 11 undefined on in
+put line 689.
 
 
-Package natbib Warning: Citation `rives2021biological' on page 7 undefined on i
-nput line 505.
+Package natbib Warning: Citation `rives2021biological' on page 11 undefined on 
+input line 689.
 
 
-Package natbib Warning: Citation `li2020predicting' on page 7 undefined on inpu
-t line 507.
+Package natbib Warning: Citation `li2020predicting' on page 11 undefined on inp
+ut line 693.
 
 
-Package natbib Warning: Citation `cao2019deepddg' on page 7 undefined on input 
-line 507.
+Package natbib Warning: Citation `cao2019deepddg' on page 11 undefined on input
+ line 693.
 
 
-Package natbib Warning: Citation `cao2019deepddg' on page 7 undefined on input 
-line 507.
+Package natbib Warning: Citation `cao2019deepddg' on page 11 undefined on input
+ line 694.
 
 
-Package natbib Warning: Citation `li2020predicting' on page 7 undefined on inpu
-t line 507.
+Package natbib Warning: Citation `li2020predicting' on page 11 undefined on inp
+ut line 695.
 
 
-Package natbib Warning: Citation `zhou2020mutation' on page 7 undefined on inpu
-t line 509.
+Package natbib Warning: Citation `zhou2020mutation' on page 11 undefined on inp
+ut line 698.
 
 
-Package natbib Warning: Citation `kipf2017semi' on page 7 undefined on input li
-ne 513.
+Package natbib Warning: Citation `kipf2017semi' on page 11 undefined on input l
+ine 704.
 
 
-Package natbib Warning: Citation `velivckovic2018graph' on page 7 undefined on 
-input line 513.
+Package natbib Warning: Citation `velivckovic2018graph' on page 11 undefined on
+ input line 704.
 
 
-Package natbib Warning: Citation `jing2021learning' on page 7 undefined on inpu
-t line 513.
+Package natbib Warning: Citation `jing2021learning' on page 11 undefined on inp
+ut line 707.
+
+[11]
+
+Package natbib Warning: Citation `vaswani2017attention' on page 12 undefined on
+ input line 712.
 
 
-Package natbib Warning: Citation `vaswani2017attention' on page 7 undefined on 
-input line 517.
+Package natbib Warning: Citation `rives2021biological' on page 12 undefined on 
+input line 714.
 
 
-Package natbib Warning: Citation `rives2021biological' on page 7 undefined on i
-nput line 517.
+Package natbib Warning: Citation `rao2021transformer' on page 12 undefined on i
+nput line 714.
 
 
-Package natbib Warning: Citation `rao2021transformer' on page 7 undefined on in
-put line 517.
+Package natbib Warning: Citation `klicpera2019diffusion' on page 12 undefined o
+n input line 720.
 
 
-Package natbib Warning: Citation `klicpera2019diffusion' on page 7 undefined on
- input line 521.
+Package natbib Warning: Citation `li2020deepergcn' on page 12 undefined on inpu
+t line 721.
 
-
-Package natbib Warning: Citation `li2020deepergcn' on page 7 undefined on input
- line 521.
-
-(./paper.bbl [7]
+(./paper.bbl [12]
 Underfull \hbox (badness 1072) in paragraph at lines 83--91
 []\OT1/ptm/m/n/10.95 Joshua Meier, Roshan Rao, Robert Verkuil, Ja-son Liu, Tom 
 Sercu, and Alex Rives.  Lan-guage
@@ -944,48 +1074,507 @@ Underfull \hbox (badness 1762) in paragraph at lines 83--91
 eurips . cc / paper _ files / paper / 2021 / file /
  []
 
-[8])
+) [13]
+
+Package natbib Warning: Citation `jing2021learning' on page 14 undefined on inp
+ut line 808.
+
+[14]
+
+! LaTeX Error: Environment definition undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.864 \begin{definition}
+                        [Optimal Structure-Aware Attention]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Undefined control sequence.
+l.867     \mathbf{A}^* = \argmin
+                                _{\mathbf{A}} \norm{\mathbf{A} - \mathbf{A}_...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+! LaTeX Error: \begin{document} ended by \end{definition}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.870 \end{definition}
+                      
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment theorem undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.872 \begin{theorem}
+                     [Convergence of Attention Diffusion]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{theorem}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.879 \end{theorem}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proof undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.881 \begin{proof}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{proof}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.901 \end{proof}
+                 
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proposition undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.903 \begin{proposition}
+                         [Convergence Rate]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+[15]
+
+! LaTeX Error: \begin{document} ended by \end{proposition}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.910 \end{proposition}
+                       
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proof undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.912 \begin{proof}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{proof}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.926 \end{proof}
+                 
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment definition undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.930 \begin{definition}
+                        [Function Space]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{definition}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.932 \end{definition}
+                      
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment theorem undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.934 \begin{theorem}
+                     [Superior Approximation of Joint Model]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Undefined control sequence.
+l.936 ...on $f^*: (\mathbf{s}, \mathcal{G}) \to \R
+                                                  $ satisfying structural-se...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+! LaTeX Error: \begin{document} ended by \end{theorem}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.941 \end{theorem}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proof undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.943 \begin{proof}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Package natbib Warning: Citation `xu2019powerful' on page 16 undefined on input
+ line 959.
+
+
+Package natbib Warning: Citation `yun2020transformers' on page 16 undefined on 
+input line 959.
+
+
+! LaTeX Error: \begin{document} ended by \end{proof}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.970 \end{proof}
+                 
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment corollary undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.972 \begin{corollary}
+                       [Sample Complexity]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{corollary}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.982 \end{corollary}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+[16]
+
+! LaTeX Error: Environment lemma undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.986 \begin{lemma}
+                   [Mutual Information Lower Bound]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{lemma}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.992 \end{lemma}
+                 
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proof undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.994 \begin{proof}
+                   
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{proof}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1011 \end{proof}
+                  
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment theorem undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1015 \begin{theorem}
+                      [Generalization Error]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Undefined control sequence.
+l.1018     \E
+             _{\text{test}}[\mathcal{L}(f_{\mathcal{S}})] \leq \hat{\mathcal...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+! LaTeX Error: \begin{document} ended by \end{theorem}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1021 \end{theorem}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proof undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1023 \begin{proof}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Package natbib Warning: Citation `mohri2018foundations' on page 17 undefined on
+ input line 1029.
+
+! Undefined control sequence.
+<argument>  &\E 
+                _{\text {test}}[\mathcal {L}(f)] - \hat {\mathcal {L}}_{\mat...
+l.1034 \end{align}
+                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+<argument>  &\E 
+                _{\text {test}}[\mathcal {L}(f)] - \hat {\mathcal {L}}_{\mat...
+l.1034 \end{align}
+                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+! LaTeX Error: \begin{document} ended by \end{proof}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1037 \end{proof}
+                  
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proposition undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1041 \begin{proposition}
+                          [Lipschitz Continuity]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+[17]
+
+! LaTeX Error: \begin{document} ended by \end{proposition}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1047 \end{proposition}
+                        
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: Environment proof undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1049 \begin{proof}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{document} ended by \end{proof}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1076 \end{proof}
+                  
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
 
 Package natbib Warning: There were undefined citations.
 
-[9] (./paper.aux)
-
-LaTeX Warning: There were undefined references.
-
+[18] [19] (./paper.aux)
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: D19533F3145E9C362AC8FDBCC9E8DEFF;4405.
+(rerunfilecheck)             Checksum: FF72C3956ABC9DDDA68AEA40A2E624F1;7794.
  ) 
 Here is how much of TeX's memory you used:
- 23311 strings out of 480247
- 430550 string characters out of 5896151
- 696703 words of memory out of 5000000
- 40719 multiletter control sequences out of 15000+600000
- 504924 words of font info for 110 fonts, out of 8000000 for 9000
+ 23505 strings out of 480247
+ 434403 string characters out of 5896151
+ 699065 words of memory out of 5000000
+ 40820 multiletter control sequences out of 15000+600000
+ 505265 words of font info for 111 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 84i,11n,89p,383b,629s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
-sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/ur
-w/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8
-a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/sha
-re/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on paper.pdf (9 pages, 268451 bytes).
+ 84i,18n,89p,496b,629s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texli
+ve/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmbx8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy
+8.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1095.pfb></usr/share/te
+xlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-d
+ist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr
+i8a.pfb>
+Output written on paper.pdf (19 pages, 319054 bytes).
 PDF statistics:
- 434 PDF objects out of 1000 (max. 8388607)
- 372 compressed objects within 4 object streams
- 119 named destinations out of 1000 (max. 500000)
- 226 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 646 PDF objects out of 1000 (max. 8388607)
+ 567 compressed objects within 6 object streams
+ 193 named destinations out of 1000 (max. 500000)
+ 394 words of extra memory for PDF output out of 10000 (max. 10000000)
 

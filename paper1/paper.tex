@@ -182,116 +182,25 @@ $f_\theta: (\mathbf{s}, \mathcal{G}, m) \rightarrow \Delta \Delta G$ by minimizi
 
 \begin{figure}[htbp]
 \centering
-    \includegraphics[width=0.8\textwidth]{Figures/arch.pdf}
+    \includegraphics[width=1.0\textwidth]{Figures/arch1.pdf}
 \caption{Architecture of our multi-modal framework with diffusively gated attention.}
 \label{fig:architecture}
 \end{figure}
 
-DGTN consists of four key components (Figure \ref{fig:architecture}):
+DGTN consists of four key components (Figure \ref{fig:architecture}): 1)
+\textbf{Geometric GNN Encoder} $\phi_G$: Processes structure graph
+$\mathcal{G}$ producing residue embeddings $\mathbf{H}^G \in R^{L \times d}$.
+2) \textbf{Sequence Transformer Encoder} $\phi_T$: Processes sequence
+$\mathbf{s}$ producing embeddings $\mathbf{H}^T \in R^{L \times d}$.  3)
+\textbf{Bidirectional Diffusion Module} $\Psi$: Co-learns GNN weights and
+Transformer attention through diffusion.  4) \textbf{Prediction Head} $\phi_P$:
+Generates $\Delta \Delta G$ from fused representations.  The forward pass is
+governed by i) $\mathbf{H}^G, \mathbf{H}^T &= \Psi(\phi_G(\mathcal{G}),
+\phi_T(\mathbf{s})) \label{eq:diffusion}$; ii) $\mathbf{h}_m &=
+\text{Aggregate}(\mathbf{H}^G, \mathbf{H}^T, m)$; 
+iii) $\Delta \Delta G &=\phi_P(\mathbf{h}_m) $$.
 
-\begin{enumerate}
-    \item \textbf{Geometric GNN Encoder} $\phi_G$: Processes structure graph $\mathcal{G}$ producing residue embeddings $\mathbf{H}^G \in R^{L \times d}$
-    \item \textbf{Sequence Transformer Encoder} $\phi_T$: Processes sequence $\mathbf{s}$ producing embeddings $\mathbf{H}^T \in R^{L \times d}$
-    \item \textbf{Bidirectional Diffusion Module} $\Psi$: Co-learns GNN weights and Transformer attention through diffusion
-    \item \textbf{Prediction Head} $\phi_P$: Generates $\Delta \Delta G$ from fused representations
-\end{enumerate}
 
-The forward pass is:
-\begin{align}
-    \mathbf{H}^G, \mathbf{H}^T &= \Psi(\phi_G(\mathcal{G}), \phi_T(\mathbf{s})) \label{eq:diffusion} \\
-    \mathbf{h}_m &= \text{Aggregate}(\mathbf{H}^G, \mathbf{H}^T, m) \\
-    \Delta \Delta G &= \phi_P(\mathbf{h}_m)
-\end{align}
-
-\subsection{Geometric Graph Neural Network}
-
-\subsubsection{Node Features}
-
-Each residue $i$ is initialized as:
-\begin{equation}
-    \mathbf{h}_i^{(0)} = [\mathbf{e}_{\text{aa}}(s_i); \mathbf{e}_{\text{pos}}(\mathbf{r}_i); \mathbf{f}_i]
-\end{equation}
-where:
-\begin{itemize}
-    \item $\mathbf{e}_{\text{aa}}(s_i) \in R^{d_a}$: learnable amino acid embedding
-    \item $\mathbf{e}_{\text{pos}}(\mathbf{r}_i) \in R^{d_p}$: coordinate encoding via MLP
-    \item $\mathbf{f}_i \in R^{d_f}$: additional features (secondary structure, solvent accessibility, B-factor)
-\end{itemize}
-
-\subsubsection{Edge Features}
-
-For edge $(i,j) \in \mathcal{E}$:
-\begin{equation}
-    \mathbf{e}_{ij} = \phi_{\text{edge}}(d_{ij}, \mathbf{v}_{ij}, \theta_{ijk})
-\end{equation}
-where:
-\begin{itemize}
-    \item $d_{ij} = \norm{\mathbf{r}_i - \mathbf{r}_j}$: Euclidean distance
-    \item $\mathbf{v}_{ij} = (\mathbf{r}_j - \mathbf{r}_i)/d_{ij}$: unit direction vector
-    \item $\theta_{ijk}$: bond angles (for backbone connectivity)
-\end{itemize}
-
-Edge encoder:
-\begin{equation}
-    \phi_{\text{edge}}(d, \mathbf{v}, \theta) = \text{MLP}([\text{RBF}(d); \mathbf{v}; \text{RBF}(\theta)])
-\end{equation}
-where $\text{RBF}$ is radial basis function expansion:
-\begin{equation}
-    \text{RBF}(x) = [\exp(-\gamma (x - \mu_k)^2)]_{k=1}^K
-\end{equation}
-
-\subsubsection{Geometric Message Passing}
-
-At layer $\ell$, messages are computed as:
-\begin{equation}
-    \mathbf{m}_{ij}^{(\ell)} = \phi_{\text{msg}}^{(\ell)}(\mathbf{h}_i^{(\ell)}, \mathbf{h}_j^{(\ell)}, \mathbf{e}_{ij})
-\end{equation}
-
-We use geometric attention \citep{jing2021learning}:
-\begin{align}
-    \alpha_{ij}^{(\ell)} &= \frac{\exp(a_{ij}^{(\ell)})}{\sum_{k \in \mathcal{N}(i)} \exp(a_{ik}^{(\ell)})} \\
-    a_{ij}^{(\ell)} &= \frac{1}{\sqrt{d}} \mathbf{q}_i^{(\ell)\top} \mathbf{k}_{ij}^{(\ell)} \\
-    \mathbf{k}_{ij}^{(\ell)} &= \mathbf{W}_k^{(\ell)} [\mathbf{h}_j^{(\ell)}; \mathbf{e}_{ij}]
-\end{align}
-
-Aggregation:
-\begin{equation}
-    \mathbf{h}_i^{(\ell+1)} = \sigma\left(\mathbf{W}_s^{(\ell)} \mathbf{h}_i^{(\ell)} + \sum_{j \in \mathcal{N}(i)} \alpha_{ij}^{(\ell)} \mathbf{W}_m^{(\ell)} [\mathbf{h}_j^{(\ell)}; \mathbf{e}_{ij}] \right)
-\end{equation}
-
-After $L_G$ layers:
-\begin{equation}
-    \mathbf{H}^G = [\mathbf{h}_1^{(L_G)}, \ldots, \mathbf{h}_L^{(L_G)}]^\top
-\end{equation}
-
-\subsection{Sequence Transformer}
-
-\subsubsection{Token Embedding}
-
-\begin{equation}
-    \mathbf{X}^{(0)} = \mathbf{E}_{\text{aa}}(\mathbf{s}) + \mathbf{E}_{\text{pos}}([1, \ldots, L])
-\end{equation}
-where $\mathbf{E}_{\text{pos}}$ uses sinusoidal encoding:
-\begin{align}
-    \text{PE}(p, 2i) &= \sin(p / 10000^{2i/d}) \\
-    \text{PE}(p, 2i+1) &= \cos(p / 10000^{2i/d})
-\end{align}
-
-\subsubsection{Multi-Head Self-Attention}
-
-Standard transformer attention at layer $\ell$:
-\begin{align}
-    \mathbf{Q}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_Q^{(\ell)} \\
-    \mathbf{K}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_K^{(\ell)} \\
-    \mathbf{V}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_V^{(\ell)} \\
-    \mathbf{A}^{(\ell)} &= \text{softmax}\left(\frac{\mathbf{Q}^{(\ell)} {\mathbf{K}^{(\ell)}}^\top}{\sqrt{d_k}}\right) \label{eq:vanilla_attn} \\
-    \mathbf{X}^{(\ell+1)} &= \text{FFN}(\mathbf{A}^{(\ell)} \mathbf{V}^{(\ell)} + \mathbf{X}^{(\ell)})
-\end{align}
-
-After $L_T$ layers:
-\begin{equation}
-    \mathbf{H}^T = \mathbf{X}^{(L_T)}
-\end{equation}
 
 \subsection{Bidirectional Diffusion Mechanism}
 \label{sec:diffusion}
@@ -447,6 +356,258 @@ MLP architecture:
 % - Experimental Setup
 % - Hyperparameters
 % - Evaluation Metrics
+\label{sec:experiments}
+
+\subsection{Datasets}
+
+\textbf{ProTherm} \citep{kumar2006protherm}: 5,166 single-point mutations across 1,228 proteins. Split: 70\% train (3,616), 15\% validation (775), 15\% test (775).
+
+\textbf{SKEMPI 2.0} \citep{jankauskaite2019skempi}: 7,085 mutations in 319 protein complexes. Used for interface mutation testing.
+
+\textbf{Ssym} \citep{kellogg2011role}: 628 mutations in symmetric proteins for generalization evaluation.
+
+\textbf{FireProtDB} \citep{musil2017fireprotdb}: 8,196 thermostability mutations for specialized testing.
+
+\textbf{Structure Processing:} PDB files preprocessed using BioPython. C$_\alpha$ atoms extracted. Edges constructed for pairs within 10 Å. DSSP \citep{kabsch1983dssp} for secondary structure. NACCESS for solvent accessibility.
+
+\subsection{Baselines}
+
+\textbf{Physics-based:}
+\begin{itemize}
+    \item FoldX 5.0 \citep{schymkowitz2005foldx}
+    \item Rosetta Delta Delta G\_monomer \citep{kellogg2011role}
+\end{itemize}
+
+\textbf{Machine Learning:}
+\begin{itemize}
+    \item DDGun3D \citep{montanucci2022ddgun}: Gradient boosting with structure features
+    \item DeepDDG \citep{cao2019deepddg}: 3D CNN + sequence
+    \item ThermoNet \citep{li2020predicting}: GCN on contact graphs
+    \item MutFormer \citep{zhou2020mutation}: Transformer on graphs
+    \item ESM-1v \citep{meier2021language}: Protein language model
+\end{itemize}
+
+\subsection{Implementation Details}
+
+\textbf{Model Configuration:}
+\begin{itemize}
+    \item GNN: 4 layers, hidden dim 256, 8 attention heads, dropout 0.1
+    \item Transformer: 6 layers, hidden dim 256, 8 heads, FFN dim 1024, dropout 0.1
+    \item Diffusion: $T=5$ steps, learnable $\beta, \gamma \in [0.1, 0.5]$
+    \item Prediction head: [768 → 384 → 192 → 1]
+\end{itemize}
+
+\textbf{Training:}
+\begin{itemize}
+    \item Optimizer: AdamW, $\text{lr}=10^{-4}$, weight decay $10^{-2}$
+    \item Batch size: 32
+    \item Epochs: 100 with early stopping (patience 15)
+    \item Loss: MSE with gradient clipping (max norm 1.0)
+    \item Hardware: NVIDIA A100 40GB GPU
+    \item Training time: 12 hours
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+
+\begin{itemize}
+    \item \textbf{Pearson correlation} $\rho$: Linear relationship
+    \item \textbf{Spearman correlation} $\rho_s$: Rank-based correlation
+    \item \textbf{RMSE}: Root mean squared error (kcal/mol)
+    \item \textbf{MAE}: Mean absolute error (kcal/mol)
+\end{itemize}
+
+\section{Results}
+
+\begin{table*}[htbp]
+\centering
+\caption{Performance on ProTherm test set. Best results in \textbf{bold}, second best \underline{underlined}.}
+\label{tab:main_results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Pearson} $\rho$ & \textbf{Spearman} $\rho_s$ & \textbf{RMSE} & \textbf{MAE} \\
+\midrule
+\multicolumn{5}{c}{\textit{Physics-based}} \\
+FoldX & 0.46 & 0.43 & 2.83 & 1.92 \\
+Rosetta & 0.53 & 0.51 & 2.61 & 1.78 \\
+\midrule
+\multicolumn{5}{c}{\textit{Machine Learning}} \\
+DDGun3D & 0.68 & 0.65 & 1.87 & 1.34 \\
+DeepDDG & 0.73 & 0.71 & 1.65 & 1.21 \\
+ThermoNet & 0.71 & 0.69 & 1.72 & 1.27 \\
+MutFormer & 0.76 & 0.74 & 1.58 & 1.15 \\
+ESM-1v & 0.78 & 0.76 & 1.52 & 1.12 \\
+\midrule
+\multicolumn{5}{c}{\textit{Ours}} \\
+DGTN (no diffusion) & \underline{0.81} & \underline{0.79} & \underline{1.38} & \underline{1.02} \\
+\textbf{DGTN (full)} & \textbf{0.87} & \textbf{0.85} & \textbf{1.21} & \textbf{0.94} \\
+\midrule
+Improvement over best baseline & +9\% & +9\% & -20\% & -16\% \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Key Observations:}
+\begin{itemize}
+    \item DGTN achieves $\rho=0.87$, significantly outperforming ESM-1v ($\rho=0.78$)
+    \item 20\% reduction in RMSE demonstrates practical improvement
+    \item Diffusion mechanism contributes 4.8 points to Pearson correlation
+\end{itemize}
+
+\subsection{Cross-Dataset Generalization}
+
+\begin{table*}[htbp]
+\centering
+\caption{Generalization to unseen datasets. Models trained on ProTherm, tested on others.}
+\label{tab:generalization}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{SKEMPI 2.0} & \textbf{Ssym} & \textbf{FireProtDB} \\
+\midrule
+DeepDDG & 0.62 & 0.58 & 0.66 \\
+MutFormer & 0.67 & 0.63 & 0.70 \\
+ESM-1v & 0.71 & 0.66 & 0.74 \\
+\textbf{DGTN} & \textbf{0.78} & \textbf{0.73} & \textbf{0.80} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+DGTN shows superior generalization, likely because co-learned structural-sequential features capture fundamental stability principles.
+
+\subsection{Ablation Studies}
+
+\begin{table*}[htbp]
+\centering
+\caption{Ablation study on ProTherm test set.}
+\label{tab:ablation}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Configuration} & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Params (M)} \\
+\midrule
+Sequence only (Transformer) & 0.74 & 1.59 & 8.2 \\
+Structure only (GNN) & 0.70 & 1.71 & 6.5 \\
+GNN + Trans (concat, no diffusion) & 0.79 & 1.42 & 14.7 \\
+GNN + Trans (learned fusion) & 0.81 & 1.38 & 15.1 \\
+\midrule
+\textbf{+ Attention diffusion only} & 0.84 & 1.31 & 15.3 \\
+\textbf{+ Graph diffusion only} & 0.82 & 1.35 & 15.3 \\
+\textbf{+ Bidirectional diffusion (full)} & \textbf{0.87} & \textbf{1.21} & \textbf{15.4} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item Bidirectional diffusion contributes 6 points over simple fusion
+    \item Attention diffusion (structure→sequence) contributes more (5 points) than graph diffusion (3 points)
+    \item Both directions together achieve best performance (synergistic effect)
+    \item Minimal parameter increase (4\%) for significant performance gain
+\end{enumerate}
+
+\subsection{Diffusion Step Analysis}
+
+\begin{table*}[htbp]
+\centering
+\caption{Effect of diffusion steps $T$ on performance.}
+\label{tab:diffusion_steps}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Diffusion Steps} $T$ & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Time (ms)} \\
+\midrule
+$T=1$ & 0.83 & 1.35 & 12 \\
+$T=3$ & 0.85 & 1.27 & 18 \\
+$T=5$ & \textbf{0.87} & \textbf{1.21} & 26 \\
+$T=7$ & 0.87 & 1.22 & 35 \\
+$T=10$ & 0.86 & 1.23 & 48 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Optimal at $T=5$. Beyond this, performance plateaus (consistent with Theorem \ref{thm:convergence}) while computational cost increases.
+
+\subsection{Learned Diffusion Rates}
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.8\columnwidth]{figures/diffusion_rates.pdf}
+\caption{Learned diffusion rates $\beta$ (attention diffusion) and $\gamma$ (graph diffusion) across layers. Error bars show standard deviation across 5 runs. Attention diffusion rate increases in deeper layers, while graph diffusion remains relatively constant.}
+\label{fig:diffusion_rates}
+\end{figure*}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item Attention diffusion rate $\beta$ increases from 0.15 (layer 1) to 0.42 (layer 6)
+    \item Deeper layers rely more on structural guidance
+    \item Graph diffusion rate $\gamma$ stable around 0.25
+    \item Supports hypothesis: Early layers learn local features, late layers integrate global structure-sequence coupling
+\end{itemize}
+
+\subsection{Attention Visualization}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/attention_maps.pdf}
+\caption{Attention maps for example mutation (L15V in lysozyme). \textbf{(a)} Vanilla attention focuses on sequential neighbors. \textbf{(b)} Diffused attention incorporates spatially proximal residues (marked with red boxes) that are distant in sequence. \textbf{(c)} 3D structure showing attended residues, confirming spatial proximity.}
+\label{fig:attention}
+\end{figure}
+
+Diffused attention successfully identifies spatially proximal residues (12-18 Å in sequence, <8 Å in 3D) that vanilla attention misses.
+
+\subsection{Case Study: Antibody Stabilization}
+
+\textbf{Objective:} Stabilize therapeutic IgG1 antibody (PDB: 1HZH) while preserving binding.
+
+\textbf{Approach:} Screen 2,000 single mutations in framework regions using DGTN.
+
+\textbf{Top predictions:}
+\begin{itemize}
+    \item L15V: $\Delta Delta G_{\text{pred}} = -1.8$ kcal/mol
+    \item T43A: $\Delta Delta G_{\text{pred}} = -1.5$ kcal/mol
+    \item S88L: $\Delta Delta G_{\text{pred}} = -1.3$ kcal/mol
+\end{itemize}
+
+\textbf{Experimental validation} (differential scanning fluorimetry):
+\begin{itemize}
+    \item L15V: $\Delta Delta G_{\text{exp}} = -1.6$ kcal/mol, $T_m$ +2.1°C
+    \item T43A: $\Delta Delta G_{\text{exp}} = -1.4$ kcal/mol, $T_m$ +1.8°C
+    \item S88L: $\Delta Delta G_{\text{exp}} = -1.1$ kcal/mol, $T_m$ +1.5°C
+    \item Combined variant: $T_m$ +4.9°C, binding affinity maintained ($K_D$ within 1.5-fold)
+\end{itemize}
+
+\textbf{Interpretation:} DGTN correctly identified hydrophobic core packing improvements detected by diffused attention connecting framework residues to CDR-proximal positions.
+
+\subsection{Computational Efficiency}
+
+\begin{table}[t]
+\centering
+\caption{Computational cost comparison (single mutation prediction).}
+\label{tab:efficiency}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Time (GPU)} & \textbf{Time (CPU)} \\
+\midrule
+FoldX & - & 180 s \\
+Rosetta & - & 300 s \\
+DeepDDG & 2.1 s & 12 s \\
+ESM-1v & 1.2 s & 8 s \\
+\textbf{DGTN (ours)} & \textbf{1.8 s} & \textbf{15 s} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+DGTN is 100× faster than physics-based methods while achieving higher accuracy. Comparable to other deep learning methods despite additional diffusion computation.
+
+\subsection{Error Analysis}
+
+\textbf{Large errors} ($|\Delta| > 2$ kcal/mol) occur in:
+\begin{itemize}
+    \item \textbf{Oligomeric interfaces} (18\% of errors): Model trained on monomers
+    \item \textbf{Cofactor binding sites} (12\%): Cofactors not explicitly modeled
+    \item \textbf{Large $|\Delta Delta G|$} values ($>$5 kcal/mol) (22\%): Training data imbalance
+    \item \textbf{Flexible loops} (15\%): Static structure limitation
+\end{itemize}
+
+\textbf{Future improvements:} Include oligomeric structures, model cofactors, use ensemble structures for flexibility.
+
 
 % 4. Results
 \section{Results}
@@ -486,6 +647,78 @@ MLP architecture:
 % - Limitations
 % - Practical Implications
 % - Theoretical Implications
+\subsection{Key Insights}
+
+\textbf{1. Bidirectional diffusion is crucial.} One-way information flow (structure→sequence or sequence→structure) provides limited benefit. Bidirectional coupling allows iterative refinement where each modality informs the other.
+
+\textbf{2. Learned diffusion rates adapt to layer depth.} The model learns to rely more on structural guidance in deeper layers, suggesting hierarchical feature integration: local features (early) → global structure-sequence coupling (late).
+
+\textbf{3. Theoretical guarantees match empirical observations.} Convergence in 5 steps aligns with Proposition \ref{prop:rate}. Superior generalization confirms Theorem \ref{thm:approximation}'s prediction about reduced approximation error.
+
+\textbf{4. Attention visualization validates mechanism.} Diffused attention successfully identifies spatially proximal but sequentially distant residues, directly confirming the intended behavior.
+
+\subsection{Comparison with Related Approaches}
+
+\textbf{vs. ESM-1v:} ESM-1v uses 650M parameters trained on 250M sequences but lacks explicit structural reasoning. DGTN achieves better performance with 40× fewer parameters by efficiently integrating structure.
+
+\textbf{vs. MutFormer:} MutFormer applies transformers to graphs but processes structure uniformly. DGTN's learnable diffusion rates allow adaptive structure-sequence coupling based on layer and context.
+
+\textbf{vs. DeepDDG:} DeepDDG uses 3D CNNs which are translationally invariant but lack permutation equivariance. GNNs are natural for graph-structured proteins.
+
+\subsection{Limitations}
+
+\textbf{1. Static structures:} Model uses single conformations, missing dynamic effects. Future work: integrate molecular dynamics ensembles or predicted structural distributions.
+
+\textbf{2. Single mutations only:} Current framework evaluates mutations independently. Extending to multiple mutations requires modeling epistatic interactions.
+
+\textbf{3. Training data bias:} ProTherm over-represents certain protein families (e.g., lysozyme 8\% of data). Transfer learning or domain adaptation could improve fairness.
+
+\textbf{4. Cofactors and ligands:} Not explicitly modeled. Including hetero
+
+
+\section{Related Work}
+% Situate your research within the existing body of work.
+
+\subsection{Machine Learning for $\Delta Delta G$ Prediction}
+
+\textbf{Sequence-based methods} \citep{capriotti2005mutant,cheng2006prediction}
+use evolutionary information but ignore 3D structure. Recent language models
+\citep{meier2021language,rives2021biological} achieve $\rho \approx 0.75-0.78$
+through unsupervised pretraining on millions of sequences, but remain limited
+without structural context.
+
+\textbf{Structure-based methods} \citep{li2020predicting,cao2019deepddg} employ
+3D CNNs or GNNs. DeepDDG \citep{cao2019deepddg} uses 3D convolutions achieving
+$\rho = 0.73$. ThermoNet \citep{li2020predicting} applies GCNs to residue
+interaction graphs ($\rho = 0.71$).
+
+\textbf{Hybrid approaches} \citep{zhou2020mutation} combine both modalities but
+use simple concatenation or independent encoders followed by late fusion,
+lacking mechanisms for cross-modal interaction during feature learning.
+
+\subsection{Graph Neural Networks for Proteins}
+
+GNNs \citep{kipf2017semi,velivckovic2018graph} naturally represent proteins as
+graphs where nodes are residues and edges represent spatial proximity or
+interactions. Recent work applies geometric GNNs incorporating distance and
+angular features \citep{jing2021learning}. However, these methods process
+structure in isolation from sequence context.
+
+\subsection{Transformers and Attention Mechanisms}
+
+Transformers \citep{vaswani2017attention} excel at capturing long-range
+dependencies in sequences. Protein-specific transformers
+\citep{rives2021biological,rao2021transformer} learn from evolutionary data but
+cannot directly incorporate 3D geometric information into attention
+computation.
+
+\subsection{Diffusion on Graphs and Attention}
+
+Graph diffusion \citep{klicpera2019diffusion} propagates information across
+graph structures. Attention diffusion \citep{li2020deepergcn} has been explored
+for stabilizing deep GNNs. Our work is the first to establish bidirectional
+diffusion between GNN and Transformer for protein property prediction with
+formal convergence guarantees.
 
 % 6. Conclusion
 \section{Conclusion}
@@ -493,32 +726,6 @@ MLP architecture:
 % - Summary of findings
 % - Significance
 % - Future Work
-
-% 7. Related Work
-\section{Related Work}
-% Situate your research within the existing body of work.
-% - Literature Review
-% - Critical Analysis
-% - Positioning
-\subsection{Machine Learning for $\Delta Delta G$ Prediction}
-
-\textbf{Sequence-based methods} \citep{capriotti2005mutant,cheng2006prediction} use evolutionary information but ignore 3D structure. Recent language models \citep{meier2021language,rives2021biological} achieve $\rho \approx 0.75-0.78$ through unsupervised pretraining on millions of sequences, but remain limited without structural context.
-
-\textbf{Structure-based methods} \citep{li2020predicting,cao2019deepddg} employ 3D CNNs or GNNs. DeepDDG \citep{cao2019deepddg} uses 3D convolutions achieving $\rho = 0.73$. ThermoNet \citep{li2020predicting} applies GCNs to residue interaction graphs ($\rho = 0.71$).
-
-\textbf{Hybrid approaches} \citep{zhou2020mutation} combine both modalities but use simple concatenation or independent encoders followed by late fusion, lacking mechanisms for cross-modal interaction during feature learning.
-
-\subsection{Graph Neural Networks for Proteins}
-
-GNNs \citep{kipf2017semi,velivckovic2018graph} naturally represent proteins as graphs where nodes are residues and edges represent spatial proximity or interactions. Recent work applies geometric GNNs incorporating distance and angular features \citep{jing2021learning}. However, these methods process structure in isolation from sequence context.
-
-\subsection{Transformers and Attention Mechanisms}
-
-Transformers \citep{vaswani2017attention} excel at capturing long-range dependencies in sequences. Protein-specific transformers \citep{rives2021biological,rao2021transformer} learn from evolutionary data but cannot directly incorporate 3D geometric information into attention computation.
-
-\subsection{Diffusion on Graphs and Attention}
-
-Graph diffusion \citep{klicpera2019diffusion} propagates information across graph structures. Attention diffusion \citep{li2020deepergcn} has been explored for stabilizing deep GNNs. Our work is the first to establish bidirectional diffusion between GNN and Transformer for protein property prediction with formal convergence guarantees.
 
 
 % 8. Acknowledgments
@@ -538,7 +745,6 @@ Graph diffusion \citep{klicpera2019diffusion} propagates information across grap
 % ------------------------------------------------
 \appendix
 
-\section{Appendix Title}
 % Include supplementary material that supports the paper but is too detailed for the main text.
 % - Mathematical Proofs
 % - Additional Figures or Tables
@@ -552,13 +758,98 @@ Graph diffusion \citep{klicpera2019diffusion} propagates information across grap
 % ------------------------------------------------
 % Document Ends
 % ------------------------------------------------
-\end{document}
+\section{Geometric Graph Neural Network}
+
+\subsection{Node Features}
+
+Each residue $i$ is initialized as:
+\begin{equation}
+    \mathbf{h}_i^{(0)} = [\mathbf{e}_{\text{aa}}(s_i); \mathbf{e}_{\text{pos}}(\mathbf{r}_i); \mathbf{f}_i]
+\end{equation}
+where:
+\begin{itemize}
+    \item $\mathbf{e}_{\text{aa}}(s_i) \in R^{d_a}$: learnable amino acid embedding
+    \item $\mathbf{e}_{\text{pos}}(\mathbf{r}_i) \in R^{d_p}$: coordinate encoding via MLP
+    \item $\mathbf{f}_i \in R^{d_f}$: additional features (secondary structure, solvent accessibility, B-factor)
+\end{itemize}
+
+\subsection{Edge Features}
+
+For edge $(i,j) \in \mathcal{E}$:
+\begin{equation}
+    \mathbf{e}_{ij} = \phi_{\text{edge}}(d_{ij}, \mathbf{v}_{ij}, \theta_{ijk})
+\end{equation}
+where:
+\begin{itemize}
+    \item $d_{ij} = \norm{\mathbf{r}_i - \mathbf{r}_j}$: Euclidean distance
+    \item $\mathbf{v}_{ij} = (\mathbf{r}_j - \mathbf{r}_i)/d_{ij}$: unit direction vector
+    \item $\theta_{ijk}$: bond angles (for backbone connectivity)
+\end{itemize}
+
+Edge encoder:
+\begin{equation}
+    \phi_{\text{edge}}(d, \mathbf{v}, \theta) = \text{MLP}([\text{RBF}(d); \mathbf{v}; \text{RBF}(\theta)])
+\end{equation}
+where $\text{RBF}$ is radial basis function expansion:
+\begin{equation}
+    \text{RBF}(x) = [\exp(-\gamma (x - \mu_k)^2)]_{k=1}^K
+\end{equation}
+
+\subsection{Geometric Message Passing}
+
+At layer $\ell$, messages are computed as:
+\begin{equation}
+    \mathbf{m}_{ij}^{(\ell)} = \phi_{\text{msg}}^{(\ell)}(\mathbf{h}_i^{(\ell)}, \mathbf{h}_j^{(\ell)}, \mathbf{e}_{ij})
+\end{equation}
+
+We use geometric attention \citep{jing2021learning}:
+\begin{align}
+    \alpha_{ij}^{(\ell)} &= \frac{\exp(a_{ij}^{(\ell)})}{\sum_{k \in \mathcal{N}(i)} \exp(a_{ik}^{(\ell)})} \\
+    a_{ij}^{(\ell)} &= \frac{1}{\sqrt{d}} \mathbf{q}_i^{(\ell)\top} \mathbf{k}_{ij}^{(\ell)} \\
+    \mathbf{k}_{ij}^{(\ell)} &= \mathbf{W}_k^{(\ell)} [\mathbf{h}_j^{(\ell)}; \mathbf{e}_{ij}]
+\end{align}
+
+Aggregation:
+\begin{equation}
+    \mathbf{h}_i^{(\ell+1)} = \sigma\left(\mathbf{W}_s^{(\ell)} \mathbf{h}_i^{(\ell)} + \sum_{j \in \mathcal{N}(i)} \alpha_{ij}^{(\ell)} \mathbf{W}_m^{(\ell)} [\mathbf{h}_j^{(\ell)}; \mathbf{e}_{ij}] \right)
+\end{equation}
+
+After $L_G$ layers:
+\begin{equation}
+    \mathbf{H}^G = [\mathbf{h}_1^{(L_G)}, \ldots, \mathbf{h}_L^{(L_G)}]^\top
+\end{equation}
 
 
+\section{Sequence Transformer}
+
+\subsection{Token Embedding}
+
+\begin{equation}
+    \mathbf{X}^{(0)} = \mathbf{E}_{\text{aa}}(\mathbf{s}) + \mathbf{E}_{\text{pos}}([1, \ldots, L])
+\end{equation}
+where $\mathbf{E}_{\text{pos}}$ uses sinusoidal encoding:
+\begin{align}
+    \text{PE}(p, 2i) &= \sin(p / 10000^{2i/d}) \\
+    \text{PE}(p, 2i+1) &= \cos(p / 10000^{2i/d})
+\end{align}
+
+\subsection{Multi-Head Self-Attention}
+
+Standard transformer attention at layer $\ell$:
+\begin{align}
+    \mathbf{Q}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_Q^{(\ell)} \\
+    \mathbf{K}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_K^{(\ell)} \\
+    \mathbf{V}^{(\ell)} &= \mathbf{X}^{(\ell)} \mathbf{W}_V^{(\ell)} \\
+    \mathbf{A}^{(\ell)} &= \text{softmax}\left(\frac{\mathbf{Q}^{(\ell)} {\mathbf{K}^{(\ell)}}^\top}{\sqrt{d_k}}\right) \label{eq:vanilla_attn} \\
+    \mathbf{X}^{(\ell+1)} &= \text{FFN}(\mathbf{A}^{(\ell)} \mathbf{V}^{(\ell)} + \mathbf{X}^{(\ell)})
+\end{align}
+
+After $L_T$ layers:
+\begin{equation}
+    \mathbf{H}^T = \mathbf{X}^{(L_T)}
+\end{equation}
 
 
-
-\section*{Methodology}
 
 \section{Theoretical Analysis}
 \label{sec:theory}
@@ -781,324 +1072,16 @@ Since $\norm{(\mathbf{I} - \beta \mathbf{\tilde{S}})^{-1}}_2 \leq 1/(1-\beta\lam
 \end{align}
 \end{proof}
 
-\section{Experiments}
-\label{sec:experiments}
-
-\subsection{Datasets}
-
-\textbf{ProTherm} \citep{kumar2006protherm}: 5,166 single-point mutations across 1,228 proteins. Split: 70\% train (3,616), 15\% validation (775), 15\% test (775).
-
-\textbf{SKEMPI 2.0} \citep{jankauskaite2019skempi}: 7,085 mutations in 319 protein complexes. Used for interface mutation testing.
-
-\textbf{Ssym} \citep{kellogg2011role}: 628 mutations in symmetric proteins for generalization evaluation.
-
-\textbf{FireProtDB} \citep{musil2017fireprotdb}: 8,196 thermostability mutations for specialized testing.
-
-\textbf{Structure Processing:} PDB files preprocessed using BioPython. C$_\alpha$ atoms extracted. Edges constructed for pairs within 10 Å. DSSP \citep{kabsch1983dssp} for secondary structure. NACCESS for solvent accessibility.
-
-\subsection{Baselines}
-
-\textbf{Physics-based:}
-\begin{itemize}
-    \item FoldX 5.0 \citep{schymkowitz2005foldx}
-    \item Rosetta Delta Delta G\_monomer \citep{kellogg2011role}
-\end{itemize}
-
-\textbf{Machine Learning:}
-\begin{itemize}
-    \item DDGun3D \citep{montanucci2022ddgun}: Gradient boosting with structure features
-    \item DeepDDG \citep{cao2019deepddg}: 3D CNN + sequence
-    \item ThermoNet \citep{li2020predicting}: GCN on contact graphs
-    \item MutFormer \citep{zhou2020mutation}: Transformer on graphs
-    \item ESM-1v \citep{meier2021language}: Protein language model
-\end{itemize}
-
-\subsection{Implementation Details}
-
-\textbf{Model Configuration:}
-\begin{itemize}
-    \item GNN: 4 layers, hidden dim 256, 8 attention heads, dropout 0.1
-    \item Transformer: 6 layers, hidden dim 256, 8 heads, FFN dim 1024, dropout 0.1
-    \item Diffusion: $T=5$ steps, learnable $\beta, \gamma \in [0.1, 0.5]$
-    \item Prediction head: [768 → 384 → 192 → 1]
-\end{itemize}
-
-\textbf{Training:}
-\begin{itemize}
-    \item Optimizer: AdamW, $\text{lr}=10^{-4}$, weight decay $10^{-2}$
-    \item Batch size: 32
-    \item Epochs: 100 with early stopping (patience 15)
-    \item Loss: MSE with gradient clipping (max norm 1.0)
-    \item Hardware: NVIDIA A100 40GB GPU
-    \item Training time: 12 hours
-\end{itemize}
-
-\subsection{Evaluation Metrics}
-
-\begin{itemize}
-    \item \textbf{Pearson correlation} $\rho$: Linear relationship
-    \item \textbf{Spearman correlation} $\rho_s$: Rank-based correlation
-    \item \textbf{RMSE}: Root mean squared error (kcal/mol)
-    \item \textbf{MAE}: Mean absolute error (kcal/mol)
-\end{itemize}
-
-\subsection{Main Results}
-
-\begin{table*}[htbp]
-\centering
-\caption{Performance on ProTherm test set. Best results in \textbf{bold}, second best \underline{underlined}.}
-\label{tab:main_results}
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Method} & \textbf{Pearson} $\rho$ & \textbf{Spearman} $\rho_s$ & \textbf{RMSE} & \textbf{MAE} \\
-\midrule
-\multicolumn{5}{c}{\textit{Physics-based}} \\
-FoldX & 0.46 & 0.43 & 2.83 & 1.92 \\
-Rosetta & 0.53 & 0.51 & 2.61 & 1.78 \\
-\midrule
-\multicolumn{5}{c}{\textit{Machine Learning}} \\
-DDGun3D & 0.68 & 0.65 & 1.87 & 1.34 \\
-DeepDDG & 0.73 & 0.71 & 1.65 & 1.21 \\
-ThermoNet & 0.71 & 0.69 & 1.72 & 1.27 \\
-MutFormer & 0.76 & 0.74 & 1.58 & 1.15 \\
-ESM-1v & 0.78 & 0.76 & 1.52 & 1.12 \\
-\midrule
-\multicolumn{5}{c}{\textit{Ours}} \\
-DGTN (no diffusion) & \underline{0.81} & \underline{0.79} & \underline{1.38} & \underline{1.02} \\
-\textbf{DGTN (full)} & \textbf{0.87} & \textbf{0.85} & \textbf{1.21} & \textbf{0.94} \\
-\midrule
-Improvement over best baseline & +9\% & +9\% & -20\% & -16\% \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-\textbf{Key Observations:}
-\begin{itemize}
-    \item DGTN achieves $\rho=0.87$, significantly outperforming ESM-1v ($\rho=0.78$)
-    \item 20\% reduction in RMSE demonstrates practical improvement
-    \item Diffusion mechanism contributes 4.8 points to Pearson correlation
-\end{itemize}
-
-\subsection{Cross-Dataset Generalization}
-
-\begin{table*}[htbp]
-\centering
-\caption{Generalization to unseen datasets. Models trained on ProTherm, tested on others.}
-\label{tab:generalization}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Method} & \textbf{SKEMPI 2.0} & \textbf{Ssym} & \textbf{FireProtDB} \\
-\midrule
-DeepDDG & 0.62 & 0.58 & 0.66 \\
-MutFormer & 0.67 & 0.63 & 0.70 \\
-ESM-1v & 0.71 & 0.66 & 0.74 \\
-\textbf{DGTN} & \textbf{0.78} & \textbf{0.73} & \textbf{0.80} \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-DGTN shows superior generalization, likely because co-learned structural-sequential features capture fundamental stability principles.
-
-\subsection{Ablation Studies}
-
-\begin{table*}[htbp]
-\centering
-\caption{Ablation study on ProTherm test set.}
-\label{tab:ablation}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Configuration} & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Params (M)} \\
-\midrule
-Sequence only (Transformer) & 0.74 & 1.59 & 8.2 \\
-Structure only (GNN) & 0.70 & 1.71 & 6.5 \\
-GNN + Trans (concat, no diffusion) & 0.79 & 1.42 & 14.7 \\
-GNN + Trans (learned fusion) & 0.81 & 1.38 & 15.1 \\
-\midrule
-\textbf{+ Attention diffusion only} & 0.84 & 1.31 & 15.3 \\
-\textbf{+ Graph diffusion only} & 0.82 & 1.35 & 15.3 \\
-\textbf{+ Bidirectional diffusion (full)} & \textbf{0.87} & \textbf{1.21} & \textbf{15.4} \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-\textbf{Key Findings:}
-\begin{enumerate}
-    \item Bidirectional diffusion contributes 6 points over simple fusion
-    \item Attention diffusion (structure→sequence) contributes more (5 points) than graph diffusion (3 points)
-    \item Both directions together achieve best performance (synergistic effect)
-    \item Minimal parameter increase (4\%) for significant performance gain
-\end{enumerate}
-
-\subsection{Diffusion Step Analysis}
-
-\begin{table*}[htbp]
-\centering
-\caption{Effect of diffusion steps $T$ on performance.}
-\label{tab:diffusion_steps}
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Diffusion Steps} $T$ & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Time (ms)} \\
-\midrule
-$T=1$ & 0.83 & 1.35 & 12 \\
-$T=3$ & 0.85 & 1.27 & 18 \\
-$T=5$ & \textbf{0.87} & \textbf{1.21} & 26 \\
-$T=7$ & 0.87 & 1.22 & 35 \\
-$T=10$ & 0.86 & 1.23 & 48 \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-Optimal at $T=5$. Beyond this, performance plateaus (consistent with Theorem \ref{thm:convergence}) while computational cost increases.
-
-\subsection{Learned Diffusion Rates}
-
-\begin{figure*}[htbp]
-\centering
-\includegraphics[width=0.8\columnwidth]{figures/diffusion_rates.pdf}
-\caption{Learned diffusion rates $\beta$ (attention diffusion) and $\gamma$ (graph diffusion) across layers. Error bars show standard deviation across 5 runs. Attention diffusion rate increases in deeper layers, while graph diffusion remains relatively constant.}
-\label{fig:diffusion_rates}
-\end{figure*}
-
-\textbf{Observations:}
-\begin{itemize}
-    \item Attention diffusion rate $\beta$ increases from 0.15 (layer 1) to 0.42 (layer 6)
-    \item Deeper layers rely more on structural guidance
-    \item Graph diffusion rate $\gamma$ stable around 0.25
-    \item Supports hypothesis: Early layers learn local features, late layers integrate global structure-sequence coupling
-\end{itemize}
-
-\subsection{Attention Visualization}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/attention_maps.pdf}
-\caption{Attention maps for example mutation (L15V in lysozyme). \textbf{(a)} Vanilla attention focuses on sequential neighbors. \textbf{(b)} Diffused attention incorporates spatially proximal residues (marked with red boxes) that are distant in sequence. \textbf{(c)} 3D structure showing attended residues, confirming spatial proximity.}
-\label{fig:attention}
-\end{figure}
-
-Diffused attention successfully identifies spatially proximal residues (12-18 Å in sequence, <8 Å in 3D) that vanilla attention misses.
-
-\subsection{Case Study: Antibody Stabilization}
-
-\textbf{Objective:} Stabilize therapeutic IgG1 antibody (PDB: 1HZH) while preserving binding.
-
-\textbf{Approach:} Screen 2,000 single mutations in framework regions using DGTN.
-
-\textbf{Top predictions:}
-\begin{itemize}
-    \item L15V: $\Delta Delta G_{\text{pred}} = -1.8$ kcal/mol
-    \item T43A: $\Delta Delta G_{\text{pred}} = -1.5$ kcal/mol
-    \item S88L: $\Delta Delta G_{\text{pred}} = -1.3$ kcal/mol
-\end{itemize}
-
-\textbf{Experimental validation} (differential scanning fluorimetry):
-\begin{itemize}
-    \item L15V: $\Delta Delta G_{\text{exp}} = -1.6$ kcal/mol, $T_m$ +2.1°C
-    \item T43A: $\Delta Delta G_{\text{exp}} = -1.4$ kcal/mol, $T_m$ +1.8°C
-    \item S88L: $\Delta Delta G_{\text{exp}} = -1.1$ kcal/mol, $T_m$ +1.5°C
-    \item Combined variant: $T_m$ +4.9°C, binding affinity maintained ($K_D$ within 1.5-fold)
-\end{itemize}
-
-\textbf{Interpretation:} DGTN correctly identified hydrophobic core packing improvements detected by diffused attention connecting framework residues to CDR-proximal positions.
-
-\subsection{Computational Efficiency}
-
-\begin{table}[t]
-\centering
-\caption{Computational cost comparison (single mutation prediction).}
-\label{tab:efficiency}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Method} & \textbf{Time (GPU)} & \textbf{Time (CPU)} \\
-\midrule
-FoldX & - & 180 s \\
-Rosetta & - & 300 s \\
-DeepDDG & 2.1 s & 12 s \\
-ESM-1v & 1.2 s & 8 s \\
-\textbf{DGTN (ours)} & \textbf{1.8 s} & \textbf{15 s} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-DGTN is 100× faster than physics-based methods while achieving higher accuracy. Comparable to other deep learning methods despite additional diffusion computation.
-
-\subsection{Error Analysis}
-
-\textbf{Large errors} ($|\Delta| > 2$ kcal/mol) occur in:
-\begin{itemize}
-    \item \textbf{Oligomeric interfaces} (18\% of errors): Model trained on monomers
-    \item \textbf{Cofactor binding sites} (12\%): Cofactors not explicitly modeled
-    \item \textbf{Large $|\Delta Delta G|$} values ($>$5 kcal/mol) (22\%): Training data imbalance
-    \item \textbf{Flexible loops} (15\%): Static structure limitation
-\end{itemize}
-
-\textbf{Future improvements:} Include oligomeric structures, model cofactors, use ensemble structures for flexibility.
-
-\section{Discussion}
-
-\subsection{Key Insights}
-
-\textbf{1. Bidirectional diffusion is crucial.} One-way information flow (structure→sequence or sequence→structure) provides limited benefit. Bidirectional coupling allows iterative refinement where each modality informs the other.
-
-\textbf{2. Learned diffusion rates adapt to layer depth.} The model learns to rely more on structural guidance in deeper layers, suggesting hierarchical feature integration: local features (early) → global structure-sequence coupling (late).
-
-\textbf{3. Theoretical guarantees match empirical observations.} Convergence in 5 steps aligns with Proposition \ref{prop:rate}. Superior generalization confirms Theorem \ref{thm:approximation}'s prediction about reduced approximation error.
-
-\textbf{4. Attention visualization validates mechanism.} Diffused attention successfully identifies spatially proximal but sequentially distant residues, directly confirming the intended behavior.
-
-\subsection{Comparison with Related Approaches}
-
-\textbf{vs. ESM-1v:} ESM-1v uses 650M parameters trained on 250M sequences but lacks explicit structural reasoning. DGTN achieves better performance with 40× fewer parameters by efficiently integrating structure.
-
-\textbf{vs. MutFormer:} MutFormer applies transformers to graphs but processes structure uniformly. DGTN's learnable diffusion rates allow adaptive structure-sequence coupling based on layer and context.
-
-\textbf{vs. DeepDDG:} DeepDDG uses 3D CNNs which are translationally invariant but lack permutation equivariance. GNNs are natural for graph-structured proteins.
-
-\subsection{Limitations}
-
-\textbf{1. Static structures:} Model uses single conformations, missing dynamic effects. Future work: integrate molecular dynamics ensembles or predicted structural distributions.
-
-\textbf{2. Single mutations only:} Current framework evaluates mutations independently. Extending to multiple mutations requires modeling epistatic interactions.
-
-\textbf{3. Training data bias:} ProTherm over-represents certain protein families (e.g., lysozyme 8\% of data). Transfer learning or domain adaptation could improve fairness.
-
-\textbf{4. Cofactors and ligands:} Not explicitly modeled. Including hetero
 
 
-\begin{acknowledgements}
-\blindtext
-\end{acknowledgements}
 
-\section*{Bibliography}
 
-\bibliographystyle{StyleBib}
-\bibliography{citations}
+
+
 
 \end{document}
-%% You can use these special %TC: tags to ignore certain parts of the text.
-%TC:ignore
-%the command above ignores this section for word count
-% \onecolumn
-% \newpage
-% 
-% \section*{Word Counts}
-% This section is \textit{not} included in the word count. 
-% \subsection*{Notes on Nature Methods Brief Communication}
-% \begin{itemize}
-% \item Abstract: 3 sentences, 70 words.
-% \item Main text: 3 pages, 2 figures, 1000-1500 words, more figures possible if under 3 pages
-% \end{itemize}
-% 
-% \subsection*{Statistics on word count}
-% \detailtexcount
-% \newpage
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % Supplementary Information %
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \captionsetup*{format=largeformat}
-% \section{Something about something} \label{note:Note1} 
-% \Blindtext
-% 
-%TC:endignore
-%the command above ignores this section for word count
+
+
+
+
+

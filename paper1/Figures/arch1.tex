@@ -1,6 +1,7 @@
 \documentclass[tikz,border=10pt]{standalone}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta}
+\usetikzlibrary{calc}
 
 \begin{document}
 \begin{tikzpicture}[
@@ -33,26 +34,50 @@
     }
 ]
 
+%     % --- 1. Define the offset coordinate ---
+%     % Calculate a point 0.5cm to the left of Block.west
+%     \coordinate (OffsetPoint) at ($(Block.west) + (-0.5cm, 0)$);
+% 
+%     % --- 2. Draw the arrow ---
+%     % Start the arrow further left and end at the calculated OffsetPoint
+%     \draw[->, very thick, red] (-4, 0) -- (OffsetPoint);
+% 
+%     % --- 3. Draw a connection from the offset to the node (if needed) ---
+%     % This path shows the small gap connecting the OffsetPoint to the Block
+%     \draw[thick, red] (OffsetPoint) -- (Block.west);
+
+
 % --- Nodes (relative positioning) ---
-\node[block0] (input1) {in 1};
-\node[block, right=0.5cm of input1] (cnn) {Geometric GNN \\ Encoder ($\phi_G$)};
+    \node[block0] (input1) {Structure \\ Graph ($\mathcal{G}$) };
+\node[block, right=0.5cm of input1] (gnn) {Geometric GNN \\ Encoder ($\phi_G$)};
 
-\node[block0, below=1cm of input1] (input2) {in 2};
-\node[block, right=0.5cm of input2] (gnn) {Sequence Transformer \\ Encoder ($\phi_T$)};
+    \node[block0, below=1cm of input1] (input2) {Sequence \\ ($\mathbf{s}$) };
+\node[block, right=0.5cm of input2] (cnn) {Sequence Transformer \\ Encoder ($\phi_T$)};
 
-\node[block, below right=0.cm and 2cm of cnn.south east, anchor=north west] (diff)
+\node[block, below right=0.cm and 2cm of gnn.south east, anchor=north west] (diff)
     {Bidirectional Diffusion \\ Module ($\Psi$)};
 
-\node[block, right=1cm of diff] (output) {out};
-\node[block0, right=0.5cm of output] (out) {ddg};
+    \node[block, right=1cm of diff] (output) {Prediction Head \\ ($\phi_P$)};
+\node[block0, right=0.5cm of output] (out) {$\Delta \Delta G$};
 
 % --- Arrows ---
-\draw[arrow] (input1) -- (cnn);
-\draw[arrow] (input2) -- (gnn);
-\draw[arrow] (cnn) -- (diff);
-\draw[arrow] (gnn) -- (diff);
+\draw[arrow] (input1) -- (gnn);
+    % node[midway, above] {Structure Graph \\ $\mathcal{G}$ };
+
+\draw[arrow] (input2) -- (cnn);
+\draw[arrow] (gnn.east) -| (diff.north);
+\draw[arrow] (cnn.east) -| (diff.south);
 \draw[arrow] (diff) -- (output);
 \draw[arrow] (output) -- (out);
+
+\draw[arrow, dashed] ($(diff.west) + (0, +0.1cm)$) -- (gnn.south east);
+
+\draw[arrow, dashed] ($(diff.west) + (0, -0.1cm)$) -- (cnn.north east);
+
+\draw[arrow, dashed] (output.north) |- ($(gnn.east) + (0, +0.2cm)$);
+
+\draw[arrow, dashed] (output.south) |- ($(cnn.east) + (0, -0.2cm)$);
+
 
 % --- Optional: feedback or vertical connection example ---
 % \node[block, below=1.5cm of fusion] (aux) {Auxiliary Module};
