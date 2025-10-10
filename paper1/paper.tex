@@ -647,78 +647,107 @@ DGTN is 100× faster than physics-based methods while achieving higher accuracy.
 % - Limitations
 % - Practical Implications
 % - Theoretical Implications
-\subsection{Key Insights}
+\subsection*{Key Insights}
 
-\textbf{1. Bidirectional diffusion is crucial.} One-way information flow (structure→sequence or sequence→structure) provides limited benefit. Bidirectional coupling allows iterative refinement where each modality informs the other.
+Our analysis reveals four core findings. First, bidirectional diffusion is
+essential: unidirectional information flow (e.g., structure to sequence alone)
+yields limited gains, whereas mutual refinement between modalities enables
+iterative co-adaptation that significantly boosts performance. Second, the
+model learns depth-dependent diffusion rates, placing greater emphasis on
+structural guidance in deeper layers—consistent with a hierarchical integration
+strategy where early layers capture local features and later layers fuse global
+structure–sequence relationships. 
+Finally,
+attention visualization confirms the mechanism’s efficacy: the diffused
+attention maps consistently highlight spatially proximal residues that are
+sequentially distant, directly demonstrating the model’s ability to bridge 3D
+geometry and sequence context as intended.
 
-\textbf{2. Learned diffusion rates adapt to layer depth.} The model learns to rely more on structural guidance in deeper layers, suggesting hierarchical feature integration: local features (early) → global structure-sequence coupling (late).
 
-\textbf{3. Theoretical guarantees match empirical observations.} Convergence in 5 steps aligns with Proposition \ref{prop:rate}. Superior generalization confirms Theorem \ref{thm:approximation}'s prediction about reduced approximation error.
+\subsection*{Comparison with Related Approaches}
 
-\textbf{4. Attention visualization validates mechanism.} Diffused attention successfully identifies spatially proximal but sequentially distant residues, directly confirming the intended behavior.
+Our method, DGTN, offers distinct advantages over existing approaches by
+design. Compared to ESM-1v—a large protein language model trained on 250
+million sequences with 650M parameters—DGTN achieves superior prediction
+performance despite using 40× fewer parameters, primarily by explicitly
+integrating 3D structural information rather than relying solely on
+evolutionary sequence patterns. In contrast to MutFormer, which applies
+Transformers to protein graphs but treats structural context uniformly across
+layers, DGTN employs learnable, depth-adaptive diffusion rates that enable
+dynamic, context-sensitive coupling between sequence and structure,
+strengthening their interaction in deeper layers where global dependencies
+matter most. Finally, while DeepDDG relies on 3D CNNs that assume translational
+invariance and operate on fixed voxel grids, DGTN leverages graph neural
+networks, which are inherently permutation-equivariant and better suited to the
+irregular, graph-structured nature of protein residues and their spatial
+interactions. This architectural choice not only respects the native geometry
+of proteins but also enables more faithful modeling of long-range and
+orientation-dependent interactions critical for stability prediction.
 
-\subsection{Comparison with Related Approaches}
+\subsection*{Study Limitations and Future Plan}
 
-\textbf{vs. ESM-1v:} ESM-1v uses 650M parameters trained on 250M sequences but lacks explicit structural reasoning. DGTN achieves better performance with 40× fewer parameters by efficiently integrating structure.
+% \item \textbf{Static structural representation:} 
+% \item \textbf{Limited to single-point mutations:} 
+% \item \textbf{Bias in training data:} 
 
-\textbf{vs. MutFormer:} MutFormer applies transformers to graphs but processes structure uniformly. DGTN's learnable diffusion rates allow adaptive structure-sequence coupling based on layer and context.
-
-\textbf{vs. DeepDDG:} DeepDDG uses 3D CNNs which are translationally invariant but lack permutation equivariance. GNNs are natural for graph-structured proteins.
-
-\subsection{Limitations}
-
-\textbf{1. Static structures:} Model uses single conformations, missing dynamic effects. Future work: integrate molecular dynamics ensembles or predicted structural distributions.
-
-\textbf{2. Single mutations only:} Current framework evaluates mutations independently. Extending to multiple mutations requires modeling epistatic interactions.
-
-\textbf{3. Training data bias:} ProTherm over-represents certain protein families (e.g., lysozyme 8\% of data). Transfer learning or domain adaptation could improve fairness.
-
-\textbf{4. Cofactors and ligands:} Not explicitly modeled. Including hetero
-
+DGTN operates on a single static conformation of the wild-type protein,
+which cannot capture dynamic or entropic contributions to stability. Future
+work will incorporate ensembles of structures—either from molecular dynamics
+simulations or predicted conformational distributions—to better model
+flexibility and allostery.
+Moreover, 
+the current DGTN framework evaluates mutations in isolation and does not explicitly
+model epistatic (non-additive) interactions between multiple substitutions.
+Extending the architecture to jointly represent combinatorial mutations—e.g.,
+via graph-based mutation encoding or interaction-aware attention—remains an
+important direction.
+Finally, the ProTherm dataset exhibits significant class imbalance, with certain protein
+families (e.g., lysozyme, constituting \textasciitilde8\% of entries)
+overrepresented. This may limit generalization to underrepresented folds.
+Strategies such as domain-adversarial training, balanced sampling, or
+cross-family transfer learning could improve robustness and fairness.
 
 \section{Related Work}
 % Situate your research within the existing body of work.
 
-\subsection{Machine Learning for $\Delta Delta G$ Prediction}
+Sequence-based methods use evolutionary information but ignore 3D structure.
+Recent language models~\cite{meier2021language,rives2021biological} achieve
+$\rho \approx 0.75-0.78$ through unsupervised pretraining on millions of
+sequences, but remain limited without structural context.  In contrast,
+structure-based methods~\cite{li2020predicting,cao2019deepddg} employ 3D CNNs
+or GNNs. DeepDDG~\cite{cao2019deepddg} uses 3D convolutions achieving $\rho =
+0.73$. ThermoNet \citep{li2020predicting} applies GCNs to residue interaction
+graphs ($\rho = 0.71$).  Recently, hybrid approaches~\cite{zhou2020mutation}
+combine both modalities but use simple concatenation or independent encoders
+followed by late fusion, lacking mechanisms for cross-modal interaction during
+feature learning.
 
-\textbf{Sequence-based methods} \citep{capriotti2005mutant,cheng2006prediction}
-use evolutionary information but ignore 3D structure. Recent language models
-\citep{meier2021language,rives2021biological} achieve $\rho \approx 0.75-0.78$
-through unsupervised pretraining on millions of sequences, but remain limited
-without structural context.
+% \subsection{Graph Neural Networks for Proteins}
 
-\textbf{Structure-based methods} \citep{li2020predicting,cao2019deepddg} employ
-3D CNNs or GNNs. DeepDDG \citep{cao2019deepddg} uses 3D convolutions achieving
-$\rho = 0.73$. ThermoNet \citep{li2020predicting} applies GCNs to residue
-interaction graphs ($\rho = 0.71$).
-
-\textbf{Hybrid approaches} \citep{zhou2020mutation} combine both modalities but
-use simple concatenation or independent encoders followed by late fusion,
-lacking mechanisms for cross-modal interaction during feature learning.
-
-\subsection{Graph Neural Networks for Proteins}
-
-GNNs \citep{kipf2017semi,velivckovic2018graph} naturally represent proteins as
+GNNs~\cite{kipf2017semi,velivckovic2018graph} naturally represent proteins as
 graphs where nodes are residues and edges represent spatial proximity or
 interactions. Recent work applies geometric GNNs incorporating distance and
-angular features \citep{jing2021learning}. However, these methods process
+angular features~\cite{jing2021learning}. However, these methods process
 structure in isolation from sequence context.
 
-\subsection{Transformers and Attention Mechanisms}
+% \subsection{Transformers and Attention Mechanisms}
 
-Transformers \citep{vaswani2017attention} excel at capturing long-range
-dependencies in sequences. Protein-specific transformers
-\citep{rives2021biological,rao2021transformer} learn from evolutionary data but
-cannot directly incorporate 3D geometric information into attention
-computation.
+Transformers~\cite{vaswani2017attention} excel at capturing long-range
+dependencies in sequences. Protein-specific
+transformers~\cite{rives2021biological,rao2021transformer} learn from
+evolutionary data but cannot directly incorporate 3D geometric information into
+attention computation.
 
-\subsection{Diffusion on Graphs and Attention}
+% {Diffusion on Graphs and Attention}
 
-Graph diffusion \citep{klicpera2019diffusion} propagates information across
-graph structures. Attention diffusion \citep{li2020deepergcn} has been explored
+Graph diffusion~\cite{klicpera2019diffusion} propagates information across
+graph structures. Attention diffusion \cite{li2020deepergcn} has been explored
 for stabilizing deep GNNs. Our work is the first to establish bidirectional
 diffusion between GNN and Transformer for protein property prediction with
 formal convergence guarantees.
+
+
+
 
 % 6. Conclusion
 \section{Conclusion}
@@ -726,6 +755,9 @@ formal convergence guarantees.
 % - Summary of findings
 % - Significance
 % - Future Work
+
+
+TBD
 
 
 % 8. Acknowledgments
