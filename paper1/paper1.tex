@@ -294,6 +294,11 @@ This enables the GNN to aggregate information from structurally relevant but pot
 
 
 
+
+
+
+\subsubsection{Joint Training Procedure}
+
 \begin{algorithm}
 \caption{Co-Learning via Bidirectional Diffusion}
 \begin{algorithmic}[1]
@@ -305,44 +310,18 @@ This enables the GNN to aggregate information from structurally relevant but pot
     \STATE // Transformer Forward  
     \STATE $\mathbf{A}_\ell = \text{Attention}_\ell(\mathbf{s}, \theta_T)$
     \STATE // Structure-guided attention diffusion
-    \STATE $\mathbf{A}_{\text{struct}, \ell} =
-    \text{Diffuse-Attention}(\mathbf{A}_\ell, \mathbf{S}, \beta_\ell, T)$ \quad
-    (Eq. \ref{eq:attn_diffusion})
-
+    \STATE $\mathbf{A}_{\text{struct}, \ell} = \text{Diffuse-Attention}(\mathbf{A}_\ell, \mathbf{S}, \beta_\ell, T)$ \quad (Eq. \ref{eq:attn_diffusion})
     \STATE // Attention-modulated graph diffusion
-    \STATE $\mathbf{S}_{\text{diff}, \ell} = \text{Diffuse-Graph}(\mathbf{S},
-    \mathbf{A}_{\text{struct}, \ell}, \gamma_\ell, T)$ \quad (Eq.
-    \ref{eq:graph_diffusion})
-
+    \STATE $\mathbf{S}_{\text{diff}, \ell} = \text{Diffuse-Graph}(\mathbf{S}, \mathbf{A}_{\text{struct}, \ell}, \gamma_\ell, T)$ \quad (Eq. \ref{eq:graph_diffusion})
     \STATE // Update with diffused structures
-    \STATE $\mathbf{H}^G_{\ell+1} =
-    \text{GNN-Layer}_{\ell+1}(\mathbf{S}_{\text{diff}, \ell},
-    \mathbf{H}^G_\ell)$
-
-    \STATE $\mathbf{H}^T_{\ell+1} =
-    \text{Transformer-Layer}_{\ell+1}(\mathbf{A}_{\text{struct}, \ell},
-    \mathbf{H}^T_\ell)$
-
+    \STATE $\mathbf{H}^G_{\ell+1} = \text{GNN-Layer}_{\ell+1}(\mathbf{S}_{\text{diff}, \ell}, \mathbf{H}^G_\ell)$
+    \STATE $\mathbf{H}^T_{\ell+1} = \text{Transformer-Layer}_{\ell+1}(\mathbf{A}_{\text{struct}, \ell}, \mathbf{H}^T_\ell)$
 \ENDFOR
 \STATE $\Delta \Delta G = \text{PredictionHead}(\mathbf{H}^G_L, \mathbf{H}^T_L, m)$
 \RETURN $\Delta \Delta G$
 \end{algorithmic}
 \end{algorithm}
 
-{\textbf Joint Training Procedure.} 
-Our co-learning algorithm jointly refines structural and sequential
-representations through \textit{bidirectional diffusion}. At each layer $\ell$,
-the GNN computes geometric-aware structural embeddings $\mathbf{H}^G_\ell$,
-while the Transformer generates sequence embeddings with mutation-aware
-attention $\mathbf{A}_\ell$. These modalities interact in two directions: (1)
-structural priors diffuse into the attention mechanism to produce
-geometry-guided attention weights $\mathbf{A}_{\text{struct},\ell}$, and (2)
-these attention weights modulate the graph adjacency to yield a refined,
-attention-informed structure $\mathbf{S}_{\text{diff},\ell}$. Both the GNN and
-Transformer are then updated using these diffused representations. This
-layer-wise mutual refinement enables the model to iteratively align 3D spatial
-context with evolutionary sequence patterns, culminating in a fused
-representation from which the final $\Delta\Delta G$ prediction is made.
 
 
 
@@ -792,53 +771,7 @@ specifically for interpretable, multi-modal protein property prediction.
 % - Future Work
 
 
-We present DGTN, a multi-modal framework that unifies geometric graph neural
-networks and mutation-aware Transformers through bidirectional diffusion,
-enabling mutual refinement of structural and sequential representations. By
-allowing GNN-derived structural priors to guide attention and
-Transformer-derived signals to modulate graph connectivity, DGTN effectively
-captures the coupling between 3D geometry and evolutionary sequence context.
-This yields state-of-the-art performance on ProTherm (Pearson $\rho$ = 0.87, RMSE =
-1.21 kcal/mol)—surpassing ESM-1v with 40x fewer parameters—and ablation studies
-confirm the diffusion mechanism alone contributes +4.8 points to correlation.
-Attention visualizations further validate that DGTN correctly identifies
-spatially proximate yet sequentially distant residue interactions.
-
-Beyond accuracy, these capabilities of DGTN enable
-practical protein design, as demonstrated in case studies on antibody
-thermostabilization, industrial enzyme engineering, and rescue of
-disease-causing mutations—all experimentally validated. Although currently
-limited to static structures and single-point mutations, DGTN establishes a
-principled, efficient, and interpretable paradigm for rational protein design,
-proving that integration, interaction, and interpretability are as essential as
-predictive performance in bridging AI with real-world biological discovery.
-
-
-
-% We presented DGTN, a multi-modal framework that co-learns structural and
-% sequential representations for protein stability prediction through
-% bidirectional diffusion between a geometric GNN and a mutation-aware
-% Transformer. By enabling mutual refinement—where structural priors guide
-% attention and attention modulates graph connectivity—DGTN captures the
-% interplay between 3D geometry and evolutionary sequence context more
-% effectively than prior methods.
-% 
-% DGTN achieves state-of-the-art performance on ProTherm ($\rho$=0.87 , RMSE = 1.21
-% kcal/mol), outperforming ESM-1v with 40x fewer parameters. Ablations confirm
-% the diffusion mechanism contributes +4.8 points to correlation, and attention
-% maps validate its ability to link spatially proximate yet sequentially distant
-% residues.
-% 
-% Beyond prediction, DGTN provides interpretable, actionable insights via
-% chain-of-thought reasoning and five search strategies (greedy, beam, Monte
-% Carlo, ensemble, constraint-based). Case studies in antibody engineering,
-% enzyme thermostabilization, and disease mutation rescue demonstrate real-world
-% utility, with experimental validation of predicted stabilizing mutations.
-% 
-% While limited to static structures and single-mutation evaluation, DGTN
-% establishes a principled, efficient, and interpretable paradigm for rational
-% protein design—proving that integration, interaction, and interpretability are
-% as critical as accuracy in bridging AI and experimental biology.
+TBD
 
 
 % 8. Acknowledgments
