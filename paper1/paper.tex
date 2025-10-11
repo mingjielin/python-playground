@@ -487,12 +487,25 @@ Improvement over best baseline & +9\% & +9\% & -20\% & -16\% \\
 \end{tabular}
 \end{table*}
 
-\textbf{Key Observations:}
-\begin{itemize}
-    \item DGTN achieves $\rho=0.87$, significantly outperforming ESM-1v ($\rho=0.78$)
-    \item 20\% reduction in RMSE demonstrates practical improvement
-    \item Diffusion mechanism contributes 4.8 points to Pearson correlation
-\end{itemize}
+Our model, DGTN, achieves state-of-the-art performance on the ProTherm
+test set with a Pearson correlation of 0.87, substantially outperforming the
+best prior method, ESM-1v ($\rho$ = 0.78), and all physics-based and machine
+learning baselines. This represents a 9\% relative improvement in correlation
+and a 20\% reduction in RMSE (from 1.52 to 1.21 kcal/mol), indicating not only
+better ranking of mutations but also more accurate absolute $\Delta \Delta G$
+predictions—critical for practical protein engineering. The ablation variant
+DGTN (no diffusion) already surpasses all existing methods ($\rho$ = 0.81),
+highlighting the strength of our multi-modal GNN–Transformer architecture;
+however, the full model with diffusively gated attention provides an additional
++0.06 gain in Pearson correlation, confirming that bidirectional
+structural–sequential diffusion is a key driver of performance. Together, these
+results demonstrate that explicitly modeling the interplay between 3D geometry
+and evolutionary sequence context—via a co-learned, diffused attention
+mechanism—yields both statistically and practically significant improvements in
+protein stability prediction.
+
+
+
 
 \subsection{Cross-Dataset Generalization}
 

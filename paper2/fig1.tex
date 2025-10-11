@@ -1,0 +1,221 @@
+% gnn_transformer_diffused_attention.tex
+% Compile with: pdflatex gnn_transformer_diffused_attention.tex
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,shadows,fit,calc,decorations.pathreplacing}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{varwidth}
+
+% --- Styling parameters (tweak these) ---
+\def\scale{1.0}
+\definecolor{colProtein}{RGB}{90,155,210}
+\definecolor{colEdge}{RGB}{80,120,160}
+\definecolor{colGNN}{RGB}{106,168,79}
+\definecolor{colTrans}{RGB}{66,133,244}
+\definecolor{colDiff}{RGB}{219,68,55}
+\definecolor{colProj}{RGB}{171,71,188}
+\definecolor{boxbg}{RGB}{250,250,250}
+\tikzset{
+  arr/.style={-{Latex[length=3mm,width=2mm]}, line width=0.9pt},
+  arrdashed/.style={-{Latex[length=3mm,width=2mm]}, dashed, line width=0.8pt},
+  module/.style={draw=black, fill=boxbg, rounded corners=2pt, inner sep=6pt, minimum width=36mm},
+  smallmod/.style={draw=black, fill=boxbg, rounded corners=2pt, inner sep=3pt, font=\footnotesize, minimum width=28mm},
+  circ/.style={circle, draw=black, fill=white, minimum size=7mm, inner sep=0pt, font=\small},
+  token/.style={rectangle, draw=black, rounded corners=1pt, minimum width=8mm, minimum height=6mm, inner sep=1pt},
+  lbl/.style={font=\footnotesize},
+  eqn/.style={font=\footnotesize\itshape}
+}
+
+\begin{document}
+\begin{tikzpicture}[scale=\scale, every node/.style={transform shape}]
+
+% -----------------------------
+% Title (for draft; remove for final)
+% -----------------------------
+\node[anchor=west,font=\bfseries] at (-9.8,6.8) {\large GNN \(\rightarrow\) Transformer with Diffusively Gated Attention};
+
+% =============================
+% Left: 3D Protein / geometric graph
+% =============================
+% stylized 3D protein cloud built from spheres
+\begin{scope}[shift={(-8.6,2)}]
+  % protein backbone spheres (3D impression by vertical offsets)
+  \foreach \i/\x/\y/\z in {
+    1/-0.9/0.2/0.6, 2/-0.4/0.7/0.9, 3/0.4/0.9/0.7, 4/1.0/0.6/0.3,
+    5/0.6/0.0/0.2, 6/0.0/-0.5/0.4, 7/-0.7/-0.7/0.6, 8/-1.2/-0.1/0.5, 9/-0.2/0.3/1.1
+  }{
+    \shade[ball color=colProtein!60!white] (\x,\y) circle (0.42cm);
+    \node[circ, minimum size=6mm, fill=colProtein!10] at (\x,\y) {};
+  }
+  % edges for structure
+  \draw[line width=0.8pt, color=colEdge] (-0.9,0.2) -- (-0.4,0.7) -- (0.4,0.9) -- (1.0,0.6) -- (0.6,0.0) -- (0.0,-0.5) -- (-0.7,-0.7) -- (-1.2,-0.1) -- (-0.9,0.2);
+  \draw[line width=0.7pt, color=colEdge] (-0.4,0.7) -- (-0.2,0.3);
+  % label
+  \node[lbl, anchor=north] at (0.2,-1.05) {3D protein structure (PDB)};
+  % arrow to conversion
+  \draw[arr] (1.3,0.6) -- (2.3,0.6) node[midway, above, font=\scriptsize] {construct geometric graph};
+\end{scope}
+
+% =============================
+% Graph / geometric graph representation (nodes as 3D coords)
+% =============================
+\node[module, anchor=west] (graphbox) at (-3.4,2.5) {\begin{minipage}{44mm}
+  \centering \textbf{Geometric Graph}\\
+  $G=(V,E)$ with node coords $\{p_v\in\mathbb{R}^3\}$ and node features $x_v$ \\
+  (distance / angle / torsion features, residue identity)
+\end{minipage}};
+
+% draw little graph inside/near the module
+\begin{scope}[shift={(-3.7,1.5)}]
+  \foreach \i/\x/\y in {1/0/0.5,2/0.7/1.0,3/1.5/0.2,4/0.6/-0.5,5/-0.4/-0.3}{
+    \node[circ, fill=colProtein!6] (gv\i) at (\x,\y) {$v_{\i}$};
+  }
+  \draw[line width=0.7pt] (gv1) -- (gv2) -- (gv3) -- (gv5) -- (gv4) -- (gv1);
+  \draw[line width=0.6pt] (gv2) -- (gv4);
+\end{scope}
+
+% arrow to GNN
+\draw[arr] (-1.3,2.5) -- (-0.1,2.5) node[midway, above,font=\scriptsize] {message passing};
+
+% =============================
+% GNN encoder with geometric attention
+% =============================
+\node[module, anchor=west, fill=colGNN!8] (gnn) at (0.6,2.0) {\begin{minipage}{54mm}
+  \centering \textbf{GNN Encoder (geometric attention)}\\[2pt]
+  Per-layer message passing with geometric attention:\\
+  \(\displaystyle m_{v}^{(t)}=\sum_{u\in\mathcal{N}(v)} \alpha_{uv}^{(t)}\; W_m h_u^{(t)},\quad
+    \alpha_{uv}^{(t)}=\mathrm{softmax}_u\big(f(h_u,h_v,\phi(p_u,p_v))\big)\)\\[3pt]
+  Output: node embeddings \(H=[h_v]_{v\in V}\)
+\end{minipage}};
+
+% small stack indicator
+\node[smallmod, below=of gnn, yshift=8pt] (gnnstack) {Stack of $L_{GNN}$ geometric attention layers};
+
+% arrow: embeddings to projection
+\draw[arr] (2.0,1.3) -- (3.2,1.3) node[midway, above, font=\scriptsize] {$H\in\mathbb{R}^{n\times d}$};
+
+% optional cross-link (GNN features -> Transformer K/V)
+\draw[arrdashed] (1.9,1.85) .. controls (2.6,1.9) and (3.2,2.7) .. (4.0,3.7) ;
+\node[lbl] at (3.25,2.55) {use as K/V (optional)};
+
+% =============================
+% Graph-to-sequence projection (learnable tokens / pooling)
+% =============================
+\node[smallmod, anchor=west, fill=colProj!10] (proj) at (3.6,1.0) {\begin{minipage}{40mm}\centering
+  Graph\(\to\)Sequence Projection \\ (learned readout tokens or pooling) \\
+  \(S = \mathrm{Proj}(H) = [\tau_1,\ldots,\tau_m]\)
+\end{minipage}};
+
+% tokens
+\foreach \i in {1,2,3,4}{
+  \node[token, anchor=west] (tok\i) at ($(proj.east)+(6mm + 10mm*(\i-1),0.0)$) {$\tau_{\i}$};
+}
+\draw[arr] (proj.east) -- (tok1.west);
+
+% labels for sequence (mutation info fed later)
+\node[lbl, anchor=west] at (6.9,0.2) {sequence tokens};
+
+% =============================
+% Sequence Transformer with mutation-aware attention
+% =============================
+\node[module, anchor=west, fill=colTrans!7] (trans) at (8.6,1.0) {\begin{minipage}{72mm}
+  \centering \textbf{Sequence Transformer (mutation-aware)}\\[2pt]
+  Standard multihead self-attention + mutation conditioning:\\[2pt]
+  \(\displaystyle A=\mathrm{softmax}\!\big(\tfrac{QK^\top}{\sqrt{d_k}}\big),\quad 
+    \widetilde A = \Psi_{\text{mut}}(A,M)\)\\
+  where \(M\) indicates mutation site / allele info (learned embedding)
+\end{minipage}};
+
+% arrow from tokens to transformer
+\draw[arr] ($(tok2.east)+(0,0)$) -- ($(trans.west)+(-9mm,0)$);
+
+% small note for mutation-aware attention
+\node[lbl] at (11.6,2.3) {mutation embeddings $M$ join Q/K/V / bias attention};
+
+% =============================
+% Diffusively gated attention fusion (visual center)
+% =============================
+% central block describing the fusion formula
+\node[module, anchor=west, fill=colDiff!6] (fusion) at (8.6,-2.2) {\begin{minipage}{74mm}
+  \centering \textbf{Diffusively Gated Attention Fusion}\\[2pt]
+  Combine Transformer attention and structural prior via a differentiable gate: \\[4pt]
+  \(\displaystyle A_{\text{struct}}=\Phi(G)\quad(\text{e.g. heat kernel, PPR, }e^{-\tau L})\)\\[4pt]
+  \(\displaystyle g = \sigma\big(w_g^\top[\mathrm{pool}(H),\,\mathrm{pool}(Y)] + b_g\big)\in[0,1]\)\\[4pt]
+  \(\displaystyle A_{\text{fused}} = g\odot A_{\text{struct}} + (1-g)\odot \widetilde A\)\\[4pt]
+  Attention output: \(O = A_{\text{fused}} V\)
+\end{minipage}};
+
+% arrows: structural prior from graph to fusion
+\draw[arrdashed] ($(graphbox.east)+(0,0.4)$) .. controls ($(graphbox.east)+(1.6,0.8)$) and ($(fusion.west)+( -18mm, 0.8)$) .. ($(fusion.west)+( -4mm, 0.7)$)
+ node[pos=0.62, above, font=\scriptsize] {compute $\Phi(G)$};
+
+% arrows: Transformer attention to fusion
+\draw[arr] ($(trans.south)+(0,-0.6)$) -- ($(fusion.north)+(0,0.5)$) node[midway,right,font=\scriptsize] {$\widetilde A$ / $Y$};
+
+% Labeled gate
+\node[smallmod, fill=colDiff!14, anchor=north] (gate) at ($(fusion.north)+(2.8,-0.9)$) {\begin{minipage}{28mm}\centering
+  Gate $g$\\ \(\sigma(\cdot)\) \end{minipage}};
+\draw[arr] (gate.west) -- ($(fusion.north)+( -6.8,-0.6)$);
+
+% =============================
+% Downstream outputs: Prediction head + reasoning modules
+% =============================
+\node[module, anchor=west, fill=boxbg] (pred) at (13.2,-2.2) {\begin{minipage}{56mm}
+  \centering \textbf{Prediction Head(s)}\\
+  - Stability / activity regression (MLP)\\
+  - Function classification (softmax)\\
+  - Per-residue effect (token-wise head)
+\end{minipage}};
+
+\draw[arr] ($(fusion.east)+(0,0)$) -- ($(pred.west)$) node[midway, above,font=\scriptsize] {fused token embeddings / pooled vector};
+
+% reasoning module (example: counterfactual / attribution / pathway)
+\node[smallmod, anchor=west, fill=boxbg] (reason) at (13.2,0.6) {\begin{minipage}{56mm}\centering
+  \textbf{Reasoning / Explainability}\\
+  - Attention attribution (A_fused)\\
+  - Counterfactual mutation simulation\\
+  - Local structural reweighting
+\end{minipage}};
+\draw[arr] ($(trans.east)+(5mm,0.6)$) -- ($(reason.west)+(0,0.0)$) node[midway, above,font=\scriptsize] {token embeddings / attention maps};
+
+% final outputs arrows to a small result panel
+\node[rectangle, draw=black, rounded corners=2pt, fill=white, minimum width=28mm, minimum height=18mm] (result) at (16.0,-4.5) {\begin{varwidth}{6.2cm}
+  \vspace{1pt}\centering \textbf{Final outputs}\\
+  Predicted ΔActivity, ΔStability, Important residues, Explanations
+  \vspace{1pt}
+\end{varwidth}};
+\draw[arr] (pred.east) -- (result.west);
+\draw[arr] (reason.south) .. controls +(0,-0.8) and +(-0.6,0.4) .. (result.north);
+
+% =============================
+% Legend & small equations
+% =============================
+% Put a compact legend on bottom-left
+\node[draw=none, anchor=west] at (-9.8,-3.6) {\begin{minipage}{7.8cm}
+  \vspace{0.8mm}\textbf{Legend / Notes:}\\[-2pt]
+  {\scriptsize
+  \begin{tabular}{@{}l@{}}
+   \(\Phi(G)\): structural diffusion / prior matrix (e.g.\ PPR, heat kernel \(e^{-\tau L}\)).\\
+   \(\widetilde A\): transformer attention (mutation-aware).\\
+   Gate \(g\) can be scalar, vector, or token-wise; learnable end-to-end.\\
+   Geometric attention \(f(h_u,h_v,\phi(p_u,p_v))\) encodes distances, angles, torsions.\\
+  \end{tabular}
+  }
+\end{minipage}};
+
+% small decorative brace and label for overall flow
+\draw[decorate, decoration={brace, amplitude=6pt}, thick] (-10.6,3.6) -- (5.8,3.6) node[midway, above=8pt,font=\small] {Structural path (left) \(\rightarrow\) representation \(\rightarrow\) Transformer fusion (center)};
+\draw[decorate, decoration={brace, amplitude=6pt}, thick] (5.5,-0.6) -- (16.8,-0.6) node[midway, above=8pt,font=\small] {Transformer path (top-right) \(\rightarrow\) diffused fusion \(\rightarrow\) outputs};
+
+% =============================
+% Fine-tuning hints (not printed in final)
+% =============================
+% (commented — left here for authors)
+% - To show token-to-node alignment lines, draw dashed lines from tokens to graph nodes.
+% - To display multi-block Transformer stack, replicate 'trans' vertically or add "xN" label.
+% - Replace the schematic 3D protein with an exported PDB cartoon image if desired in the paper.
+% - Use font and color adjustments to match journal style.
+
+\end{tikzpicture}
+\end{document}

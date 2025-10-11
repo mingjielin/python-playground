@@ -1,0 +1,78 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: paper.aux
+The style file: plainnat.bst
+Database file #1: citations.bib
+Repeated entry---line 271 of file citations.bib
+ : @inproceedings{NEURIPS2021_f51338d7
+ :                                    ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 375 of file citations.bib
+ : @article{rives2021biological
+ :                             ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 488 of file citations.bib
+ : @article{kellogg2011role
+ :                         ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 511 of file citations.bib
+ : @article{cao2019deepddg
+ :                        ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 522 of file citations.bib
+ : @article{li2020predicting
+ :                          ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 533 of file citations.bib
+ : @article{zhou2020mutation
+ :                          ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 544 of file citations.bib
+ : @inproceedings{meier2021language
+ :                                 ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "xu2019powerful"
+Warning--I didn't find a database entry for "yun2020transformers"
+Warning--I didn't find a database entry for "mohri2018foundations"
+You've used 30 entries,
+            2773 wiz_defined-function locations,
+            800 strings with 13532 characters,
+and the built_in function-call counts, 21878 in all, are:
+= -- 1790
+> -- 2013
+< -- 10
++ -- 675
+- -- 641
+* -- 2164
+:= -- 3479
+add.period$ -- 113
+call.type$ -- 30
+change.case$ -- 300
+chr.to.int$ -- 26
+cite$ -- 60
+duplicate$ -- 691
+empty$ -- 1285
+format.name$ -- 677
+if$ -- 4411
+int.to.chr$ -- 5
+int.to.str$ -- 1
+missing$ -- 30
+newline$ -- 180
+num.names$ -- 122
+pop$ -- 568
+preamble$ -- 1
+purify$ -- 270
+quote$ -- 0
+skip$ -- 620
+stack$ -- 0
+substring$ -- 712
+swap$ -- 97
+text.length$ -- 7
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 330
+warning$ -- 0
+while$ -- 132
+width$ -- 0
+write$ -- 438
+(There were 7 error messages)
