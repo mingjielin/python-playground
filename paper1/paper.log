@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2025.10.10)  11 OCT 2025 14:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2025.10.10)  11 OCT 2025 16:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -821,7 +821,7 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-<Figures/arch1.pdf, id=184, 480.68484pt x 105.63365pt>
+<Figures/arch1.pdf, id=180, 480.68484pt x 105.63365pt>
 File: Figures/arch1.pdf Graphic file (type pdf)
 <use Figures/arch1.pdf>
 Package pdftex.def Info: Figures/arch1.pdf  used on input line 194.
@@ -848,10 +848,29 @@ datasets for pro-tein sta-bil-ity pre-dic-tion. ProTherm []Ku-
  []
 
 [5] [6]
+<./Figures/plot1.pdf, id=331, 569.7191pt x 352.21336pt>
+File: ./Figures/plot1.pdf Graphic file (type pdf)
+<use ./Figures/plot1.pdf>
+Package pdftex.def Info: ./Figures/plot1.pdf  used on input line 540.
+(pdftex.def)             Requested size: 375.80544pt x 232.34329pt.
+<./Figures/ablation.pdf, id=333, 639.1146pt x 351.73822pt>
+File: ./Figures/ablation.pdf Graphic file (type pdf)
+<use ./Figures/ablation.pdf>
+Package pdftex.def Info: ./Figures/ablation.pdf  used on input line 591.
+(pdftex.def)             Requested size: 446.26582pt x 245.6086pt.
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 567.
- [7] [8] [9] [10] (./paper.bbl [11] [12]
+            Default family used instead on input line 615.
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family ptm in TS1 encoding.
+            Default family used instead on input line 616.
+ [7] [8 <./Figures/plot1.pdf> <./Figures/ablation.pdf>]
+<./Figures/attention.pdf, id=458, 638.88374pt x 238.62714pt>
+File: ./Figures/attention.pdf Graphic file (type pdf)
+<use ./Figures/attention.pdf>
+Package pdftex.def Info: ./Figures/attention.pdf  used on input line 676.
+(pdftex.def)             Requested size: 446.26582pt x 166.68465pt.
+ [9 <./Figures/attention.pdf>] [10] [11] (./paper.bbl [12] [13]
 Underfull \hbox (badness 1072) in paragraph at lines 171--179
 []\OT1/ptm/m/n/10.95 Joshua Meier, Roshan Rao, Robert Verkuil, Ja-son Liu, Tom 
 Sercu, and Alex Rives.  Lan-guage
@@ -863,36 +882,36 @@ Underfull \hbox (badness 1024) in paragraph at lines 171--179
 an Vaughan, ed-i-tors, \OT1/ptm/m/it/10.95 Ad-vances in
  []
 
-[13]) [14] [15] [16]
+[14]) [15] [16] [17]
 
-Package natbib Warning: Citation `xu2019powerful' on page 17 undefined on input
- line 1071.
+Package natbib Warning: Citation `xu2019powerful' on page 18 undefined on input
+ line 1135.
 
 
-Package natbib Warning: Citation `yun2020transformers' on page 17 undefined on 
-input line 1071.
-
-[17]
-
-Package natbib Warning: Citation `mohri2018foundations' on page 18 undefined on
- input line 1141.
+Package natbib Warning: Citation `yun2020transformers' on page 18 undefined on 
+input line 1135.
 
 [18]
 
+Package natbib Warning: Citation `mohri2018foundations' on page 19 undefined on
+ input line 1205.
+
+[19]
+
 Package natbib Warning: There were undefined citations.
 
-[19] (./paper.aux)
+[20] (./paper.aux)
 
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: C4B7E6439B70CA299FF956E4E86D5B64;4687.
+(rerunfilecheck)             Checksum: 7846EFD2C1F41D63020E5553BD0A8DCF;4546.
  ) 
 Here is how much of TeX's memory you used:
- 23532 strings out of 478287
- 434026 string characters out of 5849288
- 705416 words of memory out of 5000000
- 41098 multiletter control sequences out of 15000+600000
+ 23551 strings out of 478287
+ 434616 string characters out of 5849288
+ 705146 words of memory out of 5000000
+ 41116 multiletter control sequences out of 15000+600000
  509955 words of font info for 116 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,18n,89p,1021b,630s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -918,10 +937,10 @@ ve/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/f
 onts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw
 /times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.
 pfb>
-Output written on paper.pdf (19 pages, 350171 bytes).
+Output written on paper.pdf (20 pages, 420167 bytes).
 PDF statistics:
- 660 PDF objects out of 1000 (max. 8388607)
- 584 compressed objects within 6 object streams
- 210 named destinations out of 1000 (max. 500000)
- 258 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 824 PDF objects out of 1000 (max. 8388607)
+ 604 compressed objects within 7 object streams
+ 207 named destinations out of 1000 (max. 500000)
+ 265 words of extra memory for PDF output out of 10000 (max. 10000000)
 

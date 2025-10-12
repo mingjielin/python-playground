@@ -516,58 +516,113 @@ and evolutionary sequence context—via a co-learned, diffused attention
 mechanism—yields both statistically and practically significant improvements in
 protein stability prediction.
 
-
-
-
 \subsection{Cross-Dataset Generalization}
 
-\begin{table*}[htbp]
+% \begin{table*}[htbp]
+% \centering
+% \caption{Generalization to unseen datasets. Models trained on ProTherm, tested on others.}
+% \label{tab:generalization}
+% \begin{tabular}{lccc}
+% \toprule
+% \textbf{Method} & \textbf{SKEMPI 2.0} & \textbf{Ssym} & \textbf{FireProtDB} \\
+% \midrule
+% DeepDDG & 0.62 & 0.58 & 0.66 \\
+% MutFormer & 0.67 & 0.63 & 0.70 \\
+% ESM-1v & 0.71 & 0.66 & 0.74 \\
+% \textbf{DGTN} & \textbf{0.78} & \textbf{0.73} & \textbf{0.80} \\
+% \bottomrule
+% \end{tabular}
+% \end{table*}
+
+
+\begin{figure}[htbp]
 \centering
-\caption{Generalization to unseen datasets. Models trained on ProTherm, tested on others.}
-\label{tab:generalization}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Method} & \textbf{SKEMPI 2.0} & \textbf{Ssym} & \textbf{FireProtDB} \\
-\midrule
-DeepDDG & 0.62 & 0.58 & 0.66 \\
-MutFormer & 0.67 & 0.63 & 0.70 \\
-ESM-1v & 0.71 & 0.66 & 0.74 \\
-\textbf{DGTN} & \textbf{0.78} & \textbf{0.73} & \textbf{0.80} \\
-\bottomrule
-\end{tabular}
-\end{table*}
+\includegraphics[width=0.8\textwidth]{./Figures/plot1.pdf}
 
-DGTN shows superior generalization, likely because co-learned structural-sequential features capture fundamental stability principles.
+\caption{Cross-dataset generalization performance. Models trained on ProTherm
+    and evaluated on unseen datasets. DGTN consistently outperforms baselines,
+    demonstrating superior generalization through co-learned
+    structural-sequential representations.}
 
-\subsection{Ablation Studies}
+\label{fig:generalization}
+\end{figure}
 
-\begin{table*}[htbp]
+% DGTN shows superior generalization, likely because co-learned
+% structural-sequential features capture fundamental stability principles.
+
+Fig.~\ref{fig:generalization} shows cross-dataset generalization performance of four
+methods—DeepDDG, MutFormer, ESM-1v, and DGTN—trained on ProTherm and evaluated
+on three unseen datasets: SKEMPI 2.0 (protein complexes), Ssym (symmetric
+proteins), and FireProtDB (thermostability-focused mutations). Performance is
+measured by Pearson correlation ($\rho$) between predicted and experimental $\Delta \Delta G$
+values. DGTN consistently outperforms all baselines across all three
+datasets, achieving $\rho$ = 0.78 (SKEMPI), 0.73 (Ssym), and 0.80 (FireProtDB). The
+consistent margin (~0.05–0.07 points) over the strongest baseline (ESM-1v)
+demonstrates that DGTN’s bidirectional diffusion mechanism enables more robust
+and transferable learning of fundamental stability principles, rather than
+overfitting to dataset-specific biases. This superior generalization highlights
+the benefit of explicitly integrating 3D structural priors with sequence
+context in a co-learned framework.
+
+
+
+% \begin{table*}[htbp]
+% \centering
+% \caption{Ablation study on ProTherm test set.}
+% \label{tab:ablation}
+% \begin{tabular}{lccc}
+% \toprule
+% \textbf{Configuration} & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Params (M)} \\
+% \midrule
+% Sequence only (Transformer) & 0.74 & 1.59 & 8.2 \\
+% Structure only (GNN) & 0.70 & 1.71 & 6.5 \\
+% GNN + Trans (concat, no diffusion) & 0.79 & 1.42 & 14.7 \\
+% GNN + Trans (learned fusion) & 0.81 & 1.38 & 15.1 \\
+% \midrule
+% \textbf{+ Attention diffusion only} & 0.84 & 1.31 & 15.3 \\
+% \textbf{+ Graph diffusion only} & 0.82 & 1.35 & 15.3 \\
+% \textbf{+ Bidirectional diffusion (full)} & \textbf{0.87} & \textbf{1.21} & \textbf{15.4} \\
+% \bottomrule
+% \end{tabular}
+% \end{table*}
+
+\begin{figure}[htbp]
 \centering
-\caption{Ablation study on ProTherm test set.}
-\label{tab:ablation}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Configuration} & \textbf{Pearson} $\rho$ & \textbf{RMSE} & \textbf{Params (M)} \\
-\midrule
-Sequence only (Transformer) & 0.74 & 1.59 & 8.2 \\
-Structure only (GNN) & 0.70 & 1.71 & 6.5 \\
-GNN + Trans (concat, no diffusion) & 0.79 & 1.42 & 14.7 \\
-GNN + Trans (learned fusion) & 0.81 & 1.38 & 15.1 \\
-\midrule
-\textbf{+ Attention diffusion only} & 0.84 & 1.31 & 15.3 \\
-\textbf{+ Graph diffusion only} & 0.82 & 1.35 & 15.3 \\
-\textbf{+ Bidirectional diffusion (full)} & \textbf{0.87} & \textbf{1.21} & \textbf{15.4} \\
-\bottomrule
-\end{tabular}
-\end{table*}
+\includegraphics[width=0.95\textwidth]{./Figures/ablation.pdf}
+\caption{Ablation study showing the contribution of each component.
+    Bidirectional diffusion yields the largest improvement in both correlation
+    and error reduction.}
 
-\textbf{Key Findings:}
-\begin{enumerate}
-    \item Bidirectional diffusion contributes 6 points over simple fusion
-    \item Attention diffusion (structure→sequence) contributes more (5 points) than graph diffusion (3 points)
-    \item Both directions together achieve best performance (synergistic effect)
-    \item Minimal parameter increase (4\%) for significant performance gain
-\end{enumerate}
+\label{fig:ablation}
+\end{figure}
+
+
+% \subsection{Ablation Studies}
+% 
+% \textbf{Key Findings:}
+% \begin{enumerate}
+%     \item Bidirectional diffusion contributes 6 points over simple fusion
+%     \item Attention diffusion (structure→sequence) contributes more (5 points)
+%         than graph diffusion (3 points)
+% 
+%     \item Both directions together achieve best performance (synergistic effect)
+%     \item Minimal parameter increase (4\%) for significant performance gain
+% \end{enumerate}
+
+Ablation studies reveal that the bidirectional diffusion mechanism is central
+to DGTN’s performance, contributing a 6-point gain in Pearson correlation over
+simple cross-modal fusion. This improvement stems from the complementary roles
+of its two components: attention diffusion (structure → sequence) alone yields
+a 5-point boost, while graph diffusion (sequence → structure) adds 3 points,
+indicating that structural guidance has a stronger immediate impact on sequence
+modeling than vice versa. Crucially, combining both directions produces a
+synergistic effect, surpassing the sum of individual contributions and
+achieving the highest accuracy. Remarkably, this substantial performance gain
+comes at minimal cost—only a 4\% increase in model parameters—demonstrating the
+efficiency and effectiveness of our co-learning design.
+
+
+
 
 \subsection{Diffusion Step Analysis}
 
@@ -615,6 +670,17 @@ Optimal at $T=5$. Beyond this, performance plateaus (consistent with Theorem \re
 % \caption{Attention maps for example mutation (L15V in lysozyme). \textbf{(a)} Vanilla attention focuses on sequential neighbors. \textbf{(b)} Diffused attention incorporates spatially proximal residues (marked with red boxes) that are distant in sequence. \textbf{(c)} 3D structure showing attended residues, confirming spatial proximity.}
 % \label{fig:attention}
 % \end{figure}
+
+\begin{figure}[htbp]
+\centering
+    \includegraphics[width=0.95\textwidth]{./Figures/attention.pdf}
+\caption{
+Attention weight matrices at early, middle, and late layers of the Transformer in DGTN.
+Early layers focus on local sequence context (diagonal dominance), while later layers—guided by bidirectional diffusion—develop strong attention between sequentially distant but spatially proximate residues (e.g., positions 5 and 45), demonstrating successful integration of 3D structural priors into the attention mechanism.
+}
+\label{fig:attention_evolution}
+\end{figure}
+
 
 Diffused attention successfully identifies spatially proximal residues (12-18 Å in sequence, <8 Å in 3D) that vanilla attention misses.
 

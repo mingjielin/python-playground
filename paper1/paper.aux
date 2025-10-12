@@ -56,27 +56,28 @@
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Performance on ProTherm test set. Best results in \textbf  {bold}, second best \underline  {underlined}.\relax }}{7}{table.caption.6}\protected@file@percent }
 \newlabel{tab:main_results}{{2}{7}{Performance on ProTherm test set. Best results in \textbf {bold}, second best \underline {underlined}.\relax }{table.caption.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Cross-Dataset Generalization}{7}{subsection.4.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Generalization to unseen datasets. Models trained on ProTherm, tested on others.\relax }}{7}{table.caption.7}\protected@file@percent }
-\newlabel{tab:generalization}{{3}{7}{Generalization to unseen datasets. Models trained on ProTherm, tested on others.\relax }{table.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Ablation Studies}{7}{subsection.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Ablation study on ProTherm test set.\relax }}{8}{table.caption.8}\protected@file@percent }
-\newlabel{tab:ablation}{{4}{8}{Ablation study on ProTherm test set.\relax }{table.caption.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Diffusion Step Analysis}{8}{subsection.4.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Effect of diffusion steps $T$ on performance.\relax }}{8}{table.caption.9}\protected@file@percent }
-\newlabel{tab:diffusion_steps}{{5}{8}{Effect of diffusion steps $T$ on performance.\relax }{table.caption.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Learned Diffusion Rates}{8}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Attention Visualization}{8}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Case Study: Antibody Stabilization}{8}{subsection.4.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Computational cost comparison (single mutation prediction).\relax }}{9}{table.caption.10}\protected@file@percent }
-\newlabel{tab:efficiency}{{6}{9}{Computational cost comparison (single mutation prediction).\relax }{table.caption.10}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Computational Efficiency}{9}{subsection.4.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Error Analysis}{9}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Diffusion Step Analysis}{7}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Cross-dataset generalization performance. Models trained on ProTherm and evaluated on unseen datasets. DGTN consistently outperforms baselines, demonstrating superior generalization through co-learned structural-sequential representations.\relax }}{8}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:generalization}{{2}{8}{Cross-dataset generalization performance. Models trained on ProTherm and evaluated on unseen datasets. DGTN consistently outperforms baselines, demonstrating superior generalization through co-learned structural-sequential representations.\relax }{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Ablation study showing the contribution of each component. Bidirectional diffusion yields the largest improvement in both correlation and error reduction.\relax }}{8}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:ablation}{{3}{8}{Ablation study showing the contribution of each component. Bidirectional diffusion yields the largest improvement in both correlation and error reduction.\relax }{figure.caption.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Effect of diffusion steps $T$ on performance.\relax }}{9}{table.caption.9}\protected@file@percent }
+\newlabel{tab:diffusion_steps}{{3}{9}{Effect of diffusion steps $T$ on performance.\relax }{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Learned Diffusion Rates}{9}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Attention Visualization}{9}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces  Attention weight matrices at early, middle, and late layers of the Transformer in DGTN. Early layers focus on local sequence context (diagonal dominance), while later layers—guided by bidirectional diffusion—develop strong attention between sequentially distant but spatially proximate residues (e.g., positions 5 and 45), demonstrating successful integration of 3D structural priors into the attention mechanism. \relax }}{9}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:attention_evolution}{{4}{9}{Attention weight matrices at early, middle, and late layers of the Transformer in DGTN. Early layers focus on local sequence context (diagonal dominance), while later layers—guided by bidirectional diffusion—develop strong attention between sequentially distant but spatially proximate residues (e.g., positions 5 and 45), demonstrating successful integration of 3D structural priors into the attention mechanism. \relax }{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Case Study: Antibody Stabilization}{9}{subsection.4.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Computational cost comparison (single mutation prediction).\relax }}{10}{table.caption.11}\protected@file@percent }
+\newlabel{tab:efficiency}{{4}{10}{Computational cost comparison (single mutation prediction).\relax }{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Computational Efficiency}{10}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Error Analysis}{10}{subsection.4.7}\protected@file@percent }
 \citation{meier2021language,rives2021biological}
 \citation{cao2019deepddg}
 \citation{li2020predicting}
 \citation{zhou2020mutation}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{10}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{10}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{11}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{11}{section.6}\protected@file@percent }
 \citation{kipf2017semi,velivckovic2018graph}
 \citation{jing2021learning}
 \citation{vaswani2017attention}
@@ -87,7 +88,7 @@
 \bibdata{citations}
 \bibcite{Bashour2024}{{1}{2024}{{Bashour et~al.}}{{Bashour, Smorodina, Pariset, Zhong, Akbar, Chernigovskaya, L{\^e}~Qu{\'y}, Snapkow, Rawat, Krawczyk, Sandve, Gutierrez-Marcos, Gutierrez, Andersen, and Greiff}}}
 \bibcite{Braun2024}{{2}{2024}{{Braun et~al.}}{{Braun, Tripp, Chakatok, Kaltenbrunner, Totaro, Stoll, Bijelic, Elaily, Hoch, Aleotti, Hall, and Oberdorfer}}}
-\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{11}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{12}{section.7}\protected@file@percent }
 \bibcite{Braun2024.08.02.606416}{{3}{2025}{{Braun et~al.}}{{Braun, Tripp, Chakatok, Kaltenbrunner, Fischer, Stoll, Bijelic, Elaily, Totaro, Moser, Hoch, Lechner, Rossi, Aleotti, Hall, and Oberdorfer}}}
 \bibcite{cao2019deepddg}{{4}{2019}{{Cao et~al.}}{{Cao, Wang, He, Chen, Chen, Jiang, and Li}}}
 \bibcite{Jain2017}{{5}{2017}{{Jain et~al.}}{{Jain, Sun, Durand, Hall, Houston, Nett, Sharkey, Bobrowicz, Caffry, Yu, Cao, Lynaugh, Brown, Baruah, Gray, Krauland, Xu, Vásquez, and Wittrup}}}
@@ -117,25 +118,25 @@
 \bibcite{zhou2020mutation}{{29}{2020}{{Zhou et~al.}}{{Zhou, Chen, Ju, Xu, Chen, and Lu}}}
 \bibcite{Zhou2023}{{30}{2023}{{Zhou et~al.}}{{Zhou, Pan, Pires, Rodrigues, and Ascher}}}
 \citation{jing2021learning}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Geometric Graph Neural Network}{14}{appendix.A}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Node Features}{14}{subsection.A.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Edge Features}{14}{subsection.A.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Geometric Message Passing}{15}{subsection.A.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {B}Sequence Transformer}{15}{appendix.B}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Token Embedding}{15}{subsection.B.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Multi-Head Self-Attention}{15}{subsection.B.2}\protected@file@percent }
-\newlabel{eq:vanilla_attn}{{33}{15}{Multi-Head Self-Attention}{equation.B.33}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {C}Theoretical Analysis}{16}{appendix.C}\protected@file@percent }
-\newlabel{sec:theory}{{C}{16}{Theoretical Analysis}{appendix.C}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Convergence of Diffused Attention}{16}{subsection.C.1}\protected@file@percent }
-\newlabel{thm:convergence}{{1}{16}{Convergence of Attention Diffusion}{theorem.C.1}{}}
-\newlabel{prop:rate}{{1}{16}{Convergence Rate}{proposition.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Geometric Graph Neural Network}{15}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Node Features}{15}{subsection.A.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Edge Features}{15}{subsection.A.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Geometric Message Passing}{16}{subsection.A.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Sequence Transformer}{16}{appendix.B}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Token Embedding}{16}{subsection.B.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Multi-Head Self-Attention}{16}{subsection.B.2}\protected@file@percent }
+\newlabel{eq:vanilla_attn}{{33}{16}{Multi-Head Self-Attention}{equation.B.33}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Theoretical Analysis}{17}{appendix.C}\protected@file@percent }
+\newlabel{sec:theory}{{C}{17}{Theoretical Analysis}{appendix.C}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Convergence of Diffused Attention}{17}{subsection.C.1}\protected@file@percent }
+\newlabel{thm:convergence}{{1}{17}{Convergence of Attention Diffusion}{theorem.C.1}{}}
+\newlabel{prop:rate}{{1}{17}{Convergence Rate}{proposition.1}{}}
 \citation{xu2019powerful}
 \citation{yun2020transformers}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.2}Approximation Error Bounds}{17}{subsection.C.2}\protected@file@percent }
-\newlabel{thm:approximation}{{2}{17}{Superior Approximation of Joint Model}{theorem.C.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.2}Approximation Error Bounds}{18}{subsection.C.2}\protected@file@percent }
+\newlabel{thm:approximation}{{2}{18}{Superior Approximation of Joint Model}{theorem.C.2}{}}
 \citation{mohri2018foundations}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.3}Information Flow Analysis}{18}{subsection.C.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.4}Generalization Bound}{18}{subsection.C.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.5}Stability Analysis}{19}{subsection.C.5}\protected@file@percent }
-\gdef \@abspage@last{19}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.3}Information Flow Analysis}{19}{subsection.C.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.4}Generalization Bound}{19}{subsection.C.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.5}Stability Analysis}{20}{subsection.C.5}\protected@file@percent }
+\gdef \@abspage@last{20}

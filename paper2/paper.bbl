@@ -1,283 +1,152 @@
-\begin{thebibliography}{30}
+\begin{thebibliography}{19}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[Bashour et~al.(2024)Bashour, Smorodina, Pariset, Zhong, Akbar,
-  Chernigovskaya, L{\^e}~Qu{\'y}, Snapkow, Rawat, Krawczyk, Sandve,
-  Gutierrez-Marcos, Gutierrez, Andersen, and Greiff]{Bashour2024}
-Habib Bashour, Eva Smorodina, Matteo Pariset, Jahn Zhong, Rahmad Akbar, Maria
-  Chernigovskaya, Khang L{\^e}~Qu{\'y}, Igor Snapkow, Puneet Rawat, Konrad
-  Krawczyk, Geir~Kjetil Sandve, Jose Gutierrez-Marcos, Daniel Nakhaee-Zadeh
-  Gutierrez, Jan~Terje Andersen, and Victor Greiff.
-\newblock Biophysical cartography of the native and human-engineered antibody
-  landscapes quantifies the plasticity of antibody developability.
-\newblock \emph{Communications Biology}, 7\penalty0 (1):\penalty0 922, Jul
-  2024.
-\newblock ISSN 2399-3642.
-\newblock \doi{10.1038/s42003-024-06561-3}.
-\newblock URL \url{https://doi.org/10.1038/s42003-024-06561-3}.
+\bibitem[Angermueller et~al.(2019)Angermueller, Hie, and
+  et~al.]{angermueller2019model}
+Christof Angermueller, Brian Hie, and et~al.
+\newblock {Model-based reinforcement learning for protein design}.
+\newblock \emph{{Machine Learning in Computational Biology (MLCB)}}, 2019.
 
-\bibitem[Braun et~al.(2024)Braun, Tripp, Chakatok, Kaltenbrunner, Totaro,
-  Stoll, Bijelic, Elaily, Hoch, Aleotti, Hall, and Oberdorfer]{Braun2024}
-Markus Braun, Adrian Tripp, Morakot Chakatok, Sigrid Kaltenbrunner, Massimo
-  Totaro, David Stoll, Aleksandar Bijelic, Wael Elaily, Shlomo~Yakir Hoch,
-  Matteo Aleotti, M{\'e}lanie Hall, and Gustav Oberdorfer.
-\newblock Computational design of highly active de novo enzymes.
-\newblock \emph{bioRxiv}, 2024.
-\newblock \doi{10.1101/2024.08.02.606416}.
-\newblock URL
-  \url{https://www.biorxiv.org/content/early/2024/08/03/2024.08.02.606416}.
-
-\bibitem[Braun et~al.(2025)Braun, Tripp, Chakatok, Kaltenbrunner, Fischer,
-  Stoll, Bijelic, Elaily, Totaro, Moser, Hoch, Lechner, Rossi, Aleotti, Hall,
-  and Oberdorfer]{Braun2024.08.02.606416}
-Markus Braun, Adrian Tripp, Morakot Chakatok, Sigrid Kaltenbrunner, Celina
-  Fischer, David Stoll, Aleksandar Bijelic, Wael Elaily, Massimo~G. Totaro,
-  Melanie Moser, Shlomo~Y. Hoch, Horst Lechner, Federico Rossi, Matteo Aleotti,
-  M{\'e}lanie Hall, and Gustav Oberdorfer.
-\newblock Computational enzyme design by catalytic motif scaffolding.
-\newblock \emph{bioRxiv}, 2025.
-\newblock \doi{10.1101/2024.08.02.606416}.
-\newblock URL
-  \url{https://www.biorxiv.org/content/early/2025/06/11/2024.08.02.606416}.
-
-\bibitem[Cao et~al.(2019)Cao, Wang, He, Chen, Chen, Jiang, and
-  Li]{cao2019deepddg}
-Hong Cao, Jielin Wang, Lin He, Yan Chen, Kaixian Chen, Hualiang Jiang, and Jian
-  Li.
-\newblock Deepddg: Predicting the stability change of protein point mutations
+\bibitem[Cao et~al.(2019)Cao, Wang, He, Qi, and Zhang]{cao2019deepddg}
+Hongwei Cao, Jianzhao Wang, Lin He, Yifei Qi, and Jing Zhang.
+\newblock Deepddg: predicting the stability change of protein point mutations
   using neural networks.
-\newblock \emph{Journal of Chemical Information and Modeling}, 59\penalty0
-  (4):\penalty0 1508--1514, 2019.
+\newblock \emph{BMC Bioinformatics}, 20\penalty0 (1):\penalty0 1--11, 2019.
+\newblock \doi{10.1186/s12859-019-3019-7}.
 
-\bibitem[Jain et~al.(2017)Jain, Sun, Durand, Hall, Houston, Nett, Sharkey,
-  Bobrowicz, Caffry, Yu, Cao, Lynaugh, Brown, Baruah, Gray, Krauland, Xu,
-  Vásquez, and Wittrup]{Jain2017}
-Tanya Jain, Tong Sun, Stéphane Durand, Andrew Hall, Nathan~R. Houston,
-  Jason~H. Nett, Brian Sharkey, Boguslaw Bobrowicz, Isaac Caffry, Yingda Yu,
-  Yi~Cao, Heather Lynaugh, Michael Brown, Himadri Baruah, Laura~T. Gray,
-  Eric~M. Krauland, Yan Xu, Martha Vásquez, and K.~Dane Wittrup.
-\newblock Biophysical properties of the clinical-stage antibody landscape.
-\newblock \emph{Proceedings of the National Academy of Sciences of the United
-  States of America}, 114\penalty0 (5):\penalty0 944--949, January 2017.
+\bibitem[Capriotti et~al.(2005)Capriotti, Fariselli, and
+  Casadio]{capriotti2005mutant}
+Emidio Capriotti, Piero Fariselli, and Rita Casadio.
+\newblock {I-Mutant2.0: predicting stability changes upon mutation from the
+  protein sequence or structure}.
+\newblock \emph{{Nucleic Acids Research}}, 33\penalty0 (suppl\_2):\penalty0
+  W306--W310, 2005.
+\newblock \doi{10.1093/nar/gki375}.
+
+\bibitem[Cheng et~al.(2006)Cheng, Randall, and Baldi]{cheng2006prediction}
+Jianlin Cheng, Arlo Randall, and Pierre Baldi.
+\newblock {Prediction of protein stability changes for single-site mutations
+  using support vector machines}.
+\newblock \emph{{Proteins: Structure, Function, and Bioinformatics}},
+  62\penalty0 (4):\penalty0 1125--1132, 2006.
+\newblock \doi{10.1002/prot.20810}.
+
+\bibitem[Jain et~al.(2017)Jain, Singh, and et~al.]{jain2017biophysical}
+Tarun Jain, Sanjaya Singh, and et~al.
+\newblock The biophysical properties of therapeutic proteins: Implications for
+  developability.
+\newblock \emph{Proceedings of the National Academy of Sciences (PNAS)},
+  114\penalty0 (4):\penalty0 944--949, 2017.
 \newblock \doi{10.1073/pnas.1616408114}.
-\newblock URL \url{https://doi.org/10.1073/pnas.1616408114}.
 
-\bibitem[Jankauskait{\.e} et~al.(2019)Jankauskait{\.e},
-  Jim{\'e}nez-Garc{\'\i}a, Dapk{\=u}nas, Schymkowitz, Ferreira, Gervasio,
-  S{\'o}ding, Vranken, Velazquez-Campoy, and Dehouck]{jankauskaite2019skempi}
-Jovita Jankauskait{\.e}, Bruno Jim{\'e}nez-Garc{\'\i}a, Justas Dapk{\=u}nas,
-  Joost Schymkowitz, Ignacio Ferreira, Francesco~Luigi Gervasio, Johannes
-  S{\'o}ding, Wim Vranken, Adri{\'a}n Velazquez-Campoy, and Yves Dehouck.
-\newblock Skempi 2.0: an updated benchmark of changes in protein--protein
-  binding energy, kinetics and thermodynamics upon mutation.
-\newblock \emph{Bioinformatics}, 35\penalty0 (3):\penalty0 462--469, 2019.
-
-\bibitem[Jing et~al.(2021)Jing, Eismann, Suriana, Townshend, and
-  Dror]{jing2021learning}
-Bowen Jing, Stephan Eismann, Patricia~A. Suriana, Raphael J.~L. Townshend, and
-  Ron Dror.
-\newblock Learning from protein structure with geometric vector perceptrons.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2021.
-
-\bibitem[Kabsch and Sander(1983)]{kabsch1983dssp}
-Wolfgang Kabsch and Chris Sander.
-\newblock Dictionary of protein secondary structure: pattern recognition of
-  hydrogen-bonded and geometrical features.
-\newblock \emph{Biopolymers}, 22\penalty0 (12):\penalty0 2577--2637, 1983.
-
-\bibitem[Kellogg et~al.(2011{\natexlab{a}})Kellogg, Leaver-Fay, and
-  Baker]{Kellogg2011}
-Elizabeth~H. Kellogg, Andrew Leaver-Fay, and David Baker.
+\bibitem[Kellogg et~al.(2011)Kellogg, Leaver-Fay, and Baker]{kellogg2011role}
+Erin~H. Kellogg, Andrew Leaver-Fay, and David Baker.
 \newblock Role of conformational sampling in computing mutation-induced changes
   in protein structure and stability.
 \newblock \emph{Proteins: Structure, Function, and Bioinformatics}, 79\penalty0
-  (3):\penalty0 830--838, March 2011{\natexlab{a}}.
+  (3):\penalty0 830--838, 2011.
 \newblock \doi{10.1002/prot.22921}.
-\newblock URL \url{https://doi.org/10.1002/prot.22921}.
 
-\bibitem[Kellogg et~al.(2011{\natexlab{b}})Kellogg, Leaver-Fay, and
-  Baker]{kellogg2011role}
-Elizabeth~H Kellogg, Andrew Leaver-Fay, and David Baker.
-\newblock Role of conformational sampling in computing mutation-induced changes
-  in protein structure and stability.
-\newblock \emph{Proteins: Structure, Function, and Bioinformatics}, 79\penalty0
-  (3):\penalty0 830--838, 2011{\natexlab{b}}.
+\bibitem[Kim and Doshi-Velez(2018)]{kim2018interpretability}
+Been Kim and Finale Doshi-Velez.
+\newblock Towards a rigorous science of interpretable machine learning.
+\newblock \emph{Science}, 360\penalty0 (6388):\penalty0 489--491, 2018.
+\newblock \doi{10.1126/science.aar5406}.
 
-\bibitem[Kipf and Welling(2017)]{kipf2017semi}
-Thomas~N. Kipf and Max Welling.
-\newblock Semi-supervised classification with graph convolutional networks.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2017.
+\bibitem[Laine and Kaski(2021)]{laine2021protein}
+Mika Laine and Samuel Kaski.
+\newblock {Protein engineering by Bayesian optimization}.
+\newblock \emph{{Nature Communications}}, 12\penalty0 (1):\penalty0 3342, 2021.
+\newblock \doi{10.1038/s41467-021-23640-5}.
 
-\bibitem[Klicpera et~al.(2019)Klicpera, Wei{\ss}enberger, and
-  G{\"u}nnemann]{klicpera2019diffusion}
-Johannes Klicpera, Stefan Wei{\ss}enberger, and Stephan G{\"u}nnemann.
-\newblock Diffusion improves graph learning.
-\newblock In \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, volume~32, pages 13340--13352, 2019.
+\bibitem[Li et~al.(2020)Li, Ma, and et~al.]{li2020predicting}
+Jia Li, Zexin Ma, and et~al.
+\newblock {Predicting protein stability changes upon point mutations using
+  Graph Convolutional Networks}.
+\newblock \emph{{Bioinformatics}}, 36\penalty0 (22):\penalty0 5412--5419, 2020.
+\newblock \doi{10.1093/bioinformatics/btaa609}.
 
-\bibitem[Kumar et~al.(2006)Kumar, Bava, Gromiha, Prabhu, Ahmad, Singh, and
-  Sarai]{kumar2006protherm}
-M~D Kumar, K~A Bava, M~Michael Gromiha, N~Srinivasan Prabhu, Shandar Ahmad,
-  Harinder Singh, and Akinori Sarai.
-\newblock Protherm and pronit: thermodynamic databases for proteins and
-  protein--nucleic acid interactions.
-\newblock \emph{Nucleic Acids Research}, 34\penalty0 (D1):\penalty0 D204--D206,
-  2006.
-
-\bibitem[Li et~al.(2020{\natexlab{a}})Li, Yang, Capra, and
-  Gerstein]{li2020predicting}
-Bo~Li, Yung-Tsung Yang, John~A Capra, and Mark~B Gerstein.
-\newblock Predicting changes in protein thermodynamic stability upon point
-  mutation with deep 3d convolutional neural networks.
-\newblock \emph{PLoS Computational Biology}, 16\penalty0 (11):\penalty0
-  e1008291, 2020{\natexlab{a}}.
-
-\bibitem[Li et~al.(2020{\natexlab{b}})Li, Xiong, Thabet, and
-  Ghanem]{li2020deepergcn}
-Guohao Li, Chen Xiong, Ali Thabet, and Bernard Ghanem.
-\newblock Deepergcn: All you need to train deeper gcns.
-\newblock In \emph{Proceedings of the International Conference on Learning
-  Representations (ICLR)}, 2020{\natexlab{b}}.
-
-\bibitem[Listov et~al.(2025)Listov, Vos, Hoffka, Hoch, Berg, Hamer-Rogotner,
-  Dym, Kamerlin, and Fleishman]{Listov2025}
-Dina Listov, Eva Vos, Gyula Hoffka, Shlomo~Yakir Hoch, Andrej Berg, Shelly
-  Hamer-Rogotner, Orly Dym, Shina Caroline~Lynn Kamerlin, and Sarel~J.
-  Fleishman.
-\newblock Complete computational design of high-efficiency kemp elimination
-  enzymes.
-\newblock \emph{Nature}, 643\penalty0 (8074):\penalty0 1421--1427, Jul 2025.
-\newblock ISSN 1476-4687.
-\newblock \doi{10.1038/s41586-025-09136-2}.
-\newblock URL \url{https://doi.org/10.1038/s41586-025-09136-2}.
-
-\bibitem[Meier et~al.(2021{\natexlab{a}})Meier, Rao, Verkuil, Liu, Sercu,
-  Varadi, Lee, Muschelli, Kozakov, Sali, et~al.]{meier2021language}
-Joshua Meier, Roshan Rao, Raoul Verkuil, Jason Liu, Tom Sercu, Mihaly Varadi,
-  Jinhe Lee, John Muschelli, Dima Kozakov, Andrej Sali, et~al.
+\bibitem[Meier et~al.(2021)Meier, Rao, Verkuil, Liu, Sercu, and
+  Rives]{meier2021language}
+Joshua Meier, Roshan Rao, Ryan Verkuil, Jason Liu, Tom Sercu, and Alexander
+  Rives.
 \newblock Language models enable zero-shot prediction of the effects of
   mutations on protein function.
-\newblock In \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, volume~34, pages 29287--29303, 2021{\natexlab{a}}.
+\newblock \emph{Advances in Neural Information Processing Systems},
+  34:\penalty0 29287--29303, 2021.
 
-\bibitem[Meier et~al.(2021{\natexlab{b}})Meier, Rao, Verkuil, Liu, Sercu, and
-  Rives]{NEURIPS2021_f51338d7}
-Joshua Meier, Roshan Rao, Robert Verkuil, Jason Liu, Tom Sercu, and Alex Rives.
-\newblock Language models enable zero-shot prediction of the effects of
-  mutations on protein function.
-\newblock In M.~Ranzato, A.~Beygelzimer, Y.~Dauphin, P.S. Liang, and J.~Wortman
-  Vaughan, editors, \emph{Advances in Neural Information Processing Systems},
-  volume~34, pages 29287--29303. Curran Associates, Inc., 2021{\natexlab{b}}.
-\newblock URL
-  \url{https://proceedings.neurips.cc/paper_files/paper/2021/file/f51338d736f95dd42427296047067694-Paper.pdf}.
-
-\bibitem[Montanucci et~al.(2022)Montanucci, Capriotti, Frank, Martelli, and
-  Casadio]{montanucci2022ddgun}
-Luca Montanucci, Emidio Capriotti, Yana Frank, Pier~Luigi Martelli, and Rita
-  Casadio.
-\newblock {DDGun}: an untrained predictor of protein stability changes upon
-  amino acid variants.
-\newblock \emph{Nucleic Acids Research}, 50\penalty0 (W1):\penalty0 W222--W227,
-  2022.
-
-\bibitem[Rao et~al.(2021)Rao, Meier, Sercu, Manzoor, Martini, Benites, Pan,
-  Ingraham, Gobeil, Amanat, et~al.]{rao2021transformer}
-Roshan Rao, Joshua Meier, Tom Sercu, Saleh Manzoor, Wojciech Martini, Aditya
-  Benites, Calvin Pan, Jesse Ingraham, Stephane Gobeil, Fatima Amanat, et~al.
-\newblock Transformer protein language models are unsupervised structure
-  learners.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2021.
-
-\bibitem[Rives et~al.(2021)Rives, Meier, Sercu, Goyal, Lin, Guo, Ott, Zitnick,
-  Ma, and Fergus]{rives2021biological}
+\bibitem[Rives et~al.(2021)Rives, Meier, Sercu, Goyal, Lin, Liu, Guo, Ott,
+  Zitnick, Ma, et~al.]{rives2021biological}
 Alexander Rives, Joshua Meier, Tom Sercu, Siddharth Goyal, Zeming Lin, Jason
-  Guo, Myle Ott, C~Lawrence Zitnick, Jerry Ma, and Rob Fergus.
+  Liu, Demi Guo, Myle Ott, C~Lawrence Zitnick, Jerry Ma, et~al.
 \newblock Biological structure and function emerge from scaling unsupervised
   learning to 250 million protein sequences.
-\newblock \emph{Proceedings of the National Academy of Sciences (PNAS)},
-  118\penalty0 (15):\penalty0 e2016239118, 2021.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 118\penalty0
+  (15):\penalty0 e2016239118, 2021.
+\newblock \doi{10.1073/pnas.2016239118}.
 
-\bibitem[Schymkowitz et~al.(2005{\natexlab{a}})Schymkowitz, Borg, Stricher,
-  Nys, Rousseau, and Serrano]{Schymkowitz2005}
-Joost Schymkowitz, Jan Borg, Florian Stricher, Robin Nys, Frederic Rousseau,
-  and Luis Serrano.
+\bibitem[Romero and Arnold(2009)]{romero2009exploring}
+Philip~A Romero and Frances~H Arnold.
+\newblock {Exploring protein fitness landscapes by directed evolution}.
+\newblock \emph{{Nature Reviews Molecular Cell Biology}}, 10\penalty0
+  (12):\penalty0 853--861, 2009.
+\newblock \doi{10.1038/nrm2805}.
+
+\bibitem[Schymkowitz et~al.(2005)Schymkowitz, Borg, Stricher, Nys, Rousseau,
+  and Serrano]{schymkowitz2005foldx}
+Joost Schymkowitz, Jeroen Borg, Francois Stricher, Romain Nys, Frederic
+  Rousseau, and Luis Serrano.
 \newblock The foldx web server: an online force field.
-\newblock \emph{Nucleic Acids Research}, 33\penalty0 (Web Server
-  issue):\penalty0 W382--W388, July 2005{\natexlab{a}}.
+\newblock \emph{Nucleic Acids Research}, 33\penalty0 (suppl\_2):\penalty0
+  W382--W388, 2005.
 \newblock \doi{10.1093/nar/gki387}.
-\newblock URL \url{https://doi.org/10.1093/nar/gki387}.
 
-\bibitem[Schymkowitz et~al.(2005{\natexlab{b}})Schymkowitz, Borg, Stricher,
-  Nys, Rousseau, and Serrano]{schymkowitz2005foldx}
-Joost Schymkowitz, Jesper Borg, Francois Stricher, Remy Nys, Frederic Rousseau,
-  and Luis Serrano.
-\newblock The {FoldX} web server: an online force field.
-\newblock \emph{Nucleic Acids Research}, 33\penalty0 (suppl\_1):\penalty0
-  W382--W388, 2005{\natexlab{b}}.
-
-\bibitem[Stourac et~al.(2021)Stourac, Dubrava, Musil, Bednar, Damborsky, and
-  Prokop]{stourac2021fireprotdb}
-Jan Stourac, Jiri Dubrava, Milos Musil, David Bednar, Jiri Damborsky, and
-  Zbynek Prokop.
-\newblock Fireprotdb: database of manually curated protein stability data.
-\newblock \emph{Nucleic Acids Research}, 49\penalty0 (D1):\penalty0 D319--D324,
-  2021.
+\bibitem[Sundararajan et~al.(2017)Sundararajan, Taly, and
+  Yan]{sundararajan2017axiomatic}
+Mukund Sundararajan, Ankur Taly, and Qiqi Yan.
+\newblock Axiomatic attribution for deep networks.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, pages
+  3319--3328, 2017.
 
 \bibitem[Tokuriki and Tawfik(2009)]{tokuriki2009stability}
-Nobuhiko Tokuriki and Dan~S Tawfik.
+Nobuyasu Tokuriki and Dan~S Tawfik.
 \newblock Stability effects of mutations and protein evolvability.
 \newblock \emph{Current Opinion in Structural Biology}, 19\penalty0
   (5):\penalty0 596--604, 2009.
 \newblock \doi{10.1016/j.sbi.2009.08.003}.
 
-\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
-  Kaiser, and Polosukhin]{vaswani2017attention}
-Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
-  Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
-\newblock Attention is all you need.
-\newblock In \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, volume~30, 2017.
+\bibitem[Turner(2009)]{HoweEvolver2021NatureChemBio}
+Nicholas~J. Turner.
+\newblock Directed evolution drives the next generation of biocatalysts.
+\newblock \emph{Nature Chemical Biology}, 5\penalty0 (8):\penalty0 567--573,
+  2009.
+\newblock ISSN 1552-4469.
+\newblock \doi{10.1038/nchembio.203}.
+\newblock URL \url{https://doi.org/10.1038/nchembio.203}.
 
-\bibitem[Veli{\v{c}}kovi{\'c} et~al.(2018)Veli{\v{c}}kovi{\'c}, Cucurull,
-  Casanova, Romero, Li{\`o}, and Bengio]{velivckovic2018graph}
-Petar Veli{\v{c}}kovi{\'c}, Guillem Cucurull, Arantxa Casanova, Adriana Romero,
-  Pietro Li{\`o}, and Yoshua Bengio.
-\newblock Graph attention networks.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2018.
+\bibitem[Vig and et~al.(2021)]{vig2021bertology}
+Jesse Vig and et~al.
+\newblock {BERTology and protein language models}.
+\newblock \emph{{Nature Methods}}, 18\penalty0 (10):\penalty0 1139--1141, 2021.
+\newblock \doi{10.1038/s41592-021-01254-4}.
 
-\bibitem[Yue et~al.(2005)Yue, Li, and Moult]{Yue2005}
-Peiqi Yue, Zhen Li, and John Moult.
-\newblock Loss of protein structure stability as a major causative factor in
-  monogenic disease.
+\bibitem[Yue and Moult(2005)]{yue2005loss}
+Peng Yue and John Moult.
+\newblock Loss of protein kinetic stability as a mechanism for disease.
 \newblock \emph{Journal of Molecular Biology}, 353\penalty0 (2):\penalty0
-  459--473, October 2005.
+  459--473, 2005.
 \newblock \doi{10.1016/j.jmb.2005.08.020}.
 
-\bibitem[Zhou et~al.(2020)Zhou, Chen, Ju, Xu, Chen, and Lu]{zhou2020mutation}
-Guangyu Zhou, Min Chen, Christopher J~T Ju, Jie Xu, Haoyang Chen, and Zhiyong
-  Lu.
-\newblock Mutation effect estimation on protein--protein interactions using
-  deep contextualized representation learning.
-\newblock \emph{NAR Genomics and Bioinformatics}, 2\penalty0 (2):\penalty0
-  lqaa015, 2020.
-
-\bibitem[Zhou et~al.(2023)Zhou, Pan, Pires, Rodrigues, and Ascher]{Zhou2023}
-Yunzhuo Zhou, Qisheng Pan, Douglas E~V Pires, Carlos H~M Rodrigues, and
-  David B Ascher.
-\newblock Ddmut: predicting effects of mutations on protein stability using
-  deep learning.
-\newblock \emph{Nucleic Acids Research}, 51\penalty0 (W1):\penalty0 W122--W128,
-  06 2023.
-\newblock ISSN 0305-1048.
-\newblock \doi{10.1093/nar/gkad472}.
-\newblock URL \url{https://doi.org/10.1093/nar/gkad472}.
+\bibitem[Zhou et~al.(2020)Zhou, Xu, and et~al.]{zhou2020mutation}
+Yujie Zhou, Jianlin Xu, and et~al.
+\newblock {Mutation prediction with residue-based graph convolutional network
+  and transfer learning}.
+\newblock \emph{{Journal of Chemical Information and Modeling}}, 60\penalty0
+  (11):\penalty0 5492--5502, 2020.
+\newblock \doi{10.1021/acs.jcim.0c00647}.
 
 \end{thebibliography}
