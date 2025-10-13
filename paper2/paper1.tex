@@ -30,12 +30,8 @@
 % ------------------------------------------------
 % Title and Author Information
 % ------------------------------------------------
-% \title{Interpretable Multi-Modal Reasoning Framework for Protein Stability
-% Prediction: Bridging Deep Learning and Rational Design}
-
-\title{Monte Carlo Tree Search for the Enzyme Mutation Game: 
-\\ Discovering Epistatic Pathways in Protein Sequence Space}
-
+\title{Interpretable Multi-Modal Reasoning Framework for Protein Stability
+Prediction: Bridging Deep Learning and Rational Design}
 
 \author{
   Abigail Lin\thanks{Corresponding author: \texttt{abigail.lin@ufl.edu}} \\
@@ -49,52 +45,29 @@
 
 \begin{abstract}
 
-% Predicting the effects of amino acid mutations on protein stability ($\ddG$) is
-%     crucial for protein engineering, drug design, and understanding disease
-%     mechanisms. While recent deep learning approaches have achieved impressive
-%     predictive accuracy, they often lack interpretability and strategic
-%     reasoning capabilities essential for practical protein design tasks. We
-%     present a novel multi-modal framework that combines Graph Neural Networks
-%     (GNNs) for 3D structural information with Transformers for sequence
-%     modeling, augmented with multiple interpretable reasoning strategies for
-%     mutation selection. Our framework introduces: (1) a cross-modal fusion
-%     architecture that integrates spatial and sequential protein features, (2)
-%     mutation-aware attention mechanisms that focus on local structural
-%     perturbations, (3) five distinct search strategies (greedy, beam search,
-%     Monte Carlo, ensemble, and constraint-based) for exploring mutation space,
-%     and (4) chain-of-thought reasoning modules that generate
-%     human-interpretable explanations for each prediction. Evaluated on
-%     benchmark datasets including ProTherm and SKEMPI, our approach achieves
-%     competitive accuracy (Pearson $\rho = 0.85$) while providing actionable
-%     insights through molecular rationale generation. The framework successfully
-%     identifies stabilizing mutations with confidence scores and contextual
-%     awareness, demonstrated through case studies in antibody engineering and
-%     enzyme thermostability optimization. This work bridges the gap between
-%     predictive models and practical protein engineering by providing both
-%     accurate predictions and interpretable decision-making processes.
-
-
-Predicting the effects of multi-point mutations in enzymes remains a central
-    challenge in protein engineering due to epistasis and the vastness of
-    sequence space. We formalize enzyme mutagenesis as a sequential
-    decision-making game—the \textit{Enzyme Mutation Game}—and propose a novel
-    framework combining \textbf{Monte Carlo Tree Search (MCTS)} with
-    \textbf{Deep Graph Translation Networks (DGTN)} to discover high-fitness
-    mutation pathways. Our method treats each amino acid substitution as an
-    action and models evolutionary trajectories through a learned fitness
-    landscape. The DGTN encodes sequences into a structured latent graph,
-    enabling interpretable reasoning over residue-residue interactions, while
-    MCTS performs strategic planning to navigate epistatic dependencies. We
-    introduce a mechanism to reconstruct and visualize the hidden fitness
-    landscape using active sampling and Gaussian process regression. Evaluated
-    on synthetic landscapes with known epistatic pairs and extended to real
-    enzyme families via ESM-2 embeddings, our approach outperforms random
-    screening and gradient-free baselines in finding global optima. This work
-    establishes a new paradigm for \textit{explainable AI in directed
-    evolution}, where search traces reveal not only optimal sequences but also
-    the mechanistic logic behind them.
-
-
+Predicting the effects of amino acid mutations on protein stability ($\ddG$) is
+    crucial for protein engineering, drug design, and understanding disease
+    mechanisms. While recent deep learning approaches have achieved impressive
+    predictive accuracy, they often lack interpretability and strategic
+    reasoning capabilities essential for practical protein design tasks. We
+    present a novel multi-modal framework that combines Graph Neural Networks
+    (GNNs) for 3D structural information with Transformers for sequence
+    modeling, augmented with multiple interpretable reasoning strategies for
+    mutation selection. Our framework introduces: (1) a cross-modal fusion
+    architecture that integrates spatial and sequential protein features, (2)
+    mutation-aware attention mechanisms that focus on local structural
+    perturbations, (3) five distinct search strategies (greedy, beam search,
+    Monte Carlo, ensemble, and constraint-based) for exploring mutation space,
+    and (4) chain-of-thought reasoning modules that generate
+    human-interpretable explanations for each prediction. Evaluated on
+    benchmark datasets including ProTherm and SKEMPI, our approach achieves
+    competitive accuracy (Pearson $\rho = 0.85$) while providing actionable
+    insights through molecular rationale generation. The framework successfully
+    identifies stabilizing mutations with confidence scores and contextual
+    awareness, demonstrated through case studies in antibody engineering and
+    enzyme thermostability optimization. This work bridges the gap between
+    predictive models and practical protein engineering by providing both
+    accurate predictions and interpretable decision-making processes.
 
 \end{abstract}
 
@@ -135,11 +108,6 @@ cross-modal dependencies.
 exploration of mutation space with multiple competing objectives (stability,
 solubility, activity). Current approaches evaluate mutations individually
 without strategic search capabilities.
-
-
-
-
-
 
 \subsection{Our Contributions}
 
