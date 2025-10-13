@@ -30,12 +30,8 @@
 % ------------------------------------------------
 % Title and Author Information
 % ------------------------------------------------
-% \title{Interpretable Multi-Modal Reasoning Framework for Protein Stability
-% Prediction: Bridging Deep Learning and Rational Design}
-
-\title{Monte Carlo Tree Search for the Enzyme Mutation Game: 
-\\ Discovering Epistatic Pathways in Protein Sequence Space}
-
+\title{Interpretable Multi-Modal Reasoning Framework for Protein Stability
+Prediction: Bridging Deep Learning and Rational Design}
 
 \author{
   Abigail Lin\thanks{Corresponding author: \texttt{abigail.lin@ufl.edu}} \\
@@ -49,52 +45,29 @@
 
 \begin{abstract}
 
-% Predicting the effects of amino acid mutations on protein stability ($\ddG$) is
-%     crucial for protein engineering, drug design, and understanding disease
-%     mechanisms. While recent deep learning approaches have achieved impressive
-%     predictive accuracy, they often lack interpretability and strategic
-%     reasoning capabilities essential for practical protein design tasks. We
-%     present a novel multi-modal framework that combines Graph Neural Networks
-%     (GNNs) for 3D structural information with Transformers for sequence
-%     modeling, augmented with multiple interpretable reasoning strategies for
-%     mutation selection. Our framework introduces: (1) a cross-modal fusion
-%     architecture that integrates spatial and sequential protein features, (2)
-%     mutation-aware attention mechanisms that focus on local structural
-%     perturbations, (3) five distinct search strategies (greedy, beam search,
-%     Monte Carlo, ensemble, and constraint-based) for exploring mutation space,
-%     and (4) chain-of-thought reasoning modules that generate
-%     human-interpretable explanations for each prediction. Evaluated on
-%     benchmark datasets including ProTherm and SKEMPI, our approach achieves
-%     competitive accuracy (Pearson $\rho = 0.85$) while providing actionable
-%     insights through molecular rationale generation. The framework successfully
-%     identifies stabilizing mutations with confidence scores and contextual
-%     awareness, demonstrated through case studies in antibody engineering and
-%     enzyme thermostability optimization. This work bridges the gap between
-%     predictive models and practical protein engineering by providing both
-%     accurate predictions and interpretable decision-making processes.
-
-
-Predicting the effects of multi-point mutations in enzymes remains a central
-    challenge in protein engineering due to epistasis and the vastness of
-    sequence space. We formalize enzyme mutagenesis as a sequential
-    decision-making game—the \textit{Enzyme Mutation Game}—and propose a novel
-    framework combining \textbf{Monte Carlo Tree Search (MCTS)} with
-    \textbf{Deep Graph Translation Networks (DGTN)} to discover high-fitness
-    mutation pathways. Our method treats each amino acid substitution as an
-    action and models evolutionary trajectories through a learned fitness
-    landscape. The DGTN encodes sequences into a structured latent graph,
-    enabling interpretable reasoning over residue-residue interactions, while
-    MCTS performs strategic planning to navigate epistatic dependencies. We
-    introduce a mechanism to reconstruct and visualize the hidden fitness
-    landscape using active sampling and Gaussian process regression. Evaluated
-    on synthetic landscapes with known epistatic pairs and extended to real
-    enzyme families via ESM-2 embeddings, our approach outperforms random
-    screening and gradient-free baselines in finding global optima. This work
-    establishes a new paradigm for \textit{explainable AI in directed
-    evolution}, where search traces reveal not only optimal sequences but also
-    the mechanistic logic behind them.
-
-
+Predicting the effects of amino acid mutations on protein stability ($\ddG$) is
+    crucial for protein engineering, drug design, and understanding disease
+    mechanisms. While recent deep learning approaches have achieved impressive
+    predictive accuracy, they often lack interpretability and strategic
+    reasoning capabilities essential for practical protein design tasks. We
+    present a novel multi-modal framework that combines Graph Neural Networks
+    (GNNs) for 3D structural information with Transformers for sequence
+    modeling, augmented with multiple interpretable reasoning strategies for
+    mutation selection. Our framework introduces: (1) a cross-modal fusion
+    architecture that integrates spatial and sequential protein features, (2)
+    mutation-aware attention mechanisms that focus on local structural
+    perturbations, (3) five distinct search strategies (greedy, beam search,
+    Monte Carlo, ensemble, and constraint-based) for exploring mutation space,
+    and (4) chain-of-thought reasoning modules that generate
+    human-interpretable explanations for each prediction. Evaluated on
+    benchmark datasets including ProTherm and SKEMPI, our approach achieves
+    competitive accuracy (Pearson $\rho = 0.85$) while providing actionable
+    insights through molecular rationale generation. The framework successfully
+    identifies stabilizing mutations with confidence scores and contextual
+    awareness, demonstrated through case studies in antibody engineering and
+    enzyme thermostability optimization. This work bridges the gap between
+    predictive models and practical protein engineering by providing both
+    accurate predictions and interpretable decision-making processes.
 
 \end{abstract}
 
@@ -102,39 +75,23 @@ Predicting the effects of multi-point mutations in enzymes remains a central
 
 \section{Introduction}
 
+\subsection{Background and Motivation}
+
 Protein thermodynamic stability, quantified by the change in Gibbs free energy
 upon mutation ($\ddG = G_{\text{mutant}} - G_{\text{wild-type}}$), is a
 fundamental property that governs protein folding, function, and evolutionary
-fitness~\cite{tokuriki2009stability}. Accurate prediction of mutation effects
+fitness \citep{tokuriki2009stability}. Accurate prediction of mutation effects
 enables rational protein engineering for diverse applications including
-therapeutic antibody development~\cite{jain2017biophysical}, industrial enzyme
-optimization~\citep{HoweEvolver2021NatureChemBio}, and understanding
-disease-causing mutations~\cite{yue2005loss}.
+therapeutic antibody development \citep{jain2017biophysical}, industrial enzyme
+optimization \citep{steiner2009computational}, and understanding
+disease-causing mutations \citep{yue2005loss}.
 
-Traditional computational methods employ physics-based energy functions 
-(FoldX~\cite{schymkowitz2005foldx}, Rosetta~\cite{kellogg2011role}), achieving
+Traditional computational methods employ physics-based energy functions (FoldX
+\citep{schymkowitz2005foldx}, Rosetta \citep{kellogg2011role}), achieving
 moderate accuracy (Pearson $\rho \approx 0.5$) but requiring extensive
-computational resources. 
-Directed evolution has revolutionized enzyme engineering by mimicking natural
-selection in the lab \cite{arnold1998design}. However, its efficiency is
-limited by combinatorial explosion: even a single-site saturation scan across
-20 amino acids at 10 positions yields $20^{10}$ variants—far beyond
-experimental throughput.
-%
-The root cause of this complexity is \textit{epistasis}: non-additive
-interactions between mutations \cite{weinreich2006perspective}. A mutation that
-is neutral alone may become beneficial or deleterious depending on genetic
-background. This creates rugged, multi-modal fitness landscapes that resist
-greedy optimization.
-
-Recent machine learning approaches leverage deep
+computational resources. Recent machine learning approaches leverage deep
 neural networks, improving accuracy to $\rho \approx 0.75-0.80$
-~\cite{meier2021language,cao2019deepddg}. 
-Recent advances in deep learning offer new tools. Protein language models
-(pLMs) like ESM-2~\cite{lin2022evolutionary} capture evolutionary constraints
-from sequence data. However, they are primarily used for point predictions, not
-for \textit{planning} mutation pathways.
-However, these methods face three
+\citep{meier2021language,cao2019deepddg}. However, these methods face three
 critical limitations:
 
 \textbf{Challenge 1: Interpretability Gap.} Black-box models provide
@@ -152,16 +109,7 @@ exploration of mutation space with multiple competing objectives (stability,
 solubility, activity). Current approaches evaluate mutations individually
 without strategic search capabilities.
 
-\subsection*{Our Contributions}
-
-In this paper, we reframe enzyme engineering as a \textit{game}, inspired by
-AlphaGo \cite{silver2016mastering}. Each move is a point mutation; the goal is
-to maximize long-term fitness. We present \textbf{EnzyMCTS}, a framework that
-combines: \item \textbf{Monte Carlo Tree Search (MCTS)} for efficient
-    exploration of sequence space, \item \textbf{Deep Graph Translation
-    Networks (DGTN)} to model structural and functional constraints, \item
-        \textbf{Fitness landscape reconstruction} for visualization and
-        scientific insight.
+\subsection{Our Contributions}
 
 We present an \textbf{Interpretable Multi-Modal Reasoning Framework} that
 addresses these challenges through:
@@ -185,82 +133,43 @@ addresses these challenges through:
 \item \textbf{Comprehensive Evaluation} (\S\ref{sec:experiments}): Achieves
 state-of-the-art performance ($\rho = 0.85$) on ProTherm with superior
 interpretability (human evaluation: 4.2/5.0), demonstrated through three
-real-world case studies.  
+real-world case studies.  \end{enumerate}
 
+\subsection{Paper Organization}
 
-  \item Formalization of the \textit{Enzyme Mutation Game} as a Markov Decision Process (MDP).
-
-  \item Integration of DGTN with MCTS for interpretable, structure-aware planning.
-
-  \item A method to infer and visualize the hidden fitness landscape using active querying.
-
-  \item Demonstration of superior performance in discovering epistatic optima.
-
-\end{enumerate}
-
-
-The rest of this paper is organized as follows: Section 2 reviews related work.
-Section 3 details the prediction model architecture. Section 4 presents the
-reasoning framework with mathematical formulation. Section 5 describes
-experiments and results. Section 6 discusses findings and limitations. Section
-7 concludes with future directions.
+Section 2 reviews related work. Section 3 details the prediction model
+architecture. Section 4 presents the reasoning framework with mathematical
+formulation. Section 5 describes experiments and results. Section 6 discusses
+findings and limitations. Section 7 concludes with future directions.
 
 \section{Related Work}
 
+\subsection{$\ddG$ Prediction Methods}
 
-The progression of computational methods for predicting the change in stability
-upon mutation ($\Delta\Delta G$) has evolved through three distinct eras, each
-marked by a trade-off between speed, accuracy, and interpretability. The
-initial phase focused on \textbf{physics-based approaches} such as FoldX
-~\cite{schymkowitz2005foldx} and Rosetta~\cite{kellogg2011role}, which
-employed molecular mechanics force fields and rigorous energy minimization
-techniques. While these methods offered mechanistic interpretability by
-directly modeling physical interactions, they were computationally expensive,
-often requiring minutes per mutation, and yielded only moderate accuracy. The
-subsequent development of \textbf{statistical machine learning (ML) techniques}
-utilized hand-crafted features coupled with classical algorithms, exemplified
-by I-Mutant2.0~\cite{capriotti2005mutant} and the work of Cheng 
-et al.~\cite{cheng2006prediction}. This statistical approach increased speed and
-incrementally improved accuracy to the range of $\rho \approx 0.6-0.7$.
+\textbf{Physics-based approaches} \citep{schymkowitz2005foldx,kellogg2011role} use molecular mechanics force fields with energy minimization. While interpretable, they achieve limited accuracy and are computationally expensive (minutes per mutation).
 
-The field achieved its current state-of-the-art accuracy with the advent of
-\textbf{deep learning architectures}. This era bifurcated into two main
-strategies: \textbf{sequence-based deep learning} and \textbf{structure-based
-deep learning}. Sequence-based methods, notably Protein Language Models (PLMs)
-such as those developed by Meier et al.~\cite{meier2021language} and Rives et
-al.~\cite{rives2021biological}, achieved the highest predictive performance,
-with correlations reaching $\rho \approx 0.75-0.78$ by leveraging unsupervised
-pre-training on millions of evolutionary sequences. Conversely,
-\textbf{structure-based deep learning} utilized Graph Neural Networks (GNNs)
-and 3D Convolutional Neural Networks (CNNs), including 
-DeepDDG~\cite{cao2019deepddg}, Li et al.'s work~\cite{li2020predicting}, and Zhou et
-al.'s model~\cite{zhou2020mutation}, to explicitly model the protein's
-tertiary structure. While these models successfully captured local physical
-interactions, they typically lagged slightly in accuracy ($\rho \approx
-0.70-0.73$) due to their reduced ability to incorporate large-scale
-evolutionary context. Initial \textbf{hybrid approaches} attempted to combine
-these modalities via simple concatenation or late fusion, but they lacked a
-principled mechanism for truly synergistic cross-modal interaction.
+\textbf{Statistical methods} \citep{capriotti2005mutant,cheng2006prediction} use hand-crafted features with classical ML (SVM, random forests), achieving $\rho \approx 0.6-0.7$.
 
-Despite achieving high numerical accuracy, current deep learning paradigms
-present critical limitations for rational, high-stakes therapeutic design.
-First, the models primarily rely on post-hoc interpretation methods—such as
-attention visualization~\cite{vig2021bertology}, saliency maps
-~\cite{sundararajan2017axiomatic}, and concept-based explanations
-~\cite{kim2018interpretability}—which provide suggestive input correlations
-rather than integrated, human-understandable mechanistic reasoning. This
-opacity fundamentally undermines the trust required for clinical translation.
-Second, existing design frameworks, including those based on genetic 
-algorithms~\cite{romero2009exploring}, Bayesian optimization~\cite{laine2021protein},
-and reinforcement learning~\cite{angermueller2019model}, treat the design
-process as a heuristic search through a vast sequence space. Critically, these
-methods fail to integrate the prediction and search steps with explicit,
-verifiable mechanistic reasoning, thus providing design choices without
-scientific justification and lacking the strategic search capabilities
-necessary for truly efficient and accountable protein engineering.
+\textbf{Sequence-based deep learning} \citep{meier2021language,rives2021biological} employs protein language models pre-trained on millions of sequences, reaching $\rho \approx 0.75-0.78$ but ignoring 3D structure.
 
+\textbf{Structure-based deep learning} \citep{cao2019deepddg,li2020predicting} uses 3D CNNs or GNNs, achieving $\rho \approx 0.70-0.73$ but lacking sequence evolutionary context.
 
+\textbf{Hybrid approaches} \citep{zhou2020mutation} combine both modalities via simple concatenation or late fusion, reaching $\rho \approx 0.76$ but without principled cross-modal interaction.
 
+\textbf{Gap:} None provide interpretable reasoning or strategic mutation search capabilities.
+
+\subsection{Interpretable AI for Biology}
+
+Recent work explores attention visualization \citep{vig2021bertology}, saliency maps \citep{sundararajan2017axiomatic}, and concept-based explanations \citep{kim2018interpretability}. However, these provide post-hoc explanations rather than integrated reasoning. Our chain-of-thought approach generates explanations as part of the prediction process, grounded in domain knowledge.
+
+\subsection{Protein Design and Optimization}
+
+Traditional design uses iterative rounds of prediction and experimental testing. Recent computational methods employ:
+- Genetic algorithms \citep{romero2009exploring}
+- Bayesian optimization \citep{laine2021protein}
+- Reinforcement learning \citep{angermueller2019model}
+
+\textbf{Gap:} These methods lack interpretability and don't provide mechanistic reasoning for design choices. Our framework integrates multiple search strategies with explicit reasoning chains.
 
 \section{Methodology}
 
@@ -279,6 +188,8 @@ necessary for truly efficient and accountable protein engineering.
     \item Reasoning chain $\mathcal{R} = \{r_1, \ldots, r_k\}$ explaining the prediction
     \item Molecular rationale connecting prediction to structural/sequence features
 \end{itemize}
+
+
 
 
 % ------------------------------------------------
