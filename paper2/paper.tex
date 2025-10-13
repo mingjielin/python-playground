@@ -116,9 +116,27 @@ disease-causing mutations \citep{yue2005loss}.
 Traditional computational methods employ physics-based energy functions (FoldX
 \citep{schymkowitz2005foldx}, Rosetta \citep{kellogg2011role}), achieving
 moderate accuracy (Pearson $\rho \approx 0.5$) but requiring extensive
-computational resources. Recent machine learning approaches leverage deep
+computational resources. 
+Directed evolution has revolutionized enzyme engineering by mimicking natural
+selection in the lab \cite{arnold1998design}. However, its efficiency is
+limited by combinatorial explosion: even a single-site saturation scan across
+20 amino acids at 10 positions yields $20^{10}$ variants—far beyond
+experimental throughput.
+%
+The root cause of this complexity is \textit{epistasis}: non-additive
+interactions between mutations \cite{weinreich2006perspective}. A mutation that
+is neutral alone may become beneficial or deleterious depending on genetic
+background. This creates rugged, multi-modal fitness landscapes that resist
+greedy optimization.
+
+Recent machine learning approaches leverage deep
 neural networks, improving accuracy to $\rho \approx 0.75-0.80$
-\citep{meier2021language,cao2019deepddg}. However, these methods face three
+\citep{meier2021language,cao2019deepddg}. 
+Recent advances in deep learning offer new tools. Protein language models
+(pLMs) like ESM-2 \cite{lin2022evolutionary} capture evolutionary constraints
+from sequence data. However, they are primarily used for point predictions, not
+for \textit{planning} mutation pathways.
+However, these methods face three
 critical limitations:
 
 \textbf{Challenge 1: Interpretability Gap.} Black-box models provide
@@ -137,11 +155,16 @@ solubility, activity). Current approaches evaluate mutations individually
 without strategic search capabilities.
 
 
-
-
-
-
 \subsection{Our Contributions}
+
+In this paper, we reframe enzyme engineering as a \textit{game}, inspired by
+AlphaGo \cite{silver2016mastering}. Each move is a point mutation; the goal is
+to maximize long-term fitness. We present \textbf{EnzyMCTS}, a framework that
+combines: \item \textbf{Monte Carlo Tree Search (MCTS)} for efficient
+    exploration of sequence space, \item \textbf{Deep Graph Translation
+    Networks (DGTN)} to model structural and functional constraints, \item
+        \textbf{Fitness landscape reconstruction} for visualization and
+        scientific insight.
 
 We present an \textbf{Interpretable Multi-Modal Reasoning Framework} that
 addresses these challenges through:
@@ -165,7 +188,19 @@ addresses these challenges through:
 \item \textbf{Comprehensive Evaluation} (\S\ref{sec:experiments}): Achieves
 state-of-the-art performance ($\rho = 0.85$) on ProTherm with superior
 interpretability (human evaluation: 4.2/5.0), demonstrated through three
-real-world case studies.  \end{enumerate}
+real-world case studies.  
+
+
+  \item Formalization of the \textit{Enzyme Mutation Game} as a Markov Decision Process (MDP).
+
+  \item Integration of DGTN with MCTS for interpretable, structure-aware planning.
+
+  \item A method to infer and visualize the hidden fitness landscape using active querying.
+
+  \item Demonstration of superior performance in discovering epistatic optima.
+
+\end{enumerate}
+
 
 \subsection{Paper Organization}
 
