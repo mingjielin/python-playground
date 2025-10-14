@@ -1,0 +1,67 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: paper.aux
+The style file: plainnat.bst
+Database file #1: citations.bib
+Repeated entry---line 108 of file citations.bib
+ : @article{schymkowitz2005foldx
+ :                              ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 119 of file citations.bib
+ : @article{kellogg2011role
+ :                         ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 152 of file citations.bib
+ : @inproceedings{meier2021language
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 173 of file citations.bib
+ : @article{cao2019deepddg
+ :                        ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "arnold1998design"
+Warning--I didn't find a database entry for "weinreich2006perspective"
+Warning--I didn't find a database entry for "lin2022evolutionary"
+Warning--I didn't find a database entry for "silver2016mastering"
+You've used 19 entries,
+            2773 wiz_defined-function locations,
+            744 strings with 9061 characters,
+and the built_in function-call counts, 10429 in all, are:
+= -- 966
+> -- 639
+< -- 8
++ -- 214
+- -- 195
+* -- 953
+:= -- 1610
+add.period$ -- 75
+call.type$ -- 19
+change.case$ -- 121
+chr.to.int$ -- 19
+cite$ -- 38
+duplicate$ -- 405
+empty$ -- 792
+format.name$ -- 226
+if$ -- 2153
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 19
+newline$ -- 121
+num.names$ -- 76
+pop$ -- 194
+preamble$ -- 1
+purify$ -- 102
+quote$ -- 0
+skip$ -- 322
+stack$ -- 0
+substring$ -- 537
+swap$ -- 31
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 209
+warning$ -- 0
+while$ -- 92
+width$ -- 0
+write$ -- 289
+(There were 4 error messages)

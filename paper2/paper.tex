@@ -79,7 +79,7 @@ Predicting the effects of multi-point mutations in enzymes remains a central
     sequence space. We formalize enzyme mutagenesis as a sequential
     decision-making game—the \textit{Enzyme Mutation Game}—and propose a novel
     framework combining \textbf{Monte Carlo Tree Search (MCTS)} with
-    \textbf{Deep Graph Translation Networks (DGTN)} to discover high-fitness
+    \textbf{Deep Graph Transformer Networks (DGTN)} to discover high-fitness
     mutation pathways. Our method treats each amino acid substitution as an
     action and models evolutionary trajectories through a learned fitness
     landscape. The DGTN encodes sequences into a structured latent graph,
@@ -111,15 +111,14 @@ therapeutic antibody development~\cite{jain2017biophysical}, industrial enzyme
 optimization~\citep{HoweEvolver2021NatureChemBio}, and understanding
 disease-causing mutations~\cite{yue2005loss}.
 
-Traditional computational methods employ physics-based energy functions 
+Traditional computational methods employ physics-based energy functions
 (FoldX~\cite{schymkowitz2005foldx}, Rosetta~\cite{kellogg2011role}), achieving
 moderate accuracy (Pearson $\rho \approx 0.5$) but requiring extensive
-computational resources. 
-Directed evolution has revolutionized enzyme engineering by mimicking natural
-selection in the lab \cite{arnold1998design}. However, its efficiency is
-limited by combinatorial explosion: even a single-site saturation scan across
-20 amino acids at 10 positions yields $20^{10}$ variants—far beyond
-experimental throughput.
+computational resources.  Directed evolution has revolutionized enzyme
+engineering by mimicking natural selection in the lab \cite{arnold1998design}.
+However, its efficiency is limited by combinatorial explosion: even a
+single-site saturation scan across 20 amino acids at 10 positions yields
+$20^{10}$ variants—far beyond experimental throughput.
 %
 The root cause of this complexity is \textit{epistasis}: non-additive
 interactions between mutations \cite{weinreich2006perspective}. A mutation that
@@ -127,14 +126,12 @@ is neutral alone may become beneficial or deleterious depending on genetic
 background. This creates rugged, multi-modal fitness landscapes that resist
 greedy optimization.
 
-Recent machine learning approaches leverage deep
-neural networks, improving accuracy to $\rho \approx 0.75-0.80$
-~\cite{meier2021language,cao2019deepddg}. 
+Recent machine learning approaches leverage deep neural networks, improving
+accuracy to $\rho \approx 0.75-0.80$ ~\cite{meier2021language,cao2019deepddg}.
 Recent advances in deep learning offer new tools. Protein language models
 (pLMs) like ESM-2~\cite{lin2022evolutionary} capture evolutionary constraints
 from sequence data. However, they are primarily used for point predictions, not
-for \textit{planning} mutation pathways.
-However, these methods face three
+for \textit{planning} mutation pathways.  However, these methods face three
 critical limitations:
 
 \textbf{Challenge 1: Interpretability Gap.} Black-box models provide
@@ -157,14 +154,12 @@ without strategic search capabilities.
 In this paper, we reframe enzyme engineering as a \textit{game}, inspired by
 AlphaGo \cite{silver2016mastering}. Each move is a point mutation; the goal is
 to maximize long-term fitness. We present \textbf{EnzyMCTS}, a framework that
-combines: \item \textbf{Monte Carlo Tree Search (MCTS)} for efficient
-    exploration of sequence space, \item \textbf{Deep Graph Translation
-    Networks (DGTN)} to model structural and functional constraints, \item
-        \textbf{Fitness landscape reconstruction} for visualization and
-        scientific insight.
-
-We present an \textbf{Interpretable Multi-Modal Reasoning Framework} that
-addresses these challenges through:
+combines: \textbf{Monte Carlo Tree Search (MCTS)} for efficient
+exploration of sequence space,\textbf{Deep Graph Transformer Networks
+(DGTN)} to model structural and functional constraints, \textbf{fitness
+landscape reconstruction} for visualization and scientific insight.  We present
+an \textbf{Interpretable Multi-Modal Reasoning Framework} that addresses these
+challenges through:
 
 \begin{enumerate}
     \item \textbf{Hybrid GNN-Transformer Architecture}
@@ -172,29 +167,18 @@ addresses these challenges through:
         geometric graph neural networks for 3D structure with transformers for
         sequence, using mutation-aware attention mechanisms.
     
-    \item \textbf{Strategic Search Framework} (\S\ref{sec:search}): Five
-        complementary strategies (greedy, beam search, Monte Carlo, ensemble,
-        constraint-based) with rigorous mathematical formulation and
-        convergence analysis.
+\item \textbf{Strategic, Interpretable Search in Sequence Space}
+    (\S\ref{sec:search}): Formalization of enzyme mutagenesis as a Markov
+        Decision Process—the \textit{Enzyme Mutation Game}—enabling
+        structure-aware planning via integration of Deep Graph Translation
+        Networks (DGTN) with Monte Carlo Tree Search (MCTS); coupled with
+        active landscape querying to reconstruct and visualize fitness terrain,
+        yielding superior performance in discovering epistatic optima.
     
-    \item \textbf{Chain-of-Thought Reasoning} (\S\ref{sec:reasoning}):
-        Automated generation of human-interpretable explanations grounded in
-        structural biology principles, with confidence calibration and
-        molecular rationale.
-    
-\item \textbf{Comprehensive Evaluation} (\S\ref{sec:experiments}): Achieves
-state-of-the-art performance ($\rho = 0.85$) on ProTherm with superior
-interpretability (human evaluation: 4.2/5.0), demonstrated through three
-real-world case studies.  
-
-
-  \item Formalization of the \textit{Enzyme Mutation Game} as a Markov Decision Process (MDP).
-
-  \item Integration of DGTN with MCTS for interpretable, structure-aware planning.
-
-  \item A method to infer and visualize the hidden fitness landscape using active querying.
-
-  \item Demonstration of superior performance in discovering epistatic optima.
+    \item \textbf{Comprehensive Evaluation} (\S\ref{sec:experiments}): Achieves
+        state-of-the-art performance ($\rho = 0.85$) on ProTherm with superior
+        interpretability (human evaluation: 4.2/5.0), demonstrated through
+        three real-world case studies.  
 
 \end{enumerate}
 
@@ -260,18 +244,21 @@ scientific justification and lacking the strategic search capabilities
 necessary for truly efficient and accountable protein engineering.
 
 
-
-
 \section{Methodology}
 
 \subsection{Problem Formulation}
 
 \textbf{Input:} 
 \begin{itemize}
-    \item Protein sequence $\mathbf{s} = (s_1, \ldots, s_L)$ where $s_i \in \mathcal{A}$ (20 amino acids)
-    \item 3D structure graph $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ where $\mathcal{V}$ represents residues with coordinates $\{\mathbf{r}_i\}$
-    \item Mutation $m = (p, s_p^{\text{wt}}, s_p^{\text{mut}})$: position, wild-type, mutant
-\end{itemize}
+
+    \item Protein sequence $\mathbf{s} = (s_1, \ldots, s_L)$ where $s_i \in
+        \mathcal{A}$ (20 amino acids)
+
+    \item 3D structure graph $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ where
+        $\mathcal{V}$ represents residues with coordinates $\{\mathbf{r}_i\}$
+
+    \item Mutation $m = (p, s_p^{\text{wt}}, s_p^{\text{mut}})$: position,
+wild-type, mutant \end{itemize}
 
 \textbf{Output:} 
 \begin{itemize}
@@ -279,6 +266,142 @@ necessary for truly efficient and accountable protein engineering.
     \item Reasoning chain $\mathcal{R} = \{r_1, \ldots, r_k\}$ explaining the prediction
     \item Molecular rationale connecting prediction to structural/sequence features
 \end{itemize}
+
+We define the \textit{Enzyme Mutation Game} as a finite-horizon MDP
+$(\mathcal{S}, \mathcal{A}, P, R, H)$:
+
+\begin{itemize}
+\item \textbf{State} $s_t \in \mathcal{S}$: Protein sequence at step $t$, $s_t
+    \in \{1,\dots,20\}^L$
+
+  \item \textbf{Action} $a_t \in \mathcal{A}(s_t)$: Apply a point mutation:
+      $\text{position } i, \text{mutate to } a$
+
+  \item \textbf{Transition} $P(s_{t+1}|s_t,a_t)$: Deterministic: $s_{t+1} =
+      \text{mutate}(s_t, a_t)$
+
+  \item \textbf{Reward} $R(s_t,a_t,s_{t+1}) = f(s_{t+1}) - f(s_t)$, where
+      $f:\mathcal{S}\to\mathbb{R}$ is the fitness function
+
+  \item \textbf{Horizon} $H$: Maximum number of mutations allowed
+
+\end{itemize}
+
+The objective is to find a path $\pi = (a_1,\dots,a_H)$ maximizing cumulative reward:
+\[
+\max_\pi \mathbb{E}\left[\sum_{t=1}^H R(s_t,a_t,s_{t+1})\right]
+\]
+
+Due to epistasis, $f$ is non-convex and often unknown. We assume access to a
+\textit{fitness oracle} $ \hat{f} \approx f $, which may be noisy or
+approximate.
+
+\subsection{Overview}
+Our framework (Fig.~\ref{fig:pipeline}) consists of:
+\begin{enumerate}
+  \item A \textbf{DGTN encoder} that maps sequences to interaction graphs.
+  \item An \textbf{MCTS planner} that searches for optimal mutation paths.
+  \item A \textbf{landscape reconstructor} that builds a surrogate model of $f$.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{pipeline.png}
+  \caption{EnzyMCTS pipeline: DGTN embeds sequence into graph; MCTS uses it for informed search; landscape is reconstructed from queries.}
+  \label{fig:pipeline}
+\end{figure}
+
+
+\subsection{Deep Graph Translation Network (DGTN)}
+\label{sec:dgtn}
+
+We use a DGTN to encode each sequence $s$ into a latent interaction graph $G = (V,E)$, where:
+- $V$: nodes represent residues
+- $E_{ij}$: edge strength reflects co-evolution or spatial proximity
+
+The DGTN comprises:
+\item \textbf{Sequence Encoder}: ESM-2 to get per-residue embeddings $ \mathbf{h}_i $
+  \item \textbf{Graph Constructor}: Attention-based module computes pairwise affinities:
+  \[
+  A_{ij} = \text{softmax}(\mathbf{h}_i^\top \mathbf{W} \mathbf{h}_j)
+  \]
+  \item \textbf{Message Passing}: GNN layers refine node states using neighbors.
+
+The resulting graph provides MCTS with structural priors—e.g., mutations in tightly connected clusters may disrupt folding.
+
+\subsection{MCTS with DGTN-Guided Heuristics}
+\label{sec:mcts}
+
+We enhance standard MCTS with DGTN-derived knowledge.
+
+\paragraph{Selection} Use UCT:
+\[
+\mathrm{UCT}(v) = \frac{Q(v)}{N(v)} + c \sqrt{\frac{\ln N(p)}{N(v)}}
+\]
+where $c$ balances exploration and exploitation.
+
+\paragraph{Expansion} Prioritize actions affecting high-centrality nodes in the DGTN graph.
+
+\paragraph{Rollout Policy} Biased toward:
+- Residues with high solvent accessibility (from AlphaFold if available)
+- Positions under strong evolutionary constraint (high entropy in MSA)
+
+\paragraph{Backpropagation} Update Q-values with reward from oracle $\hat{f}$.
+
+\begin{algorithm}[H]
+\caption{EnzyMCTS Search}
+\begin{algorithmic}
+\STATE {\bfseries Input:} Wild-type $s_0$, oracle $\hat{f}$, max depth $H$, simulations $T$
+\STATE Initialize root node with $s_0$
+\FOR{$t = 1$ to $T$}
+    \STATE $v \leftarrow \text{Select}(root)$
+    \STATE $v' \leftarrow \text{Expand}(v)$
+    \IF{$v'$ not terminal}
+        \STATE $r \leftarrow \text{Simulate}(v', \hat{f}, H)$
+    \ELSE
+        \STATE $r \leftarrow \hat{f}(v'.seq)$
+    \ENDIF
+    \STATE $\text{Backpropagate}(v', r)$
+\ENDFOR
+\STATE {\bfseries Output:} Best path from root
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Fitness Landscape Reconstruction}
+\label{sec:landscape}
+
+To visualize the discovered landscape, we:
+\begin{enumerate}
+  \item Collect all evaluated sequences during MCTS.
+  \item Embed them using DGTN.
+  \item Fit a \textbf{Gaussian Process (GP)} regressor: $\hat{f}_{\text{surrogate}}(s) \sim \mathcal{GP}(0, k(\cdot,\cdot))$
+  \item Project latent space to 2D using UMAP.
+  \item Plot fitness as heatmap.
+\end{enumerate}
+
+This reveals local optima, ridges, and epistatic valleys.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 % ------------------------------------------------
