@@ -80,7 +80,7 @@ Predicting the effects of multi-point mutations in enzymes remains a central
     decision-making game—the \textit{Enzyme Mutation Game}—and propose a novel
     framework combining \textbf{Monte Carlo Tree Search (MCTS)} with
     \textbf{Deep Graph Transformer Networks (DGTN)} to discover high-fitness
-    mutation pathways.  Our method treats each amino acid substitution as an
+    mutation pathways. Our method treats each amino acid substitution as an
     action and models evolutionary trajectories through a learned fitness
     landscape. The DGTN encodes sequences into a structured latent graph,
     enabling interpretable reasoning over residue-residue interactions, while
@@ -93,21 +93,6 @@ Predicting the effects of multi-point mutations in enzymes remains a central
     establishes a new paradigm for \textit{explainable AI in directed
     evolution}, where search traces reveal not only optimal sequences but also
     the mechanistic logic behind them.
-
-    Enzyme engineering often confronts an exponentially large sequence space,
-    where multi-point mutations interact in non-linear, epistatic ways. We
-    propose a framework that formulates enzyme design as a sequential
-    decision-making problem, where each mutation is a move in an \emph{Enzyme
-    Mutation Game}. Using Monte Carlo Tree Search (MCTS), we efficiently
-    discover promising mutation trajectories without exhaustive screening. To
-    model the underlying fitness landscape, we integrate Diffusion Graph
-    Transformer Networks (DGTN), which diffuse both structural and sequence
-    embeddings over residue interaction graphs. This hybrid approach allows the
-    search process to not only predict enzyme fitness but also visualize hidden
-    epistatic pathways. Our results demonstrate that MCTS can identify
-    beneficial mutation combinations significantly faster than brute-force
-    methods, capturing higher-order dependencies that elude gradient-based and
-    local search algorithms.
 
 
 
@@ -146,13 +131,7 @@ accuracy to $\rho \approx 0.75-0.80$ ~\cite{meier2021language,cao2019deepddg}.
 Recent advances in deep learning offer new tools. Protein language models
 (pLMs) like ESM-2~\cite{lin2022evolutionary} capture evolutionary constraints
 from sequence data. However, they are primarily used for point predictions, not
-for \textit{planning} mutation pathways.  However, 
-the protein fitness landscape encapsulates how amino acid sequence variations
-translate into functional or catalytic outcomes. Hence, this landscape is
-rugged and high-dimensional, with extensive epistatic coupling among residues.
-Traditional approaches such as directed evolution and exhaustive mutational
-scans are often infeasible due to combinatorial explosion.
-Therefore, the exisiting methods face three
+for \textit{planning} mutation pathways.  However, these methods face three
 critical limitations:
 
 \textbf{Challenge 1: Interpretability Gap.} Black-box models provide
@@ -169,9 +148,6 @@ cross-modal dependencies.
 exploration of mutation space with multiple competing objectives (stability,
 solubility, activity). Current approaches evaluate mutations individually
 without strategic search capabilities.
-
-
-
 
 \subsection*{Our Contributions}
 
@@ -205,17 +181,6 @@ challenges through:
         three real-world case studies.  
 
 \end{enumerate}
-
-We model enzyme engineering as a game of sequential mutation decisions, where
-each step modifies one residue, transitioning the protein into a new state. The
-objective is to maximize an unknown fitness function—often experimental
-catalytic efficiency or computational stability. To solve this, we deploy
-\emph{Monte Carlo Tree Search (MCTS)}, a stochastic optimization algorithm that
-balances exploration and exploitation during search, guided by predictive
-evaluations from a DGTN-based fitness model.
-
-
-
 
 
 The rest of this paper is organized as follows: Section 2 reviews related work.
@@ -280,64 +245,6 @@ necessary for truly efficient and accountable protein engineering.
 
 
 \section{Methodology}
-
-\section{Problem Definition}
-
-Let $\mathcal{S}$ denote the space of all amino acid sequences of length $L$,
-and $f: \mathcal{S} \rightarrow \mathbb{R}$ represent the unknown fitness
-function.  Given an initial sequence $s_0$, we aim to discover a sequence
-$s^\ast$ such that:
-
-\begin{equation}
-    s^\ast = \arg\max_{s \in \mathcal{S}} f(s),
-\end{equation}
-
-by applying a series of mutation operations $a_t \in \mathcal{A}$, each
-modifying one or more residues:
-
-\begin{equation}
-    s_{t+1} = \mathcal{M}(s_t, a_t),
-\end{equation}
-
-where $\mathcal{M}$ is the mutation operator. The search space grows
-exponentially with sequence length, making brute-force enumeration infeasible.
-
-\section{Monte Carlo Tree Search Formulation}
-
-We treat the mutation process as a tree search problem. Each node represents a
-sequence, and each edge corresponds to a mutation. MCTS iteratively builds this
-tree using four canonical phases:
-
-\begin{enumerate}
-    \item \textbf{Selection:} Starting from the root node $s_0$, select child
-        nodes according to the Upper Confidence Bound (UCB) criterion:
-
-    \begin{equation}
-        UCB_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}},
-    \end{equation}
-
-    where $\bar{X}_i$ is the mean fitness reward, $n_i$ is the visit count of
-        child $i$, $N$ is the parent’s visit count, and $C$ controls
-        exploration.
-
-    \item \textbf{Expansion:} Add a new child node by applying a random
-        unexplored mutation $a_t$.
-
-    \item \textbf{Simulation:} Estimate $f(s_t)$ using a predictive model
-        (DGTN) or a stochastic evaluation.
-
-    \item \textbf{Backpropagation:} Propagate the simulated reward up the tree,
-        updating $\bar{X}_i$ and $n_i$.
-
-\end{enumerate}
-
-This iterative process efficiently prioritizes mutation sequences likely to
-yield high fitness, balancing exploration (new mutations) and exploitation
-(known promising paths).
-
-
-
-
 
 \subsection{Problem Formulation}
 
